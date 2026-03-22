@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết đàn piano — Piano Vinh Quang</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="templatemo-604-christmas-piano.css">
+    <link rel="stylesheet" href="css/app-components.css">
+</head>
+<body>
+    <div class="snowflakes" id="snowflakes"></div>
+    <div id="site-header-mount"></div>
+
+    <main class="page-main">
+        <p><a href="products.html" class="pvq-muted" style="text-decoration:none">← Danh sách đàn piano</a></p>
+        <div class="pvq-detail-layout" style="margin-top:20px">
+            <div class="pvq-detail-media">
+                <img id="product-image" src="" alt="">
+            </div>
+            <div class="pvq-detail-body">
+                <div class="pvq-price-pill" id="product-price">—</div>
+                <h1 id="product-title">Đang tải…</h1>
+                <p id="product-desc"></p>
+                <p class="pvq-muted" id="product-condition"></p>
+                <div id="product-chips" class="pvq-chip-list"></div>
+                <a href="index.html#contact" class="cta-btn cta-btn-primary">Liên hệ tư vấn / đặt mua</a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <img src="images/branding/logo-pianovinhquang-main.png" alt="" class="footer-logo-image">
+                <span>Piano Vinh Quang</span>
+            </div>
+            <div class="footer-links">
+                <a href="index.html">Trang chủ</a>
+                <a href="products.html">Đàn piano</a>
+                <a href="courses.html">Khóa học</a>
+                <a href="account.html">Tài khoản</a>
+                <a href="index.html#contact">Liên hệ</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>Copyright © 2026 Piano Vinh Quang.</p>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/app-common.js"></script>
+    <script src="js/site-header.js"></script>
+    <script src="js/utils/url.js"></script>
+    <script src="js/data/products.js"></script>
+    <script src="js/pages/product-detail.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            window.PVQ_injectSiteHeader('products');
+            window.PVQ_appCommon.createSnowflakes();
+        });
+    </script>
+</body>
+</html>

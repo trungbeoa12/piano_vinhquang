@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đàn piano — Piano Vinh Quang</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="templatemo-604-christmas-piano.css">
+    <link rel="stylesheet" href="css/app-components.css">
+</head>
+<body>
+    <div class="snowflakes" id="snowflakes"></div>
+    <div id="site-header-mount"></div>
+
+    <main class="page-main">
+        <div class="page-hero-block">
+            <span class="section-badge" style="display:inline-block;margin-bottom:14px">Sản phẩm</span>
+            <h1>Đàn piano</h1>
+            <p class="lead">Chọn mẫu đàn phù hợp không gian và ngân sách — tư vấn trực tiếp sau khi bạn để lại liên hệ.</p>
+        </div>
+        <div id="products-grid" class="pvq-catalog-grid"></div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <img src="images/branding/logo-pianovinhquang-main.png" alt="Piano Vinh Quang logo" class="footer-logo-image">
+                <span>Piano Vinh Quang</span>
+            </div>
+            <div class="footer-links">
+                <a href="index.html">Trang chủ</a>
+                <a href="products.html">Đàn piano</a>
+                <a href="courses.html">Khóa học</a>
+                <a href="account.html">Tài khoản</a>
+                <a href="index.html#contact">Liên hệ</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>Copyright © 2026 Piano Vinh Quang.</p>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/app-common.js"></script>
+    <script src="js/site-header.js"></script>
+    <script src="js/data/products.js"></script>
+    <script src="js/pages/products-list.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            window.PVQ_injectSiteHeader('products');
+            window.PVQ_appCommon.createSnowflakes();
+        });
+    </script>
+</body>
+</html>

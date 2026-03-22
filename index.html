@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piano Vinh Quang — Đàn piano & khóa học piano online</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="templatemo-604-christmas-piano.css">
+    <link rel="stylesheet" href="css/app-components.css">
+</head>
+<body>
+    <div class="snowflakes" id="snowflakes"></div>
+    <div id="site-header-mount"></div>
+
+    <!-- Hero -->
+    <section id="hero">
+        <div class="hero-content">
+            <span class="hero-badge">Piano Vinh Quang</span>
+            <h1>Đàn piano chất lượng & khóa học piano online bài bản</h1>
+            <p class="hero-subtitle">Hai trụ cột: tư vấn và bán đàn phù hợp nhu cầu; khóa học với video và sheet nhạc trên Google Drive — chỉ học viên đã mua mới mở được học liệu.</p>
+            <div class="hero-actions">
+                <a href="courses.html" class="cta-btn cta-btn-primary">Khóa học online</a>
+                <a href="products.html" class="cta-btn cta-btn-secondary">Xem đàn piano</a>
+                <a href="#contact" class="cta-btn cta-btn-ghost">Tư vấn & liên hệ</a>
+            </div>
+            <div class="hero-highlights">
+                <div class="hero-highlight">
+                    <strong>Bán đàn & phụ kiện</strong>
+                    <span>Tư vấn theo ngân sách và không gian</span>
+                </div>
+                <div class="hero-highlight">
+                    <strong>Khóa học có lộ trình</strong>
+                    <span>Video, sheet — truy cập theo quyền học viên</span>
+                </div>
+                <div class="hero-highlight">
+                    <strong>Tối ưu mobile / tablet</strong>
+                    <span>Học và xem tài liệu mọi lúc</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mini-player">
+            <div class="player-header">
+                <div class="song-info">
+                    <div class="now-playing">Lesson Preview</div>
+                    <div class="song-title" id="currentSongTitle">Luyện ngón căn bản</div>
+                </div>
+                <div class="player-controls">
+                    <button type="button" class="control-btn nav-btn" id="prevBtn">◀</button>
+                    <button type="button" class="control-btn play-btn" id="playBtn">▶</button>
+                    <button type="button" class="control-btn nav-btn" id="nextBtn">▶</button>
+                </div>
+            </div>
+
+            <div class="song-selector">
+                <button type="button" class="song-tab active" data-song="0">Luyện ngón</button>
+                <button type="button" class="song-tab" data-song="1">Giai điệu căn bản</button>
+                <button type="button" class="song-tab" data-song="2">Bản nhạc ứng dụng</button>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="time-display">
+                    <span id="currentTime">0:00</span>
+                    <span id="totalTime">0:00</span>
+                </div>
+            </div>
+
+            <div class="mini-piano-container">
+                <div class="mini-piano" id="miniPiano"></div>
+            </div>
+
+            <div class="player-controls-row">
+                <div class="control-group">
+                    <span class="control-label">Speed</span>
+                    <input type="range" class="control-slider" id="speedSlider" min="0.5" max="2" step="0.1" value="1">
+                    <span class="control-value" id="speedValue">1.0x</span>
+                </div>
+                <div class="control-group">
+                    <span class="control-label">Volume</span>
+                    <input type="range" class="control-slider" id="volumeSlider" min="0" max="1" step="0.1" value="0.7">
+                    <span class="control-value" id="volumeValue">70%</span>
+                </div>
+                <div class="repeat-toggle" id="repeatToggle">
+                    <span class="repeat-icon">🔁</span>
+                    <div class="toggle-switch" id="repeatSwitch"></div>
+                </div>
+            </div>
+
+            <div class="keyboard-hint">
+                Preview bài học bằng bàn phím: Z-M (quãng thấp) • Q-U (quãng cao) • Space (phát / dừng)
+            </div>
+        </div>
+    </section>
+
+    <!-- Hai trụ cột kinh doanh -->
+    <section id="pillars">
+        <div class="section-header">
+            <span class="section-badge">Khám phá</span>
+            <h2>Đàn piano & khóa học online</h2>
+            <p class="section-desc">Chọn mảng bạn quan tâm — mỗi mảng có trang riêng, dữ liệu tách biệt để dễ quản lý và mở rộng.</p>
+        </div>
+        <div class="pvq-pillar-grid">
+            <a class="pvq-pillar-card" href="products.html">
+                <div class="pvq-pillar-label">Sản phẩm</div>
+                <h3>Đàn piano</h3>
+                <p>Xem mẫu đàn, điều kiện và mô tả ngắn. Liên hệ để được tư vấn cấu hình phù hợp phòng và mục đích sử dụng.</p>
+                <span class="pvq-pillar-cta">Mở danh sách đàn →</span>
+            </a>
+            <a class="pvq-pillar-card" href="courses.html">
+                <div class="pvq-pillar-label">Đào tạo</div>
+                <h3>Khóa học piano online</h3>
+                <p>Chương trình theo từng khóa, chia bài và học liệu (video, sheet). Nội dung Drive chỉ hiển thị khi bạn có quyền học viên.</p>
+                <span class="pvq-pillar-cta">Xem khóa học →</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- About -->
+    <section id="about">
+        <div class="section-header">
+            <span class="section-badge">Giới thiệu</span>
+            <h2>Một piano studio online được thiết kế để học thật sự hiệu quả</h2>
+            <p class="section-desc">Giao diện tối giản, cao cấp và tập trung vào việc giúp học viên theo dõi bài giảng, luyện tập và tiến bộ đều đặn.</p>
+        </div>
+        <div class="about-grid">
+            <div class="about-media">
+                <img src="images/courses/course-piano-basic-cover.jpg" alt="Online piano lesson">
+                <a href="courses.html" class="youtube-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                    </svg>
+                    Xem các khóa học
+                </a>
+            </div>
+            <div class="about-content">
+                <h3>Học nhạc bài bản, rõ ràng và truyền cảm hứng</h3>
+                <p>Piano Vinh Quang tập trung vào trải nghiệm học piano online chuyên nghiệp: dễ xem trên màn hình nhỏ, dễ thao tác khi đang ngồi tại đàn, và đủ tinh tế để tạo cảm hứng luyện tập mỗi ngày.</p>
+                <p>Nội dung được tổ chức theo cấp độ: khóa học gồm nhiều bài; mỗi bài gắn học liệu riêng (video, sheet, PDF…). Trang công khai không hiển thị link Drive — chỉ tài khoản đã cấp quyền mới mở được.</p>
+                <p class="about-credits">Giao diện phát triển từ template <a href="https://templatemo.com" target="_blank" rel="nofollow noopener">TemplateMo</a>.</p>
+                <div class="about-stats">
+                    <div class="stat">
+                        <div class="stat-number">2+</div>
+                        <div class="stat-label">Khóa mẫu</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">3+</div>
+                        <div class="stat-label">Mẫu đàn</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Học online</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features">
+        <div class="section-header">
+            <span class="section-badge">Lộ trình học</span>
+            <h2>Những điểm chạm quan trọng của một nền tảng học piano tốt</h2>
+            <p class="section-desc">Từ kỹ thuật cơ bản đến trải nghiệm học tập mượt mà trên mọi thiết bị, mọi section đều được hướng về hiệu quả thực hành.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="32" cy="32" r="28" stroke-opacity="0.3"/>
+                        <path d="M32 8v48M8 32h48" stroke-opacity="0.2"/>
+                        <path d="M20 20c0 8 6 12 12 12s12-4 12-12" stroke-width="2.5"/>
+                        <path d="M20 44c0-8 6-12 12-12s12 4 12 12" stroke-width="2.5"/>
+                        <circle cx="32" cy="32" r="6" fill="currentColor" opacity="0.3"/>
+                        <path d="M26 32h12" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <h3>Bài học trực quan</h3>
+                <p>Học viên có thể nghe mẫu, theo dõi cao độ và luyện phản xạ ngay trên giao diện mà không cần cài thêm công cụ phụ.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="8" y="20" width="48" height="32" rx="4" stroke-width="2"/>
+                        <rect x="12" y="24" width="6" height="24" rx="1" fill="currentColor" opacity="0.2"/>
+                        <rect x="20" y="24" width="6" height="24" rx="1" fill="currentColor" opacity="0.2"/>
+                        <rect x="28" y="24" width="6" height="24" rx="1" fill="currentColor" opacity="0.2"/>
+                        <rect x="36" y="24" width="6" height="24" rx="1" fill="currentColor" opacity="0.2"/>
+                        <rect x="44" y="24" width="6" height="24" rx="1" fill="currentColor" opacity="0.2"/>
+                        <rect x="16" y="24" width="4" height="14" rx="1" fill="currentColor" opacity="0.6"/>
+                        <rect x="24" y="24" width="4" height="14" rx="1" fill="currentColor" opacity="0.6"/>
+                        <rect x="40" y="24" width="4" height="14" rx="1" fill="currentColor" opacity="0.6"/>
+                    </svg>
+                </div>
+                <h3>Minh họa phím đàn</h3>
+                <p>Bàn phím trực quan giúp người học đối chiếu nốt nhanh hơn, phù hợp với người mới bắt đầu và học viên đang luyện bài tại nhà.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="18" width="52" height="32" rx="4"/>
+                        <rect x="10" y="22" width="8" height="8" rx="2" fill="currentColor" opacity="0.3"/>
+                        <rect x="20" y="22" width="8" height="8" rx="2" fill="currentColor" opacity="0.3"/>
+                        <rect x="30" y="22" width="8" height="8" rx="2" fill="currentColor" opacity="0.3"/>
+                        <rect x="40" y="22" width="8" height="8" rx="2" fill="currentColor" opacity="0.3"/>
+                        <rect x="14" y="32" width="8" height="8" rx="2" fill="currentColor" opacity="0.5"/>
+                        <rect x="24" y="32" width="8" height="8" rx="2" fill="currentColor" opacity="0.5"/>
+                        <rect x="34" y="32" width="8" height="8" rx="2" fill="currentColor" opacity="0.5"/>
+                        <rect x="18" y="42" width="28" height="6" rx="2" fill="currentColor" opacity="0.2"/>
+                    </svg>
+                </div>
+                <h3>Thực hành tương tác</h3>
+                <p>Cho phép thử nốt bằng bàn phím để làm quen bài học, phù hợp cho trải nghiệm demo, luyện tiết tấu và kiểm tra ghi nhớ.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="18" y="8" width="28" height="48" rx="4"/>
+                        <rect x="22" y="14" width="20" height="32" rx="2" stroke-opacity="0.5"/>
+                        <circle cx="32" cy="52" r="3" fill="currentColor" opacity="0.4"/>
+                        <path d="M26 20h12M26 26h8M26 32h10" stroke-opacity="0.4" stroke-linecap="round"/>
+                        <rect x="6" y="16" width="8" height="32" rx="2" stroke-opacity="0.3"/>
+                        <rect x="50" y="12" width="10" height="40" rx="2" stroke-opacity="0.3"/>
+                    </svg>
+                </div>
+                <h3>Tối ưu cho iPad và mobile</h3>
+                <p>Bố cục được nới khoảng chạm và nhịp thở thị giác để dễ xem khi đặt điện thoại hoặc tablet trên giá đàn.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M32 8L38 20H58L42 30L48 44L32 34L16 44L22 30L6 20H26L32 8Z" fill="currentColor" opacity="0.2"/>
+                        <path d="M32 8L38 20H58L42 30L48 44L32 34L16 44L22 30L6 20H26L32 8Z"/>
+                        <circle cx="32" cy="26" r="4" fill="currentColor" opacity="0.5"/>
+                        <path d="M28 50h8M24 56h16" stroke-linecap="round" stroke-opacity="0.5"/>
+                    </svg>
+                </div>
+                <h3>Truy cập theo quyền</h3>
+                <p>Học liệu khóa học không nhúng công khai trên trang chủ; chỉ học viên đã mua (hoặc được cấp quyền) mới mở được video và sheet.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="32" cy="32" r="24" stroke-opacity="0.3"/>
+                        <circle cx="32" cy="32" r="18"/>
+                        <path d="M32 20v12l8 8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="32" cy="32" r="3" fill="currentColor"/>
+                        <path d="M32 10v4M32 50v4M10 32h4M50 32h4" stroke-linecap="round" stroke-opacity="0.4"/>
+                        <path d="M18 18l2 2M44 44l2 2M18 46l2-2M44 18l2-2" stroke-linecap="round" stroke-opacity="0.3"/>
+                    </svg>
+                </div>
+                <h3>Kiểm soát tốc độ luyện tập</h3>
+                <p>Người học có thể giảm tốc để bắt tay phải, tay trái hoặc tăng tốc dần khi đã quen bài, rất phù hợp cho luyện tập từng bước.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Khóa học nổi bật (catalog thật — không có link Drive) -->
+    <section id="featured-courses">
+        <div class="section-header">
+            <span class="section-badge">Khóa học nổi bật</span>
+            <h2>Chương trình trong catalog</h2>
+            <p class="section-desc">Chi tiết từng khóa, danh sách bài và học liệu nằm ở trang khóa học — không dùng link ngoài placeholder cho marketing.</p>
+        </div>
+        <div class="songs-grid">
+            <a href="course-detail.html?id=piano-co-ban" class="song-card">
+                <div class="song-card-icon">01</div>
+                <div class="song-card-info">
+                    <div class="song-card-title">Piano căn bản cho người mới</div>
+                    <div class="song-card-meta">8 tuần • Tư thế • Nhịp • Đọc nốt</div>
+                </div>
+                <div class="song-card-duration">Chi tiết</div>
+            </a>
+            <a href="course-detail.html?id=dem-hat-thuc-chien" class="song-card">
+                <div class="song-card-icon">02</div>
+                <div class="song-card-info">
+                    <div class="song-card-title">Piano đệm hát thực chiến</div>
+                    <div class="song-card-meta">Hợp âm • Vòng công năng • Đệm pop ballad</div>
+                </div>
+                <div class="song-card-duration">Chi tiết</div>
+            </a>
+            <a href="courses.html" class="song-card">
+                <div class="song-card-icon">→</div>
+                <div class="song-card-info">
+                    <div class="song-card-title">Xem toàn bộ khóa học</div>
+                    <div class="song-card-meta">Danh sách cập nhật trên trang Khóa học</div>
+                </div>
+                <div class="song-card-duration">Mở</div>
+            </a>
+        </div>
+    </section>
+
+    <!-- Gallery -->
+    <section id="gallery">
+        <div class="section-header">
+            <span class="section-badge">Trải nghiệm học</span>
+            <h2>Không gian thị giác truyền cảm hứng cho việc luyện tập mỗi ngày</h2>
+            <p class="section-desc">Moodboard tinh thần piano studio — ảnh minh họa, không gắn học liệu khóa học.</p>
+        </div>
+        <div class="gallery-grid">
+            <div class="gallery-item" data-index="0">
+                <img src="images/gallery/gallery-piano-learning-inspiration-01.jpg" alt="Piano learning inspiration">
+                <div class="gallery-icon">+</div>
+            </div>
+            <div class="gallery-item" data-index="1">
+                <img src="images/gallery/gallery-online-lesson-atmosphere-01.jpg" alt="Online lesson atmosphere">
+                <div class="gallery-icon">+</div>
+            </div>
+            <div class="gallery-item" data-index="2">
+                <img src="images/courses/course-piano-accompaniment-cover.jpg" alt="Piano practice setup">
+                <div class="gallery-icon">+</div>
+            </div>
+            <div class="gallery-item" data-index="3">
+                <img src="images/gallery/gallery-music-lifestyle-detail-01.jpg" alt="Music lifestyle detail">
+                <div class="gallery-icon">+</div>
+            </div>
+            <div class="gallery-item" data-index="4">
+                <img src="images/products/product-upright-yamaha-u1-showroom.jpg" alt="Student practice scene">
+                <div class="gallery-icon">+</div>
+            </div>
+            <div class="gallery-item" data-index="5">
+                <img src="images/products/product-digital-casio-privia-pxs7000-showroom.jpg" alt="Piano course detail">
+                <div class="gallery-icon">+</div>
+            </div>
+            <div class="gallery-item" data-index="6">
+                <img src="images/gallery/gallery-music-academy-atmosphere-01.jpg" alt="Music academy atmosphere">
+                <div class="gallery-icon">+</div>
+            </div>
+            <div class="gallery-item" data-index="7">
+                <img src="images/products/product-grand-yamaha-c3-showroom.jpg" alt="Grand piano inspiration">
+                <div class="gallery-icon">+</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button type="button" class="lightbox-close" id="lightboxClose">×</button>
+            <button type="button" class="lightbox-nav lightbox-prev" id="lightboxPrev">◀</button>
+            <img src="" alt="Gallery image" id="lightboxImg">
+            <button type="button" class="lightbox-nav lightbox-next" id="lightboxNext">▶</button>
+        </div>
+    </div>
+
+    <!-- Contact -->
+    <section id="contact">
+        <div class="section-header">
+            <span class="section-badge">Tư vấn</span>
+            <h2>Sẵn sàng bắt đầu lộ trình piano của bạn?</h2>
+            <p class="section-desc">Để lại thông tin để nhận tư vấn đàn piano, khóa học online, hoặc lộ trình phù hợp thời gian luyện tập.</p>
+        </div>
+        <div class="contact-container">
+            <div class="contact-info">
+                <h3>Thông tin liên hệ</h3>
+                <div class="contact-item">
+                    <div class="contact-item-icon">📍</div>
+                    <div class="contact-item-content">
+                        <h4>Hình thức</h4>
+                        <p><a href="https://www.google.com/maps/place/Ho+Chi+Minh+City,+Vietnam" target="_blank" rel="noopener">Online toàn quốc<br>Tư vấn đàn & khóa học</a></p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-item-icon">📧</div>
+                    <div class="contact-item-content">
+                        <h4>Email</h4>
+                        <p><a href="mailto:hello@pianovinhquang.vn">hello@pianovinhquang.vn</a></p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-item-icon">📞</div>
+                    <div class="contact-item-content">
+                        <h4>Hotline</h4>
+                        <p><a href="tel:+84901234567">+84 901 234 567</a></p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-item-icon">🕐</div>
+                    <div class="contact-item-content">
+                        <h4>Lịch hỗ trợ</h4>
+                        <p>Học viên truy cập bài theo quyền<br>Tư vấn: 8:00 - 21:00 mỗi ngày</p>
+                    </div>
+                </div>
+                <div class="contact-map">
+                    <iframe title="Bản đồ" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.412690388863!2d106.69482187585672!3d10.780344859153778!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f3a2dfb27f9%3A0x5b3f7f8d9fcb8e92!2zSOG7kyBDaMOtIE1pbmggQ2l0eQ!5e0!3m2!1sen!2s!4v1710000000000!5m2!1sen!2s" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
+            <form class="contact-form" id="contactForm">
+                <div class="form-group">
+                    <label for="name">Họ và tên</label>
+                    <input type="text" id="name" name="name" placeholder="Nhập họ và tên" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="Nhập email liên hệ" required>
+                </div>
+                <div class="form-group">
+                    <label for="message">Nhu cầu</label>
+                    <textarea id="message" name="message" placeholder="Tư vấn đàn piano, đăng ký khóa học, hoặc mục tiêu học của bạn"></textarea>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-submit">Gửi liên hệ</button>
+                    <button type="reset" class="btn btn-clear">Làm lại</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <img src="images/branding/logo-pianovinhquang-main.png" alt="Piano Vinh Quang logo" class="footer-logo-image">
+                <span>Piano Vinh Quang</span>
+            </div>
+            <div class="footer-links">
+                <a href="index.html">Trang chủ</a>
+                <a href="products.html">Đàn piano</a>
+                <a href="courses.html">Khóa học</a>
+                <a href="account.html">Tài khoản</a>
+                <a href="#contact">Liên hệ</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>Copyright © 2026 Piano Vinh Quang. Nâng cấp từ template <a rel="nofollow" href="https://templatemo.com" target="_blank">TemplateMo</a>.</p>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/app-common.js"></script>
+    <script src="js/site-header.js"></script>
+    <script src="js/data/demo-songs.js"></script>
+    <script src="js/piano-player.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            window.PVQ_injectSiteHeader('home');
+            window.PVQ_appCommon.createSnowflakes();
+            window.PVQ_appCommon.initGallery();
+            window.PVQ_appCommon.initContactForm();
+            new window.PVQ_PianoStudioPlayer();
+        });
+    </script>
+</body>
+</html>

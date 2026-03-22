@@ -1,0 +1,378 @@
+/* Bổ sung layout & component chuẩn hóa — dùng cùng templatemo-604-christmas-piano.css */
+
+.nav-links a.active {
+	color: var(--text) !important;
+	background: rgba(142, 165, 223, 0.18) !important;
+}
+
+/* --- Page shell --- */
+.page-main {
+	max-width: 1100px;
+	margin: 0 auto;
+	padding: 160px 24px 80px;
+	position: relative;
+	z-index: 2;
+}
+
+.page-hero-block {
+	text-align: center;
+	margin-bottom: 48px;
+}
+
+.page-hero-block h1 {
+	font-family: 'Cormorant Garamond', serif;
+	font-size: clamp(2rem, 4vw, 3rem);
+	font-weight: 700;
+	color: var(--ivory);
+	margin-bottom: 12px;
+}
+
+.page-hero-block .lead {
+	color: var(--text-muted);
+	max-width: 640px;
+	margin: 0 auto;
+	line-height: 1.75;
+}
+
+/* --- Home: hai trụ cột --- */
+.pvq-pillar-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 22px;
+	margin-top: 28px;
+}
+
+.pvq-pillar-card {
+	display: block;
+	padding: 28px 26px;
+	border-radius: var(--radius-md);
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	text-decoration: none;
+	color: inherit;
+	transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.pvq-pillar-card:hover,
+.pvq-pillar-card:focus-visible {
+	transform: translateY(-4px);
+	border-color: var(--border-strong);
+	box-shadow: var(--shadow);
+	outline: none;
+}
+
+.pvq-pillar-label {
+	font-size: 0.78rem;
+	text-transform: uppercase;
+	letter-spacing: 0.14em;
+	color: var(--accent-soft);
+	font-weight: 600;
+	margin-bottom: 10px;
+}
+
+.pvq-pillar-card h3 {
+	font-family: 'Cormorant Garamond', serif;
+	font-size: 1.65rem;
+	margin-bottom: 10px;
+	color: var(--ivory);
+}
+
+.pvq-pillar-card p {
+	color: var(--text-muted);
+	font-size: 0.95rem;
+	line-height: 1.65;
+	margin-bottom: 18px;
+}
+
+.pvq-pillar-cta {
+	font-weight: 600;
+	color: var(--accent-ink);
+	font-size: 0.95rem;
+}
+
+/* --- Catalog grid (products / courses list) --- */
+.pvq-catalog-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 20px;
+}
+
+.pvq-catalog-card {
+	display: flex;
+	flex-direction: column;
+	border-radius: var(--radius-md);
+	overflow: hidden;
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	text-decoration: none;
+	color: inherit;
+	transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.pvq-catalog-card:hover,
+.pvq-catalog-card:focus-visible {
+	transform: translateY(-3px);
+	border-color: rgba(142, 165, 223, 0.35);
+	outline: none;
+}
+
+.pvq-catalog-card-image {
+	aspect-ratio: 4/3;
+	object-fit: cover;
+	width: 100%;
+}
+
+.pvq-catalog-card-body {
+	padding: 20px 20px 22px;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+.pvq-catalog-card-body h2 {
+	font-family: 'Cormorant Garamond', serif;
+	font-size: 1.35rem;
+	margin-bottom: 8px;
+	color: var(--ivory);
+}
+
+.pvq-catalog-meta {
+	font-size: 0.88rem;
+	color: var(--text-soft);
+	margin-bottom: 12px;
+}
+
+.pvq-catalog-card-body p {
+	font-size: 0.92rem;
+	color: var(--text-muted);
+	line-height: 1.6;
+	flex: 1;
+}
+
+.pvq-link-arrow {
+	margin-top: 12px;
+	font-weight: 600;
+	color: var(--accent-ink);
+	font-size: 0.92rem;
+}
+
+/* --- Detail pages --- */
+.pvq-detail-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+	gap: 36px;
+	align-items: start;
+}
+
+@media (max-width: 900px) {
+	.pvq-detail-layout {
+		grid-template-columns: 1fr;
+	}
+}
+
+.pvq-detail-media img {
+	width: 100%;
+	border-radius: var(--radius-md);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pvq-price-pill {
+	display: inline-block;
+	padding: 8px 14px;
+	border-radius: 999px;
+	background: rgba(142, 165, 223, 0.12);
+	border: 1px solid rgba(142, 165, 223, 0.35);
+	color: var(--accent-ink);
+	font-weight: 600;
+	font-size: 0.9rem;
+	margin-bottom: 16px;
+}
+
+.pvq-detail-body h1 {
+	font-family: 'Cormorant Garamond', serif;
+	font-size: clamp(1.8rem, 3vw, 2.4rem);
+	margin-bottom: 14px;
+	color: var(--ivory);
+}
+
+.pvq-detail-body p {
+	color: var(--text-muted);
+	line-height: 1.75;
+	margin-bottom: 14px;
+}
+
+.pvq-chip-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 16px 0 20px;
+}
+
+.pvq-chip {
+	font-size: 0.82rem;
+	padding: 6px 12px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.06);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	color: var(--text-muted);
+}
+
+.pvq-lesson-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.pvq-lesson-row {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 16px 0;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pvq-lesson-row:last-child {
+	border-bottom: none;
+}
+
+.pvq-lesson-row a {
+	color: var(--accent-ink);
+	text-decoration: none;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.pvq-lesson-row a:hover,
+.pvq-lesson-row a:focus-visible {
+	text-decoration: underline;
+	outline: none;
+}
+
+.pvq-lesson-title {
+	font-weight: 600;
+	color: var(--ivory);
+	margin-bottom: 4px;
+}
+
+.pvq-lesson-meta {
+	font-size: 0.88rem;
+	color: var(--text-soft);
+}
+
+/* --- Lesson / resources --- */
+.pvq-resource-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.pvq-resource-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 14px;
+	flex-wrap: wrap;
+	padding: 16px 18px;
+	border-radius: var(--radius-sm);
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pvq-resource-item strong {
+	color: var(--ivory);
+	font-weight: 600;
+}
+
+.pvq-resource-kind {
+	font-size: 0.8rem;
+	color: var(--text-soft);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+
+.pvq-alert {
+	padding: 18px 20px;
+	border-radius: var(--radius-sm);
+	background: rgba(36, 58, 115, 0.35);
+	border: 1px solid rgba(142, 165, 223, 0.25);
+	color: var(--text-muted);
+	line-height: 1.65;
+}
+
+.pvq-alert strong {
+	color: var(--ivory);
+}
+
+/* --- Account --- */
+.pvq-account-grid {
+	display: grid;
+	grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+	gap: 28px;
+	align-items: start;
+}
+
+@media (max-width: 800px) {
+	.pvq-account-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.pvq-panel {
+	padding: 24px 22px;
+	border-radius: var(--radius-md);
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pvq-panel h2 {
+	font-family: 'Cormorant Garamond', serif;
+	font-size: 1.45rem;
+	margin-bottom: 16px;
+	color: var(--ivory);
+}
+
+.pvq-form-stack .form-group {
+	margin-bottom: 16px;
+}
+
+.pvq-form-stack label {
+	display: block;
+	margin-bottom: 6px;
+	font-size: 0.88rem;
+	color: var(--text-muted);
+}
+
+.pvq-form-stack input {
+	width: 100%;
+	padding: 12px 14px;
+	border-radius: 12px;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	background: rgba(0, 0, 0, 0.25);
+	color: var(--text);
+	font-family: inherit;
+}
+
+.pvq-course-owned {
+	padding: 14px 0;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pvq-course-owned:last-child {
+	border-bottom: none;
+}
+
+.pvq-course-owned a {
+	color: var(--accent-ink);
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.pvq-course-owned a:hover {
+	text-decoration: underline;
+}
+
+.pvq-muted {
+	color: var(--text-soft);
+	font-size: 0.9rem;
+}
