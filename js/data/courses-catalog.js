@@ -1,12 +1,24 @@
 /**
  * Catalog khóa học — công khai.
- * Không chứa URL Google Drive hay file nhạy cảm; chỉ id tham chiếu tới resource (resolve ở lớp access).
+ * Không chứa URL học liệu riêng; chỉ refId tham chiếu resource (resolve ở lớp access).
  */
 window.PVQ_COURSES = [
   {
     id: 'piano-co-ban',
     title: 'Piano căn bản cho người mới',
     summary: 'Tư thế ngồi, nhịp điệu, đọc nốt và bài tập ngón trên đàn thật hoặc đàn kỹ thuật số.',
+    audience:
+      'Người mới bắt đầu, người lâu không luyện muốn làm lại nền tảng, học viên cần lộ trình rõ ràng theo tuần.',
+    contentTopics: [
+      'Tư thế ngồi, tay và nhận diện quãng trên bàn phím',
+      'Nhịp điệu cơ bản, đệm tay trái đơn giản',
+      'Đọc nốt, bài tập ngón và thói quen luyện tập đều',
+    ],
+    outcomes: [
+      'Đọc được nốt và nhịp ở mức cơ bản trong bài tập khóa',
+      'Tự luyện theo video và tài liệu được giao sau khi đăng ký',
+      'Nền tảng để học tiếp các khóa nâng cao hoặc đệm hát',
+    ],
     priceLabel: 'Liên hệ',
     level: 'Cơ bản',
     durationWeeks: 8,
@@ -36,6 +48,18 @@ window.PVQ_COURSES = [
     id: 'dem-hat-thuc-chien',
     title: 'Piano đệm hát thực chiến',
     summary: 'Hợp âm, vòng công năng pop ballad, intro — đệm theo giọng hát.',
+    audience:
+      'Đã có nền tảng hợp âm cơ bản, người hát muốn tự đệm, hoặc pianist muốn chơi nhạc pop ballad tự tin hơn.',
+    contentTopics: [
+      'Hợp âm major / minor, chuyển nhanh và giữ nhịp ổn định',
+      'Vòng công năng thường gặp trong pop ballad',
+      'Intro, kết và cách “nhường” cho giọng hát',
+    ],
+    outcomes: [
+      'Đệm được các tiết tấu ballad phổ biến ở mức ứng dụng',
+      'Tự xây dựng phần intro đơn giản cho bài hát chọn sẵn',
+      'Sẵn sàng kết hợp với vocal hoặc thu demo tại nhà',
+    ],
     priceLabel: 'Liên hệ',
     level: 'Trung cấp',
     durationWeeks: 10,

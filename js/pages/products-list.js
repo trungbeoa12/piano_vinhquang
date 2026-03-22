@@ -9,7 +9,9 @@ document.addEventListener('DOMContentLoaded', function () {
       '">' +
       '<img class="pvq-catalog-card-image" src="' +
       p.image +
-      '" alt="">' +
+      '" alt="' +
+      p.name.replace(/"/g, '') +
+      '">' +
       '<div class="pvq-catalog-card-body">' +
       '<h2>' +
       p.name +

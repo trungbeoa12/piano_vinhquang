@@ -99,7 +99,15 @@ function initContactForm() {
   if (!form) return;
   form.addEventListener('submit', function (e) {
     e.preventDefault();
-    alert('Cảm ơn bạn! Chúng tôi sẽ liên hệ để tư vấn lộ trình học piano phù hợp.');
+    var interestEl = document.getElementById('interest');
+    var interestText = interestEl
+      ? interestEl.options[interestEl.selectedIndex].text
+      : '';
+    alert(
+      'Cảm ơn bạn! Chúng tôi đã nhận yêu cầu (' +
+        interestText +
+        ') và sẽ liên hệ tư vấn sớm nhất có thể.'
+    );
     form.reset();
   });
 }

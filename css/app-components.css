@@ -9,7 +9,7 @@
 .page-main {
 	max-width: 1100px;
 	margin: 0 auto;
-	padding: 160px 24px 80px;
+	padding: clamp(120px, 24vw, 160px) 24px clamp(56px, 12vw, 80px);
 	position: relative;
 	z-index: 2;
 }
@@ -375,4 +375,286 @@
 .pvq-muted {
 	color: var(--text-soft);
 	font-size: 0.9rem;
+}
+
+/* --- Design tokens: spacing nhịp section --- */
+:root {
+	--pvq-section-pad-y: clamp(3.25rem, 7vw, 5rem);
+}
+
+.pvq-section-rhythm {
+	padding-top: var(--pvq-section-pad-y) !important;
+	padding-bottom: var(--pvq-section-pad-y) !important;
+}
+
+/* --- Hero editorial --- */
+#hero.hero--editorial {
+	padding-top: clamp(136px, 16vw, 170px);
+	padding-bottom: clamp(2.25rem, 5vw, 3.75rem);
+}
+
+#hero.hero--editorial::before {
+	height: min(520px, 60vw);
+	opacity: 0.72;
+}
+
+.hero-actions--editorial .cta-btn-primary {
+	box-shadow: 0 22px 52px rgba(111, 135, 199, 0.28);
+}
+
+/* --- Intro band duoi hero --- */
+.pvq-intro-band {
+	position: relative;
+	z-index: 2;
+	padding: clamp(2.5rem, 6vw, 4rem) 24px;
+}
+
+.pvq-intro-head {
+	max-width: 900px;
+	margin: 0 auto 28px;
+	text-align: center;
+}
+
+.pvq-intro-head h2 {
+	font-size: clamp(2rem, 4vw, 3.2rem);
+	line-height: 1.08;
+}
+
+.pvq-intro-grid {
+	max-width: 1180px;
+	margin: 0 auto;
+	display: grid;
+	grid-template-columns: 1.15fr 1fr 1fr;
+	gap: 20px;
+	align-items: stretch;
+}
+
+.pvq-intro-card {
+	padding: 28px 26px;
+	border-radius: 24px;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.03));
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	box-shadow: var(--shadow);
+}
+
+.pvq-intro-card--wide {
+	background:
+		radial-gradient(circle at top left, rgba(142, 165, 223, 0.14), transparent 38%),
+		linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+}
+
+.pvq-intro-card-head {
+	display: flex;
+	gap: 14px;
+	align-items: flex-start;
+	margin-bottom: 18px;
+}
+
+.pvq-intro-icon {
+	flex-shrink: 0;
+	width: 42px;
+	height: 42px;
+	border-radius: 14px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(142, 165, 223, 0.12);
+	border: 1px solid rgba(142, 165, 223, 0.18);
+	color: var(--accent-ink);
+	font-size: 0.84rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+}
+
+.pvq-intro-card-head strong {
+	display: block;
+	font-size: 1.05rem;
+	color: var(--ivory);
+	margin-bottom: 6px;
+}
+
+.pvq-intro-card-head span:last-child {
+	display: block;
+	font-size: 0.88rem;
+	color: var(--text-soft);
+	line-height: 1.5;
+}
+
+.pvq-intro-card p {
+	font-size: 0.94rem;
+	line-height: 1.72;
+	color: var(--text-muted);
+	margin-bottom: 22px;
+}
+
+.pvq-intro-link {
+	color: var(--accent-ink);
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.pvq-intro-link:hover,
+.pvq-intro-link:focus-visible {
+	text-decoration: underline;
+	outline: none;
+}
+
+/* --- Demo piano section: căn giữa player --- */
+#demo-piano .mini-player {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+/* --- Card đồng bộ: ô “xem thêm” không ảnh --- */
+.pvq-catalog-card--more {
+	min-height: 200px;
+}
+
+.pvq-catalog-card--more .pvq-catalog-card-body--center {
+	flex: 1;
+	justify-content: center;
+	text-align: center;
+	padding: 28px 22px 30px;
+}
+
+/* --- Chi tiết khóa / sản phẩm (Phase 3) --- */
+.pvq-detail-block {
+	margin-top: 22px;
+}
+
+.pvq-detail-block-title {
+	font-family: 'Cormorant Garamond', serif;
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: var(--ivory);
+	margin-bottom: 10px;
+}
+
+.pvq-detail-text {
+	color: var(--text-muted);
+	line-height: 1.75;
+	font-size: 0.95rem;
+}
+
+.pvq-detail-list {
+	margin: 0;
+	padding-left: 1.15rem;
+	color: var(--text-muted);
+	line-height: 1.65;
+	font-size: 0.95rem;
+}
+
+.pvq-detail-list li {
+	margin-bottom: 6px;
+}
+
+.pvq-sales-dl {
+	display: grid;
+	grid-template-columns: minmax(0, 120px) 1fr;
+	gap: 10px 16px;
+	font-size: 0.92rem;
+	color: var(--text-muted);
+	line-height: 1.6;
+}
+
+.pvq-sales-dl dt {
+	color: var(--text-soft);
+	font-weight: 600;
+	font-size: 0.82rem;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+
+.pvq-sales-dl dd {
+	margin: 0;
+}
+
+.pvq-detail-lessons-heading {
+	margin: 28px 0 12px !important;
+	display: block !important;
+}
+
+.feature-card p a {
+	color: var(--accent-soft);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.feature-card p a:hover {
+	color: var(--accent-ink);
+}
+
+/* --- Form liên hệ: select + textarea ngắn hơn --- */
+#contactForm .form-group select,
+.contact-form .form-group select {
+	width: 100%;
+	padding: 16px 44px 16px 18px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 16px;
+	color: var(--text);
+	font-family: 'Outfit', sans-serif;
+	font-size: 1rem;
+	cursor: pointer;
+	transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+	appearance: none;
+	background-color: rgba(255, 255, 255, 0.04);
+	background-image: linear-gradient(45deg, transparent 50%, var(--text-soft) 50%),
+		linear-gradient(135deg, var(--text-soft) 50%, transparent 50%);
+	background-position: calc(100% - 22px) 50%, calc(100% - 16px) 50%;
+	background-size: 6px 6px, 6px 6px;
+	background-repeat: no-repeat;
+}
+
+#contactForm .form-group select:focus,
+.contact-form .form-group select:focus {
+	outline: none;
+	border-color: rgba(142, 165, 223, 0.38);
+	background-color: rgba(255, 255, 255, 0.06);
+	box-shadow: 0 0 0 4px rgba(142, 165, 223, 0.08);
+}
+
+#contactForm .form-group textarea {
+	min-height: 120px;
+}
+
+.optional-label {
+	font-weight: 400;
+	color: var(--text-soft);
+	text-transform: none;
+	letter-spacing: 0;
+	font-size: 0.78rem;
+}
+
+/* --- Navbar mobile: gọn header --- */
+@media (max-width: 768px) {
+	.hero-actions--editorial .cta-btn {
+		width: 100%;
+	}
+
+	.pvq-intro-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.pvq-sales-dl {
+		grid-template-columns: 1fr;
+	}
+
+	.pvq-sales-dl dt {
+		margin-top: 8px;
+	}
+
+	.pvq-sales-dl dt:first-child {
+		margin-top: 0;
+	}
+}
+
+@media (min-width: 769px) {
+	.hero-actions--editorial {
+		flex-wrap: nowrap;
+		justify-content: flex-start;
+	}
+
+	.hero-actions--editorial .cta-btn-secondary {
+		flex: 0 1 auto;
+	}
 }

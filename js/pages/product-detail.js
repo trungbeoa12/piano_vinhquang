@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var condEl = document.getElementById('product-condition');
   var imgEl = document.getElementById('product-image');
   var chipsEl = document.getElementById('product-chips');
+  var salesEl = document.getElementById('product-sales');
 
   if (!p) {
     if (titleEl) titleEl.textContent = 'Không tìm thấy sản phẩm';
@@ -32,5 +33,25 @@ document.addEventListener('DOMContentLoaded', function () {
         return '<span class="pvq-chip">' + h + '</span>';
       })
       .join('');
+  }
+
+  if (salesEl) {
+    salesEl.innerHTML =
+      '<div class="pvq-detail-block">' +
+      '<h3 class="pvq-detail-block-title">Chính sách & mua hàng</h3>' +
+      '<dl class="pvq-sales-dl">' +
+      '<dt>Bảo hành</dt><dd>' +
+      (p.warranty || '—') +
+      '</dd>' +
+      '<dt>Vận chuyển</dt><dd>' +
+      (p.shipping || '—') +
+      '</dd>' +
+      '<dt>Thanh toán</dt><dd>' +
+      (p.payment || '—') +
+      '</dd>' +
+      '<dt>Tư vấn xem đàn</dt><dd>' +
+      (p.consultation || '—') +
+      '</dd>' +
+      '</dl></div>';
   }
 });

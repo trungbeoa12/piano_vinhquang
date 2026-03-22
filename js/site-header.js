@@ -15,16 +15,14 @@ window.PVQ_injectSiteHeader = function (current) {
   }
 
   mount.innerHTML =
-    '<header>' +
-    '<div class="header-logo-row">' +
+    '<header class="site-header">' +
+    '<div class="site-header-shell">' +
     '<a href="index.html#hero" class="logo">' +
     '<img src="images/branding/logo-pianovinhquang-main.png" alt="Piano Vinh Quang logo" class="logo-icon">' +
-    '<span class="logo-text">Piano Vinh Quang</span>' +
+    '<span class="logo-copy"><span class="logo-kicker">Piano Studio &amp; Academy</span><span class="logo-text">Piano Vinh Quang</span></span>' +
     '</a>' +
-    '</div>' +
     '<div class="header-nav-row">' +
     '<div class="nav-container">' +
-    '<div class="nav-decor"><span class="ornament">♪</span><span>•</span><span class="ornament">♫</span></div>' +
     '<ul class="nav-links" id="navLinks">' +
     '<li><a' +
     navClass('home') +
@@ -44,9 +42,10 @@ window.PVQ_injectSiteHeader = function (current) {
     accountLabel +
     '</a></li>' +
     '</ul>' +
-    '<div class="nav-decor"><span class="ornament">♬</span><span>•</span><span class="ornament">♪</span></div>' +
-    '<div class="nav-toggle" id="navToggle"><span></span><span></span><span></span></div>' +
     '</div>' +
+    '</div>' +
+    '<a href="index.html#contact" class="header-cta">Nhận tư vấn</a>' +
+    '<div class="nav-toggle" id="navToggle"><span></span><span></span><span></span></div>' +
     '</div>' +
     '</header>';
 
