@@ -1,4 +1,4 @@
-/* Mini piano preview — tách từ template gốc, dùng PVQ_DEMO_SONGS */
+/* Mini piano preview — dùng PVQ_DEMO_SONGS; UI có thể tối giản (chỉ play + bàn phím). */
 
 class PianoAudio {
   constructor() {
@@ -76,6 +76,7 @@ class PianoAudio {
 class PianoStudioPlayer {
   constructor() {
     this.audio = new PianoAudio();
+    this.pianoRoot = null;
     this.currentSong = 0;
     this.isPlaying = false;
     this.currentNoteIndex = 0;
@@ -114,6 +115,7 @@ class PianoStudioPlayer {
 
   buildPiano() {
     var piano = document.getElementById('miniPiano');
+    this.pianoRoot = piano;
     if (!piano) {
       this.keys = [];
       return;
@@ -146,7 +148,7 @@ class PianoStudioPlayer {
       });
     });
 
-    this.keys = document.querySelectorAll('.mini-key');
+    this.keys = piano.querySelectorAll('.mini-key');
   }
 
   bindEvents() {
@@ -156,36 +158,55 @@ class PianoStudioPlayer {
     this.playBtn.addEventListener('click', function () {
       self.togglePlay();
     });
-    this.prevBtn.addEventListener('click', function () {
-      self.prevSong();
-    });
-    this.nextBtn.addEventListener('click', function () {
-      self.nextSong();
-    });
 
-    this.speedSlider.addEventListener('input', function (e) {
-      self.speed = parseFloat(e.target.value);
-      self.speedValue.textContent = self.speed.toFixed(1) + 'x';
-    });
-
-    this.volumeSlider.addEventListener('input', function (e) {
-      self.volume = parseFloat(e.target.value);
-      self.volumeValue.textContent = Math.round(self.volume * 100) + '%';
-      self.audio.setVolume(self.volume);
-    });
-
-    this.repeatToggle.addEventListener('click', function () {
-      self.repeat = !self.repeat;
-      self.repeatToggle.classList.toggle('active', self.repeat);
-      self.repeatSwitch.classList.toggle('active', self.repeat);
-    });
-
-    this.songTabs.forEach(function (tab) {
-      tab.addEventListener('click', function () {
-        var songIndex = parseInt(tab.dataset.song, 10);
-        self.selectSong(songIndex);
+    if (this.prevBtn) {
+      this.prevBtn.addEventListener('click', function () {
+        self.prevSong();
       });
-    });
+    }
+    if (this.nextBtn) {
+      this.nextBtn.addEventListener('click', function () {
+        self.nextSong();
+      });
+    }
+
+    if (this.speedSlider) {
+      this.speedSlider.addEventListener('input', function (e) {
+        self.speed = parseFloat(e.target.value);
+        if (self.speedValue) {
+          self.speedValue.textContent = self.speed.toFixed(1) + 'x';
+        }
+      });
+    }
+
+    if (this.volumeSlider) {
+      this.volumeSlider.addEventListener('input', function (e) {
+        self.volume = parseFloat(e.target.value);
+        if (self.volumeValue) {
+          self.volumeValue.textContent = Math.round(self.volume * 100) + '%';
+        }
+        self.audio.setVolume(self.volume);
+      });
+    }
+
+    if (this.repeatToggle) {
+      this.repeatToggle.addEventListener('click', function () {
+        self.repeat = !self.repeat;
+        self.repeatToggle.classList.toggle('active', self.repeat);
+        if (self.repeatSwitch) {
+          self.repeatSwitch.classList.toggle('active', self.repeat);
+        }
+      });
+    }
+
+    if (this.songTabs && this.songTabs.length) {
+      this.songTabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          var songIndex = parseInt(tab.dataset.song, 10);
+          self.selectSong(songIndex);
+        });
+      });
+    }
 
     if (this.keys && this.keys.length) {
       this.keys.forEach(function (key) {
@@ -213,6 +234,7 @@ class PianoStudioPlayer {
   }
 
   updateTabs() {
+    if (!this.songTabs || !this.songTabs.length) return;
     var self = this;
     this.songTabs.forEach(function (tab, i) {
       tab.classList.toggle('active', i === self.currentSong);
@@ -222,14 +244,20 @@ class PianoStudioPlayer {
   updateSongInfo() {
     var list = this.songs();
     var song = list[this.currentSong];
-    if (!this.songTitleEl) return;
-    this.songTitleEl.textContent = song.title;
+    if (!song) return;
+    if (this.songTitleEl) {
+      this.songTitleEl.textContent = song.title;
+    }
 
     var totalDuration = song.notes.reduce(function (sum, n) {
       return sum + n.duration;
     }, 0);
-    this.totalTimeEl.textContent = this.formatTime(totalDuration);
-    this.currentTimeEl.textContent = '0:00';
+    if (this.totalTimeEl) {
+      this.totalTimeEl.textContent = this.formatTime(totalDuration);
+    }
+    if (this.currentTimeEl) {
+      this.currentTimeEl.textContent = '0:00';
+    }
   }
 
   formatTime(seconds) {
@@ -248,13 +276,13 @@ class PianoStudioPlayer {
 
   play() {
     this.isPlaying = true;
-    this.playBtn.textContent = '❚❚';
+    if (this.playBtn) this.playBtn.textContent = '❚❚';
     this.playNextNote();
   }
 
   pause() {
     this.isPlaying = false;
-    this.playBtn.textContent = '▶';
+    if (this.playBtn) this.playBtn.textContent = '▶';
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
     }
@@ -274,10 +302,10 @@ class PianoStudioPlayer {
     var list = this.songs();
     var song = list[this.currentSong];
     if (this.currentNoteIndex >= song.notes.length) {
-      if (this.repeat) {
+      if (this.repeat && this.repeatToggle) {
         this.currentNoteIndex = 0;
         this.updateProgress(0);
-        this.currentTimeEl.textContent = '0:00';
+        if (this.currentTimeEl) this.currentTimeEl.textContent = '0:00';
         this.playNextNote();
         return;
       }
@@ -299,7 +327,9 @@ class PianoStudioPlayer {
     for (var i = 0; i <= this.currentNoteIndex; i++) {
       elapsed += song.notes[i].duration;
     }
-    this.currentTimeEl.textContent = this.formatTime(elapsed / this.speed);
+    if (this.currentTimeEl) {
+      this.currentTimeEl.textContent = this.formatTime(elapsed / this.speed);
+    }
 
     this.currentNoteIndex++;
 
@@ -310,7 +340,9 @@ class PianoStudioPlayer {
 
   highlightKey(note) {
     this.clearAllKeys();
-    var key = document.querySelector('.mini-key[data-note="' + note + '"]');
+    var scope = this.pianoRoot;
+    if (!scope) return;
+    var key = scope.querySelector('.mini-key[data-note="' + note + '"]');
     if (key) {
       key.classList.add('active');
       setTimeout(function () {
@@ -377,7 +409,8 @@ class PianoStudioPlayer {
     var self = this;
 
     document.addEventListener('keydown', function (e) {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      var tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
 
       if (e.code === 'Space') {
         e.preventDefault();
