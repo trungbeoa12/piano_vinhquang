@@ -1,0 +1,40 @@
+NHÚNG MODULE PIANO VÀO WEBSITE KHÁC
+==================================
+
+1) Copy nguyên folder `module_piano_self_build` vào project (vd: public/module_piano_self_build/).
+
+2) Trên trang HTML, thêm vùng mount + đúng 1 thẻ script:
+
+   <div id="pvq-piano-mount"></div>
+   <script src="/module_piano_self_build/piano-loader.js"
+           data-mount="#pvq-piano-mount" defer></script>
+
+   (Đổi src cho khớp đường dẫn thật trên server.)
+   Loader sẽ tự chèn HTML widget + CSS + JS cần thiết từ chính folder này.
+
+3) Mở trang qua HTTP (localhost hoặc deploy).
+   Piano loader hiện không còn phụ thuộc fetch partial nữa, nhưng HTTP vẫn là cách chạy an toàn nhất khi nhúng vào project thật.
+
+Tùy chọn trên thẻ script:
+- data-base="https://site.com/static/module_piano_self_build/"  — nếu script không nằm cùng folder với module
+- data-no-fonts="true"  — bỏ qua Google Fonts nếu site đã import Outfit + Cormorant
+
+Không thêm tay `js/piano/piano-practice.js`, `js/piano/piano-player.js`, `js/piano/audio-engine.js`,
+`js/piano/piano-keyboard.js`, `js/data/piano-lessons.js` khi đã dùng `piano-loader.js`.
+
+Thủ công (không dùng loader): gắn piano-lessons + audio-engine + piano-keyboard + piano-player + piano-practice,
+và chèn HTML giống piano-widget.partial.html vào trang; kèm css/piano-widget.css.
+
+Flow nhúng chuẩn hiện tại:
+- Copy nguyên folder.
+- Tạo một mount element.
+- Gắn một script `piano-loader.js`.
+- Không cần copy HTML widget ra ngoài.
+
+Ghi chú score:
+- File score chuẩn đặt trong `assets/scores/`.
+- Script score chuẩn đặt trong `js/score/`.
+- Hiện tại score viewer chỉ dùng trên `piano-studio.html`.
+- `piano-loader.js` hiện chỉ nhúng piano widget, chưa nhúng score viewer.
+- Nếu sau này cần embed cả score + piano, sẽ mở rộng loader bằng thuộc tính kiểu `data-score-url` và nạp thêm OSMD + `js/score/`.
+- Thư mục `sheet_piano/` là thư mục cũ (legacy), không dùng cho flow hiện tại trừ khi đang tham chiếu dữ liệu cũ.

@@ -1,6 +1,6 @@
 /**
  * @deprecated Logic đã tách sang:
- * - js/piano-player.js + js/data/demo-songs.js (mini piano)
+ * - js/piano/*.js + js/data/piano-lessons.js (mini piano; xem piano-studio.html)
  * - js/app-common.js (nav, gallery, form)
  * - index.html và các trang mới load các file trên.
  *

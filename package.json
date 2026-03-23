@@ -1,0 +1,17 @@
+{
+  "name": "piano_vinhquang",
+  "version": "1.0.0",
+  "description": "Static site with a minimal Express + MongoDB backend for customer leads.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "mongodb": "^6.16.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

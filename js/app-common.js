@@ -97,18 +97,68 @@ function initGallery() {
 function initContactForm() {
   var form = document.getElementById('contactForm');
   if (!form) return;
-  form.addEventListener('submit', function (e) {
+  var submitButton = form.querySelector('button[type="submit"]');
+
+  form.addEventListener('submit', async function (e) {
     e.preventDefault();
+
     var interestEl = document.getElementById('interest');
     var interestText = interestEl
       ? interestEl.options[interestEl.selectedIndex].text
       : '';
-    alert(
-      'Cảm ơn bạn! Chúng tôi đã nhận yêu cầu (' +
-        interestText +
-        ') và sẽ liên hệ tư vấn sớm nhất có thể.'
-    );
-    form.reset();
+    var payload = {
+      interest: interestEl ? interestEl.value : '',
+      interestLabel: interestText,
+      name: document.getElementById('name')
+        ? document.getElementById('name').value.trim()
+        : '',
+      email: document.getElementById('email')
+        ? document.getElementById('email').value.trim()
+        : '',
+      phone: document.getElementById('phone')
+        ? document.getElementById('phone').value.trim()
+        : '',
+      message: document.getElementById('message')
+        ? document.getElementById('message').value.trim()
+        : '',
+    };
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'Đang gửi...';
+    }
+
+    try {
+      var response = await fetch('/api/customers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      var data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        throw new Error(data.message || 'Không thể gửi liên hệ.');
+      }
+
+      alert(
+        'Cảm ơn bạn! Chúng tôi đã nhận yêu cầu (' +
+          interestText +
+          ') và sẽ liên hệ tư vấn sớm nhất có thể.'
+      );
+      form.reset();
+    } catch (error) {
+      alert(
+        'Chưa thể gửi liên hệ lúc này. Vui lòng kiểm tra server MongoDB/Node và thử lại.'
+      );
+      console.error('[contactForm] submit failed:', error);
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Gửi liên hệ';
+      }
+    }
   });
 }
 

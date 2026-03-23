@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piano studio — demo độc lập | Piano Vinh Quang</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/piano-studio.css">
+</head>
+<body class="pvq-piano-studio-page">
+    <div class="pvq-piano-studio-shell">
+        <a class="pvq-piano-back" href="index.html">← Về trang chủ</a>
+        <h1>Piano studio (module độc lập)</h1>
+        <p class="pvq-piano-studio-lead">
+            Trang này chỉ cần <code>css/piano-studio.css</code> và thư mục <code>js/piano/</code> + <code>js/data/piano-lessons.js</code>.
+            Có đủ chọn bài, tốc độ, âm lượng, lặp lại, bàn phím chuột và phím máy tính.
+        </p>
+
+        <!-- data-pvq-piano-root: mount boundary — player chỉ query bên trong -->
+        <div
+            class="mini-player pvq-piano-widget"
+            data-pvq-piano-root
+        >
+            <div class="song-selector">
+                <button type="button" class="song-tab active" data-pvq-role="song-tab" data-song="0">Luyện ngón căn bản</button>
+                <button type="button" class="song-tab" data-pvq-role="song-tab" data-song="1">Giai điệu căn bản</button>
+                <button type="button" class="song-tab" data-pvq-role="song-tab" data-song="2">Bản nhạc ứng dụng</button>
+            </div>
+
+            <div class="player-header">
+                <div class="song-info">
+                    <div class="now-playing">Đang phát</div>
+                    <div class="song-title" data-pvq-role="song-title">Luyện ngón căn bản</div>
+                </div>
+                <div class="player-controls">
+                    <button type="button" class="control-btn nav-btn" data-pvq-role="prev-btn" aria-label="Bài trước">‹</button>
+                    <button type="button" class="control-btn play-btn" data-pvq-role="play-btn" aria-label="Phát hoặc tạm dừng">▶</button>
+                    <button type="button" class="control-btn nav-btn" data-pvq-role="next-btn" aria-label="Bài sau">›</button>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" data-pvq-role="progress-fill"></div>
+                </div>
+                <div class="time-display">
+                    <span data-pvq-role="current-time">0:00</span>
+                    <span data-pvq-role="total-time">0:00</span>
+                </div>
+            </div>
+
+            <div class="mini-piano-container">
+                <div class="mini-piano" data-pvq-role="mini-piano"></div>
+            </div>
+
+            <div class="player-controls-row">
+                <div class="control-group speed-control">
+                    <span class="control-label">Tốc độ</span>
+                    <input type="range" class="control-slider" data-pvq-role="speed-slider" min="0.5" max="2" step="0.1" value="1">
+                    <span class="control-value" data-pvq-role="speed-value">1.0x</span>
+                </div>
+                <div class="control-group">
+                    <span class="control-label">Âm lượng</span>
+                    <input type="range" class="control-slider" data-pvq-role="volume-slider" min="0" max="1" step="0.05" value="0.7">
+                    <span class="control-value" data-pvq-role="volume-value">70%</span>
+                </div>
+                <div class="repeat-toggle" data-pvq-role="repeat-toggle" role="button" tabindex="0" aria-label="Lặp lại bài">
+                    <span class="repeat-icon" aria-hidden="true">🔁</span>
+                    <div class="toggle-switch" data-pvq-role="repeat-switch"></div>
+                </div>
+            </div>
+
+            <p class="keyboard-hint">Phím máy tính: Z–M (quãng thấp) · Q–U (quãng cao) · Space (phát / dừng)</p>
+        </div>
+    </div>
+
+    <script src="js/data/piano-lessons.js"></script>
+    <script src="js/piano/audio-engine.js"></script>
+    <script src="js/piano/piano-keyboard.js"></script>
+    <script src="js/piano/piano-player.js"></script>
+    <script src="js/piano/piano-practice.js"></script>
+</body>
+</html>

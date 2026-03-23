@@ -173,27 +173,28 @@
                 <p class="pvq-demo-widget-lead">Đoạn minh họa ngắn trên trình duyệt — trong khóa học bạn có video hướng dẫn và bài tập đầy đủ theo từng buổi.</p>
                 <a href="courses.html" class="cta-btn cta-btn-primary pvq-demo-widget-cta">Học đầy đủ trong khóa học</a>
             </div>
-            <div class="mini-player mini-player--lite">
+            <!-- data-pvq-piano-root: ranh giới module piano — JS chỉ query bên trong -->
+            <div class="mini-player mini-player--lite pvq-piano-widget" data-pvq-piano-root>
                 <div class="player-header player-header--lite">
                     <div class="song-info">
                         <div class="now-playing">Bản xem thử</div>
-                        <div class="song-title" id="currentSongTitle">Luyện ngón căn bản</div>
+                        <div class="song-title" data-pvq-role="song-title">Luyện ngón căn bản</div>
                     </div>
-                    <button type="button" class="control-btn play-btn" id="playBtn" aria-label="Phát hoặc tạm dừng">▶</button>
+                    <button type="button" class="control-btn play-btn" data-pvq-role="play-btn" aria-label="Phát hoặc tạm dừng">▶</button>
                 </div>
 
                 <div class="progress-container">
                     <div class="progress-bar" id="progressBar">
-                        <div class="progress-fill" id="progressFill"></div>
+                        <div class="progress-fill" data-pvq-role="progress-fill"></div>
                     </div>
                     <div class="time-display">
-                        <span id="currentTime">0:00</span>
-                        <span id="totalTime">0:00</span>
+                        <span data-pvq-role="current-time">0:00</span>
+                        <span data-pvq-role="total-time">0:00</span>
                     </div>
                 </div>
 
                 <div class="mini-piano-container">
-                    <div class="mini-piano" id="miniPiano"></div>
+                    <div class="mini-piano" data-pvq-role="mini-piano"></div>
                 </div>
 
                 <p class="keyboard-hint keyboard-hint--lite">Phím máy tính: Z–M (quãng thấp) · Q–U (quãng cao) · Space (phát / dừng)</p>
@@ -489,15 +490,23 @@
     <script src="js/auth.js"></script>
     <script src="js/app-common.js"></script>
     <script src="js/site-header.js"></script>
-    <script src="js/data/demo-songs.js"></script>
-    <script src="js/piano-player.js"></script>
+    <script src="js/data/piano-lessons.js"></script>
+    <script src="js/piano/audio-engine.js"></script>
+    <script src="js/piano/piano-keyboard.js"></script>
+    <script src="js/piano/piano-player.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             window.PVQ_injectSiteHeader('home');
             window.PVQ_appCommon.createSnowflakes();
             window.PVQ_appCommon.initGallery();
             window.PVQ_appCommon.initContactForm();
-            new window.PVQ_PianoStudioPlayer();
+            var pianoRoot = document.querySelector('#demo-piano [data-pvq-piano-root]');
+            if (pianoRoot) {
+                new window.PVQ_PianoStudioPlayer({
+                    root: pianoRoot,
+                    songs: window.PVQ_PIANO_LESSONS,
+                });
+            }
         });
     </script>
 </body>

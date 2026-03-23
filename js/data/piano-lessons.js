@@ -1,8 +1,8 @@
 /**
- * Dữ liệu demo cho mini piano player (preview trên trang chủ).
- * Tách khỏi logic player để file piano-player.js gọn hơn.
+ * piano-lessons.js — Dữ liệu bài / nốt cho piano widget (tách khỏi logic player).
+ * Module boundary: chỉ export dữ liệu, không DOM.
  */
-window.PVQ_DEMO_SONGS = [
+window.PVQ_PIANO_LESSONS = [
   {
     title: 'Luyện ngón căn bản',
     notes: [
@@ -108,3 +108,6 @@ window.PVQ_DEMO_SONGS = [
     ],
   },
 ];
+
+/** Alias cũ (trang chủ / snippet ngoài) — ưu tiên dùng PVQ_PIANO_LESSONS */
+window.PVQ_DEMO_SONGS = window.PVQ_PIANO_LESSONS;
