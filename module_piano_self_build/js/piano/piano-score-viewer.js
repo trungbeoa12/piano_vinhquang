@@ -48,8 +48,9 @@
 
     return loadOsmdLib()
       .then(function () {
-        // Clear old render
-        scoreRoot.innerHTML = '';
+        // Clear old render + show status (help debugging when CDN/CORS fails).
+        scoreRoot.innerHTML =
+          '<div style=\"padding: 10px 0; color: #b5bdd0; font-size: 0.9rem;\">Đang render sheet nhạc...</div>';
 
         var osmd = new window.OpenSheetMusicDisplay(scoreRoot, {
           autoResize: true,
@@ -59,12 +60,22 @@
         });
 
         return osmd.load(musicxmlUrl).then(function () {
-          return osmd.render();
+          return osmd.render().then(function () {
+            // OSMD sometimes renders asynchronously; but render() resolves when SVG is created.
+            return true;
+          });
         });
       })
       .catch(function (err) {
         // Không crash cả site nếu OSMD lỗi (CDN/CORS/file sai).
         console.error('[PVQ PianoScore] render failed:', err);
+
+        var msg = String(err && err.message ? err.message : err);
+        scoreRoot.innerHTML =
+          '<div style=\"padding: 10px 0; color: #ffb3b3; font-size: 0.9rem; font-weight: 600;\">Không render được MusicXML.</div>' +
+          '<pre style=\"margin-top: 8px; white-space: pre-wrap; color: #ffb3b3; font-size: 0.75rem; max-height: 220px; overflow: auto;\">' +
+          msg +
+          '</pre>';
       });
   }
 

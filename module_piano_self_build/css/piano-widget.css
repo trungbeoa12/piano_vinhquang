@@ -364,6 +364,7 @@
 	border-radius: 16px;
 	padding: 14px;
 	overflow: auto;
+	min-height: 260px;
 	max-height: 340px;
 }
 
