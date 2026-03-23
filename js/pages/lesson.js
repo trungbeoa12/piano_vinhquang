@@ -4,19 +4,39 @@ function renderLocked(message) {
   el.innerHTML = '<div class="pvq-alert"><p>' + message + '</p></div>';
 }
 
-function renderLessonContent(data) {
+function ensurePianoMounted() {
   var bodyEl = document.getElementById('lesson-access-body');
   if (!bodyEl) return;
 
   // Nhúng piano module (MusicXML + MIDI) vào bài học.
-  // Demo file nằm trong module: assets/scores/waltz-in-a-minorchopin.(mxl|mid)
-  var pianoMountHtml =
-    '<div style="margin: 18px 0 26px;">' +
-    '<div id="pvq-piano-mount" ' +
-    'data-pvq-score-musicxml="assets/scores/waltz-in-a-minorchopin.xml" ' +
-    'data-pvq-score-midi="assets/scores/waltz-in-a-minorchopin.mid">' +
-    '</div>' +
-    '</div>';
+  // Demo file nằm trong module: assets/scores/waltz-in-a-minorchopin.(xml|mid)
+  var mountEl = document.getElementById('pvq-piano-mount');
+  if (!mountEl) {
+    var pianoMountHtml =
+      '<div style="margin: 18px 0 26px;">' +
+      '<div id="pvq-piano-mount" ' +
+      'data-pvq-score-musicxml="assets/scores/waltz-in-a-minorchopin.xml" ' +
+      'data-pvq-score-midi="assets/scores/waltz-in-a-minorchopin.mid">' +
+      '</div>' +
+      '</div>';
+    bodyEl.insertAdjacentHTML('afterbegin', pianoMountHtml);
+  }
+
+  // Loader sẽ tự render UI + sheet.
+  var existingScript = bodyEl.querySelector(
+    'script[src=\"module_piano_self_build/piano-loader.js\"]'
+  );
+  if (!existingScript) {
+    var s = document.createElement('script');
+    s.src = 'module_piano_self_build/piano-loader.js';
+    s.setAttribute('data-mount', '#pvq-piano-mount');
+    bodyEl.appendChild(s);
+  }
+}
+
+function renderLessonContent(data) {
+  var bodyEl = document.getElementById('lesson-access-body');
+  if (!bodyEl) return;
 
   var itemsHtml = data.items
     .map(function (item) {
@@ -43,21 +63,11 @@ function renderLessonContent(data) {
 
   bodyEl.innerHTML =
     '<p class="pvq-muted" style="margin-bottom:16px">Học liệu được lưu trên Google Drive / tài liệu đi kèm. Chỉ chia sẻ trong phạm vi học viên.</p>' +
-    pianoMountHtml +
     '<div class="pvq-resource-list">' +
     itemsHtml +
     '</div>';
 
-  // Append script DOM-style để đảm bảo trình duyệt thực thi khi chèn sau khi innerHTML.
-  var existingScript = bodyEl.querySelector(
-    'script[src=\"module_piano_self_build/piano-loader.js\"]'
-  );
-  if (!existingScript) {
-    var s = document.createElement('script');
-    s.src = 'module_piano_self_build/piano-loader.js';
-    s.setAttribute('data-mount', '#pvq-piano-mount');
-    bodyEl.appendChild(s);
-  }
+  ensurePianoMounted();
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -66,12 +76,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (!courseId || !lessonId) {
     renderLocked('Thiếu tham số khóa học hoặc bài học.');
+    ensurePianoMounted();
     return;
   }
 
   var found = window.PVQ_findLesson(courseId, lessonId);
   if (!found) {
     renderLocked('Không tìm thấy bài học.');
+    ensurePianoMounted();
     return;
   }
 
@@ -88,6 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
     renderLocked(
       '<strong>Cần đăng nhập.</strong> Vui lòng vào trang Tài khoản để đăng nhập (demo), sau đó quay lại bài học này.'
     );
+    ensurePianoMounted();
     return;
   }
 
@@ -95,6 +108,7 @@ document.addEventListener('DOMContentLoaded', function () {
     renderLocked(
       '<strong>Chưa có quyền truy cập khóa học này.</strong> Sau khi mua khóa, quản trị viên sẽ cấp quyền trong hệ thống (ở bản demo: dùng nút đăng nhập thử để xem luồng).'
     );
+    ensurePianoMounted();
     return;
   }
 
