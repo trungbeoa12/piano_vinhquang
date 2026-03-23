@@ -8,6 +8,16 @@ function renderLessonContent(data) {
   var bodyEl = document.getElementById('lesson-access-body');
   if (!bodyEl) return;
 
+  // Nhúng piano module (MusicXML + MIDI) vào bài học.
+  // Demo file nằm trong module: assets/scores/waltz-in-a-minorchopin.(mxl|mid)
+  var pianoMountHtml =
+    '<div style="margin: 18px 0 26px;">' +
+    '<div id="pvq-piano-mount" ' +
+    'data-pvq-score-musicxml="assets/scores/waltz-in-a-minorchopin.mxl" ' +
+    'data-pvq-score-midi="assets/scores/waltz-in-a-minorchopin.mid">' +
+    '</div>' +
+    '</div>';
+
   var itemsHtml = data.items
     .map(function (item) {
       if (!item.url) {
@@ -33,9 +43,21 @@ function renderLessonContent(data) {
 
   bodyEl.innerHTML =
     '<p class="pvq-muted" style="margin-bottom:16px">Học liệu được lưu trên Google Drive / tài liệu đi kèm. Chỉ chia sẻ trong phạm vi học viên.</p>' +
+    pianoMountHtml +
     '<div class="pvq-resource-list">' +
     itemsHtml +
     '</div>';
+
+  // Append script DOM-style để đảm bảo trình duyệt thực thi khi chèn sau khi innerHTML.
+  var existingScript = bodyEl.querySelector(
+    'script[src=\"module_piano_self_build/piano-loader.js\"]'
+  );
+  if (!existingScript) {
+    var s = document.createElement('script');
+    s.src = 'module_piano_self_build/piano-loader.js';
+    s.setAttribute('data-mount', '#pvq-piano-mount');
+    bodyEl.appendChild(s);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
