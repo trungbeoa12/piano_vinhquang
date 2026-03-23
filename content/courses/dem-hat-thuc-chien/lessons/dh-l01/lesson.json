@@ -1,0 +1,17 @@
+{
+  "id": "dh-l01",
+  "title": "Hợp âm major và minor và chuyển nhanh",
+  "durationMin": 45,
+  "resources": [
+    {
+      "refId": "pvq-dh-l01-vid",
+      "kind": "video",
+      "title": "Video bài học"
+    },
+    {
+      "refId": "pvq-dh-l01-sheet",
+      "kind": "sheet",
+      "title": "Lead sheet mẫu"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "pcb-l02",
+  "title": "Nhịp điệu và đệm tay trái đơn giản",
+  "durationMin": 40,
+  "resources": [
+    {
+      "refId": "pvq-pcb-l02-vid",
+      "kind": "video",
+      "title": "Video bài học"
+    },
+    {
+      "refId": "pvq-pcb-l02-pdf",
+      "kind": "pdf",
+      "title": "Tài liệu PDF"
+    }
+  ]
+}

@@ -1,10 +1,8 @@
 /**
- * Ghép catalog bài học với bản đồ URL private (sau khi file private đã load).
+ * Ghép dữ liệu bài học với bản đồ URL private (sau khi file private đã load).
  */
-window.PVQ_mergeLessonResources = function (courseId, lessonId) {
-  var found = window.PVQ_findLesson(courseId, lessonId);
-  if (!found) return null;
-
+window.PVQ_mergeLessonResources = function (found) {
+  if (!found || !found.lesson) return null;
   var map = window.PVQ_PRIVATE_RESOURCE_URLS;
   var items = [];
 

@@ -1,0 +1,23 @@
+{
+  "id": "dem-hat-thuc-chien",
+  "title": "Piano đệm hát thực chiến",
+  "summary": "Hợp âm, vòng công năng pop ballad, intro và đệm theo giọng hát.",
+  "audience": "Đã có nền tảng hợp âm cơ bản, người hát muốn tự đệm, hoặc pianist muốn chơi nhạc pop ballad tự tin hơn.",
+  "contentTopics": [
+    "Hợp âm major và minor, chuyển nhanh và giữ nhịp ổn định",
+    "Vòng công năng thường gặp trong pop ballad",
+    "Intro, kết và cách nhường cho giọng hát"
+  ],
+  "outcomes": [
+    "Đệm được các tiết tấu ballad phổ biến ở mức ứng dụng",
+    "Tự xây dựng phần intro đơn giản cho bài hát chọn sẵn",
+    "Sẵn sàng kết hợp với vocal hoặc thu demo tại nhà"
+  ],
+  "priceLabel": "Liên hệ",
+  "level": "Trung cấp",
+  "durationWeeks": 10,
+  "heroImage": "images/courses/course-piano-accompaniment-cover.jpg",
+  "lessonOrder": [
+    "dh-l01"
+  ]
+}

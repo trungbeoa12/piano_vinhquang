@@ -15,22 +15,32 @@ function refreshAccountView() {
   if (userPanel) userPanel.style.display = 'block';
   if (emailDisplay) emailDisplay.textContent = session.email || '—';
 
-  if (coursesList && session.purchasedCourseIds) {
-    coursesList.innerHTML = session.purchasedCourseIds
-      .map(function (cid) {
-        var c = window.PVQ_getCourseById(cid);
-        if (!c) return '';
-        return (
-          '<div class="pvq-course-owned">' +
-          '<a href="course-detail.html?id=' +
-          encodeURIComponent(cid) +
-          '">' +
-          c.title +
-          '</a>' +
-          '<div class="pvq-muted">Vào khóa học để mở danh sách bài & học liệu.</div></div>'
-        );
+  if (coursesList && session.purchasedCourseIds && window.PVQ_Content) {
+    coursesList.innerHTML = '<p class="pvq-muted">Đang tải khóa học của bạn...</p>';
+
+    Promise.all(
+      session.purchasedCourseIds.map(function (cid) {
+        return window.PVQ_Content.loadCourseById(cid).catch(function () {
+          return null;
+        });
       })
-      .join('');
+    ).then(function (courses) {
+      coursesList.innerHTML = courses
+        .map(function (c, index) {
+          var cid = session.purchasedCourseIds[index];
+          if (!c) return '';
+          return (
+            '<div class="pvq-course-owned">' +
+            '<a href="course-detail.html?id=' +
+            encodeURIComponent(cid) +
+            '">' +
+            c.title +
+            '</a>' +
+            '<div class="pvq-muted">Vào khóa học để mở danh sách bài & học liệu.</div></div>'
+          );
+        })
+        .join('');
+    });
   }
 }
 

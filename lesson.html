@@ -42,20 +42,13 @@
     <script src="js/app-common.js"></script>
     <script src="js/site-header.js"></script>
     <script src="js/utils/url.js"></script>
-    <script src="js/data/courses-catalog.js"></script>
+    <script src="js/data/content-loader.js"></script>
     <script src="js/access-resources.js"></script>
     <script src="js/pages/lesson.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             window.PVQ_injectSiteHeader('courses');
             window.PVQ_appCommon.createSnowflakes();
-            var courseId = window.PVQ_getQueryParam('courseId');
-            var lessonId = window.PVQ_getQueryParam('lessonId');
-            var found = window.PVQ_findLesson(courseId, lessonId);
-            var bc = document.getElementById('lesson-breadcrumb');
-            if (bc && found) {
-                bc.innerHTML = '<a href="course-detail.html?id=' + encodeURIComponent(courseId) + '" style="color:inherit">' + found.course.title + '</a> / ' + found.lesson.title;
-            }
         });
     </script>
 </body>

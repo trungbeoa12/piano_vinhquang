@@ -1,0 +1,24 @@
+{
+  "id": "piano-co-ban",
+  "title": "Piano căn bản cho người mới",
+  "summary": "Tư thế ngồi, nhịp điệu, đọc nốt và bài tập ngón trên đàn thật hoặc đàn kỹ thuật số.",
+  "audience": "Người mới bắt đầu, người lâu không luyện muốn làm lại nền tảng, học viên cần lộ trình rõ ràng theo tuần.",
+  "contentTopics": [
+    "Tư thế ngồi, tay và nhận diện quãng trên bàn phím",
+    "Nhịp điệu cơ bản, đệm tay trái đơn giản",
+    "Đọc nốt, bài tập ngón và thói quen luyện tập đều"
+  ],
+  "outcomes": [
+    "Đọc được nốt và nhịp ở mức cơ bản trong bài tập khóa",
+    "Tự luyện theo video và tài liệu được giao sau khi đăng ký",
+    "Nền tảng để học tiếp các khóa nâng cao hoặc đệm hát"
+  ],
+  "priceLabel": "Liên hệ",
+  "level": "Cơ bản",
+  "durationWeeks": 8,
+  "heroImage": "images/courses/course-piano-basic-cover.jpg",
+  "lessonOrder": [
+    "pcb-l01",
+    "pcb-l02"
+  ]
+}

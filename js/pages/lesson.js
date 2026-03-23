@@ -73,6 +73,7 @@ function renderLessonContent(data) {
 document.addEventListener('DOMContentLoaded', function () {
   var courseId = window.PVQ_getQueryParam('courseId');
   var lessonId = window.PVQ_getQueryParam('lessonId');
+  var bc = document.getElementById('lesson-breadcrumb');
 
   if (!courseId || !lessonId) {
     renderLocked('Thiếu tham số khóa học hoặc bài học.');
@@ -80,50 +81,60 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
-  var found = window.PVQ_findLesson(courseId, lessonId);
-  if (!found) {
-    renderLocked('Không tìm thấy bài học.');
-    ensurePianoMounted();
-    return;
-  }
-
-  var titleEl = document.getElementById('lesson-title');
-  var subEl = document.getElementById('lesson-subtitle');
-  if (titleEl) titleEl.textContent = found.lesson.title;
-  if (subEl) {
-    subEl.textContent =
-      found.course.title + ' — ' + found.lesson.durationMin + ' phút';
-  }
-  document.title = found.lesson.title + ' — Piano Vinh Quang';
-
-  if (!window.PVQ_Auth.isLoggedIn()) {
-    renderLocked(
-      '<strong>Cần đăng nhập.</strong> Vui lòng vào trang Tài khoản để đăng nhập (demo), sau đó quay lại bài học này.'
-    );
-    ensurePianoMounted();
-    return;
-  }
-
-  if (!window.PVQ_Auth.hasCourseAccess(courseId)) {
-    renderLocked(
-      '<strong>Chưa có quyền truy cập khóa học này.</strong> Sau khi mua khóa, quản trị viên sẽ cấp quyền trong hệ thống (ở bản demo: dùng nút đăng nhập thử để xem luồng).'
-    );
-    ensurePianoMounted();
-    return;
-  }
-
-  var s = document.createElement('script');
-  s.src = 'js/data/course-resources-private.js';
-  s.onload = function () {
-    var merged = window.PVQ_mergeLessonResources(courseId, lessonId);
-    if (!merged) {
-      renderLocked('Không tải được học liệu.');
+  window.PVQ_Content.findLesson(courseId, lessonId).then(function (found) {
+    if (!found) {
+      renderLocked('Không tìm thấy bài học.');
+      ensurePianoMounted();
       return;
     }
-    renderLessonContent(merged);
-  };
-  s.onerror = function () {
-    renderLocked('Không tải được cấu hình học liệu. Kiểm tra đường dẫn file.');
-  };
-  document.body.appendChild(s);
+
+    var titleEl = document.getElementById('lesson-title');
+    var subEl = document.getElementById('lesson-subtitle');
+    if (titleEl) titleEl.textContent = found.lesson.title;
+    if (subEl) {
+      subEl.textContent =
+        found.course.title + ' — ' + found.lesson.durationMin + ' phút';
+    }
+    if (bc) {
+      bc.innerHTML =
+        '<a href="course-detail.html?id=' +
+        encodeURIComponent(courseId) +
+        '" style="color:inherit">' +
+        found.course.title +
+        '</a> / ' +
+        found.lesson.title;
+    }
+    document.title = found.lesson.title + ' — Piano Vinh Quang';
+
+    if (!window.PVQ_Auth.isLoggedIn()) {
+      renderLocked(
+        '<strong>Cần đăng nhập.</strong> Vui lòng vào trang Tài khoản để đăng nhập (demo), sau đó quay lại bài học này.'
+      );
+      ensurePianoMounted();
+      return;
+    }
+
+    if (!window.PVQ_Auth.hasCourseAccess(courseId)) {
+      renderLocked(
+        '<strong>Chưa có quyền truy cập khóa học này.</strong> Sau khi mua khóa, quản trị viên sẽ cấp quyền trong hệ thống (ở bản demo: dùng nút đăng nhập thử để xem luồng).'
+      );
+      ensurePianoMounted();
+      return;
+    }
+
+    var s = document.createElement('script');
+    s.src = 'js/data/course-resources-private.js';
+    s.onload = function () {
+      var merged = window.PVQ_mergeLessonResources(found);
+      if (!merged) {
+        renderLocked('Không tải được học liệu.');
+        return;
+      }
+      renderLessonContent(merged);
+    };
+    s.onerror = function () {
+      renderLocked('Không tải được cấu hình học liệu. Kiểm tra đường dẫn file.');
+    };
+    document.body.appendChild(s);
+  });
 });
