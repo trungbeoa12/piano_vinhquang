@@ -21,7 +21,13 @@
   }
 
   function loadOsmdLib() {
-    if (window.OpenSheetMusicDisplay) return Promise.resolve();
+    if (
+      window.OpenSheetMusicDisplay ||
+      (window.opensheetmusicdisplay &&
+        window.opensheetmusicdisplay.OpenSheetMusicDisplay)
+    ) {
+      return Promise.resolve();
+    }
     if (osmdLibPromise) return osmdLibPromise;
 
     injectCSSOnce(OSMD_CSS_URL);
@@ -52,7 +58,19 @@
         scoreRoot.innerHTML =
           '<div style=\"padding: 10px 0; color: #b5bdd0; font-size: 0.9rem;\">Đang render sheet nhạc...</div>';
 
-        var osmd = new window.OpenSheetMusicDisplay(scoreRoot, {
+        var OpenSheetMusicDisplayCtor =
+          window.OpenSheetMusicDisplay ||
+          (window.opensheetmusicdisplay &&
+            window.opensheetmusicdisplay.OpenSheetMusicDisplay);
+
+        if (!OpenSheetMusicDisplayCtor) {
+          throw new Error(
+            'OSMD không có OpenSheetMusicDisplay constructor. ' +
+              'Kiểm tra window.OpenSheetMusicDisplay và window.opensheetmusicdisplay.'
+          );
+        }
+
+        var osmd = new OpenSheetMusicDisplayCtor(scoreRoot, {
           autoResize: true,
           drawTitle: false,
           followCursor: false,
@@ -60,10 +78,8 @@
         });
 
         return osmd.load(musicxmlUrl).then(function () {
-          return osmd.render().then(function () {
-            // OSMD sometimes renders asynchronously; but render() resolves when SVG is created.
-            return true;
-          });
+          var renderResult = osmd.render();
+          return Promise.resolve(renderResult);
         });
       })
       .catch(function (err) {
@@ -71,10 +87,20 @@
         console.error('[PVQ PianoScore] render failed:', err);
 
         var msg = String(err && err.message ? err.message : err);
+        var debugA = typeof window.OpenSheetMusicDisplay;
+        var debugB = window.opensheetmusicdisplay
+          ? Object.keys(window.opensheetmusicdisplay).join(',')
+          : 'no-window.opensheetmusicdisplay';
         scoreRoot.innerHTML =
           '<div style=\"padding: 10px 0; color: #ffb3b3; font-size: 0.9rem; font-weight: 600;\">Không render được MusicXML.</div>' +
           '<pre style=\"margin-top: 8px; white-space: pre-wrap; color: #ffb3b3; font-size: 0.75rem; max-height: 220px; overflow: auto;\">' +
           msg +
+          '\\n\\n' +
+          'debug: typeof OpenSheetMusicDisplay=' +
+          debugA +
+          '\\n' +
+          'debug: opensheetmusicdisplay keys=' +
+          debugB +
           '</pre>';
       });
   }

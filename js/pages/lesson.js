@@ -15,7 +15,7 @@ function ensurePianoMounted() {
     var pianoMountHtml =
       '<div style="margin: 18px 0 26px;">' +
       '<div id="pvq-piano-mount" ' +
-      'data-pvq-score-musicxml="assets/scores/waltz-in-a-minorchopin.xml" ' +
+      'data-pvq-score-musicxml="assets/scores/waltz-in-a-minorchopin.musicxml" ' +
       'data-pvq-score-midi="assets/scores/waltz-in-a-minorchopin.mid">' +
       '</div>' +
       '</div>';
