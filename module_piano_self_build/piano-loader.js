@@ -63,6 +63,13 @@
           '</div>' +
         '</div>' +
         '<p class="keyboard-hint">Phím máy tính: Z–M (quãng thấp) · Q–U (quãng cao) · Space (phát / dừng)</p>' +
+        '<div class="pvq-score-container" data-pvq-score-container>' +
+          '<div class="pvq-score" data-pvq-score-root></div>' +
+          '<div class="pvq-score-downloads">' +
+            '<a class="pvq-midi-download" data-pvq-midi-download' +
+              ' href="#" target="_blank" rel="noreferrer">Tải MIDI</a>' +
+          '</div>' +
+        '</div>' +
       '</div>' +
     '</div>';
 
@@ -162,6 +169,42 @@
     });
   }
 
+  function initScore(mount, baseUrl) {
+    var scoreRoot = mount.querySelector('[data-pvq-score-root]');
+    var scoreContainer = mount.querySelector('[data-pvq-score-container]');
+    var midiLink = mount.querySelector('[data-pvq-midi-download]');
+    if (!scoreRoot || !scoreContainer) return Promise.resolve();
+
+    var musicxmlRel = mount.getAttribute('data-pvq-score-musicxml');
+    var midiRel = mount.getAttribute('data-pvq-score-midi');
+
+    var musicxmlUrl = musicxmlRel
+      ? new URL(musicxmlRel, baseUrl).href
+      : null;
+    var midiUrl = midiRel ? new URL(midiRel, baseUrl).href : null;
+
+    var hasAny = Boolean(musicxmlUrl) || Boolean(midiUrl);
+    scoreContainer.style.display = hasAny ? '' : 'none';
+
+    if (midiLink) {
+      if (midiUrl) {
+        midiLink.href = midiUrl;
+        midiLink.style.display = '';
+      } else {
+        midiLink.style.display = 'none';
+      }
+    }
+
+    if (!musicxmlUrl) return Promise.resolve();
+
+    return loadScript(baseUrl + 'js/piano/piano-score-viewer.js').then(function () {
+      if (!window.PVQ_PianoScoreViewer || !window.PVQ_PianoScoreViewer.renderMusicXML) {
+        return;
+      }
+      return window.PVQ_PianoScoreViewer.renderMusicXML(scoreRoot, musicxmlUrl);
+    });
+  }
+
   function run() {
     var script = findLoaderScript();
     if (!script || !script.src) {
@@ -200,6 +243,7 @@
       })
       .then(function () {
         mount._pvqPianoPlayer = createPlayer(mount);
+        return initScore(mount, baseUrl);
       })
       .catch(function (err) {
         console.error('[PVQ Piano]', err);

@@ -354,6 +354,38 @@
 	color: var(--accent-ink);
 }
 
+.pvq-piano-module .pvq-score-container {
+	margin-top: 18px;
+}
+
+.pvq-piano-module .pvq-score {
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 16px;
+	padding: 14px;
+	overflow: auto;
+	max-height: 340px;
+}
+
+.pvq-piano-module .pvq-score-downloads {
+	margin-top: 10px;
+	display: flex;
+	justify-content: flex-start;
+}
+
+.pvq-piano-module .pvq-midi-download {
+	color: var(--accent-soft);
+	text-decoration: none;
+	font-size: 0.9rem;
+	font-weight: 500;
+}
+
+.pvq-piano-module .pvq-midi-download:hover,
+.pvq-piano-module .pvq-midi-download:focus-visible {
+	text-decoration: underline;
+	outline: none;
+}
+
 .pvq-piano-module .keyboard-hint {
 	text-align: center;
 	font-size: 0.76rem;

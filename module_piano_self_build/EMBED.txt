@@ -32,9 +32,9 @@ Flow nhúng chuẩn hiện tại:
 - Không cần copy HTML widget ra ngoài.
 
 Ghi chú score:
-- File score chuẩn đặt trong `assets/scores/`.
-- Script score chuẩn đặt trong `js/score/`.
-- Hiện tại score viewer chỉ dùng trên `piano-studio.html`.
-- `piano-loader.js` hiện chỉ nhúng piano widget, chưa nhúng score viewer.
-- Nếu sau này cần embed cả score + piano, sẽ mở rộng loader bằng thuộc tính kiểu `data-score-url` và nạp thêm OSMD + `js/score/`.
-- Thư mục `sheet_piano/` là thư mục cũ (legacy), không dùng cho flow hiện tại trừ khi đang tham chiếu dữ liệu cũ.
+- Copy file MusicXML (`.xml` / `.musicxml` / `.mxl`) và MIDI (`.mid`) vào thư mục `assets/scores/`.
+- Trên phần tử mount (ví dụ `#pvq-piano-mount`), thêm:
+  - `data-pvq-score-musicxml="assets/scores/<ten-file>.xml"`
+  - `data-pvq-score-midi="assets/scores/<ten-file>.mid"`
+- `piano-loader.js` sẽ tự render MusicXML bằng OSMD (CDN) và tạo link tải MIDI.
+- Nếu bạn không cung cấp `data-pvq-score-musicxml` thì phần score sẽ không hiển thị.
