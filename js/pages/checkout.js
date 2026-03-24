@@ -32,47 +32,36 @@ function lessonHref(course) {
   );
 }
 
-function formatCheckoutTime(date) {
+function formatCheckoutTime(isoOrDate) {
   try {
+    var date = isoOrDate instanceof Date ? isoOrDate : new Date(isoOrDate);
     return new Intl.DateTimeFormat('vi-VN', {
       dateStyle: 'medium',
       timeStyle: 'short',
     }).format(date);
   } catch (error) {
-    return date.toISOString();
+    return String(isoOrDate);
   }
 }
 
-function createDemoOrderMeta(course, method) {
-  var now = new Date();
-  var dateCode = [
-    now.getFullYear(),
-    String(now.getMonth() + 1).padStart(2, '0'),
-    String(now.getDate()).padStart(2, '0'),
-  ].join('');
-  var timeCode = [
-    String(now.getHours()).padStart(2, '0'),
-    String(now.getMinutes()).padStart(2, '0'),
-    String(now.getSeconds()).padStart(2, '0'),
-  ].join('');
-
-  return {
-    orderCode:
-      'PVQ-DEMO-' +
-      String(course.id || 'COURSE').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10) +
-      '-' +
-      dateCode +
-      '-' +
-      timeCode,
-    paidAt: now,
-    method: method || 'bank',
-  };
+function formatPriceVnd(amount) {
+  var n = Number(amount);
+  if (!Number.isFinite(n)) return '—';
+  try {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      maximumFractionDigits: 0,
+    }).format(n);
+  } catch (error) {
+    return n + ' VND';
+  }
 }
 
 function getMethodLabel(method) {
-  if (method === 'momo') return 'Vi dien tu mock';
-  if (method === 'card') return 'The mock';
-  return 'Chuyen khoan mock';
+  if (method === 'momo') return 'Ví điện tử (mock)';
+  if (method === 'card') return 'Thẻ (mock)';
+  return 'Chuyển khoản (mock)';
 }
 
 function renderCheckoutStatus(status, message) {
@@ -94,29 +83,37 @@ function renderCheckoutStatus(status, message) {
     '<div class="pvq-checkout-status ' + toneClass + '">' +
     '<span class="pvq-checkout-status__label">' + label + '</span>' +
     '<p class="pvq-muted">' +
-    (message || 'Checkout mock đã sẵn sàng để mô phỏng bước thanh toán.') +
+    (message ||
+      'Đơn hàng lưu trong MongoDB; bước thanh toán chỉ là mô phỏng.') +
     '</p>' +
     '</div>';
 }
 
-function renderOrderSummary(course, orderMeta) {
+function renderOrderSummary(course, pendingOrder) {
   var el = document.getElementById('checkout-order-summary');
   if (!el || !course) return;
 
-  var paymentMethod = orderMeta ? getMethodLabel(orderMeta.method) : 'Chua chon';
-  var orderCode = orderMeta ? orderMeta.orderCode : 'Se tao sau khi thanh toan';
-  var paidAt = orderMeta ? formatCheckoutTime(orderMeta.paidAt) : 'Se cap nhat sau khi thanh toan';
+  var orderId = pendingOrder && pendingOrder.id ? pendingOrder.id : 'Đang tạo đơn...';
+  var priceLine =
+    pendingOrder && pendingOrder.price !== undefined
+      ? formatPriceVnd(pendingOrder.price)
+      : '—';
+  var statusLine = pendingOrder && pendingOrder.status ? pendingOrder.status : 'pending';
+  var createdLine =
+    pendingOrder && pendingOrder.createdAt
+      ? formatCheckoutTime(pendingOrder.createdAt)
+      : '—';
 
   el.innerHTML =
     '<dl class="pvq-sales-dl">' +
     '<dt>Khóa học</dt><dd>' + course.title + '</dd>' +
     '<dt>Cấp độ</dt><dd>' + course.level + '</dd>' +
     '<dt>Thời lượng</dt><dd>' + course.durationWeeks + ' tuần</dd>' +
-    '<dt>Giá mô phỏng</dt><dd>Miễn phí demo / mock payment</dd>' +
-    '<dt>Phương thức</dt><dd>' + paymentMethod + '</dd>' +
-    '<dt>Mã đơn demo</dt><dd>' + orderCode + '</dd>' +
-    '<dt>Thanh toán lúc</dt><dd>' + paidAt + '</dd>' +
-    '<dt>Sau thanh toán</dt><dd>Tự động cấp quyền vào khóa học và lesson</dd>' +
+    '<dt>Giá (VND)</dt><dd>' + priceLine + '</dd>' +
+    '<dt>Mã đơn (MongoDB)</dt><dd style="word-break:break-all">' + orderId + '</dd>' +
+    '<dt>Trạng thái đơn</dt><dd>' + statusLine + '</dd>' +
+    '<dt>Tạo lúc</dt><dd>' + createdLine + '</dd>' +
+    '<dt>Sau thanh toán</dt><dd>Ghi enrollment trên server, quyền học theo DB</dd>' +
     '</dl>';
 }
 
@@ -128,7 +125,7 @@ function renderGuestState(course) {
     '<div class="pvq-checkout-state">' +
     '<p class="pvq-course-access-badge">Bước 1</p>' +
     '<h3>Đăng nhập hoặc tạo tài khoản trước</h3>' +
-    '<p class="pvq-muted">Checkout mock cần biết tài khoản nào sẽ được cấp quyền cho khóa <strong>' +
+    '<p class="pvq-muted">Cần tài khoản để tạo đơn hàng và enrollment cho khóa <strong>' +
     course.title +
     '</strong>.</p>' +
     '<div class="pvq-course-access-actions">' +
@@ -138,26 +135,48 @@ function renderGuestState(course) {
     '</div>';
 }
 
-function renderUnlockedState(course, orderMeta) {
+function renderCreateOrderFailed(course, message) {
   var flowEl = document.getElementById('checkout-flow');
   if (!flowEl) return;
 
-  var orderCode = orderMeta ? orderMeta.orderCode : 'PVQ-DEMO';
-  var paidAt = orderMeta ? formatCheckoutTime(orderMeta.paidAt) : formatCheckoutTime(new Date());
-  var methodLabel = getMethodLabel(orderMeta && orderMeta.method);
+  flowEl.innerHTML =
+    '<div class="pvq-checkout-state">' +
+    '<p class="pvq-course-access-badge">Lỗi</p>' +
+    '<h3>Không tạo được đơn hàng</h3>' +
+    '<p class="pvq-muted">' +
+    (message || 'Vui lòng thử lại.') +
+    '</p>' +
+    '<div class="pvq-course-access-actions">' +
+    '<a href="course-detail.html?id=' +
+    encodeURIComponent(course.id) +
+    '" class="cta-btn cta-btn-primary">Quay lại khóa học</a>' +
+    '</div>' +
+    '</div>';
+}
+
+function renderUnlockedState(course, receipt) {
+  var flowEl = document.getElementById('checkout-flow');
+  if (!flowEl) return;
+
+  var orderId = receipt && receipt.orderId ? receipt.orderId : '—';
+  var paidAt =
+    receipt && receipt.paidAt
+      ? formatCheckoutTime(receipt.paidAt)
+      : formatCheckoutTime(new Date());
+  var methodLabel = getMethodLabel(receipt && receipt.method);
 
   flowEl.innerHTML =
     '<div class="pvq-checkout-state">' +
     '<p class="pvq-course-access-badge">Đã cấp quyền</p>' +
     '<h3>Khóa học đã sẵn sàng</h3>' +
-    '<p class="pvq-muted">Tài khoản hiện tại đã có quyền học khóa này. Bạn có thể quay lại dashboard hoặc mở bài học đầu tiên ngay.</p>' +
+    '<p class="pvq-muted">Enrollment đã được lưu trên server. Bạn có thể mở bài học hoặc dashboard.</p>' +
     '<div class="pvq-checkout-receipt">' +
-    '<h4>Receipt / Success Summary</h4>' +
+    '<h4>Biên lai (mock thanh toán)</h4>' +
     '<dl class="pvq-sales-dl">' +
-    '<dt>Mã đơn demo</dt><dd>' + orderCode + '</dd>' +
+    '<dt>Mã đơn</dt><dd style="word-break:break-all">' + orderId + '</dd>' +
     '<dt>Thời gian</dt><dd>' + paidAt + '</dd>' +
     '<dt>Phương thức</dt><dd>' + methodLabel + '</dd>' +
-    '<dt>Trạng thái</dt><dd>Thanh toán thành công</dd>' +
+    '<dt>Trạng thái</dt><dd>Đã thanh toán (mock)</dd>' +
     '</dl>' +
     '</div>' +
     '<div class="pvq-course-access-actions">' +
@@ -167,15 +186,17 @@ function renderUnlockedState(course, orderMeta) {
     '</div>';
 }
 
-function renderCheckoutState(course) {
+function renderCheckoutState(course, pendingOrder) {
   var flowEl = document.getElementById('checkout-flow');
-  if (!flowEl) return;
+  if (!flowEl || !pendingOrder || !pendingOrder.id) return;
 
   flowEl.innerHTML =
     '<div class="pvq-checkout-state">' +
     '<p class="pvq-course-access-badge">Bước 2</p>' +
-    '<h3>Xác nhận đăng ký khóa học demo</h3>' +
-    '<p class="pvq-muted">Nút bên dưới sẽ mô phỏng thanh toán thành công và gọi API cấp quyền cho tài khoản hiện tại.</p>' +
+    '<h3>Xác nhận thanh toán (mô phỏng)</h3>' +
+    '<p class="pvq-muted">Đơn <code style="font-size:0.85em">' +
+    pendingOrder.id +
+    '</code> đang <strong>pending</strong>. Nút dưới gọi API confirm để ghi <strong>paid</strong> và enrollment.</p>' +
     '<div class="pvq-checkout-methods">' +
     '<button type="button" class="pvq-checkout-method is-selected" data-method="bank">' +
     '<strong>Chuyển khoản mock</strong>' +
@@ -191,14 +212,14 @@ function renderCheckoutState(course) {
     '</button>' +
     '</div>' +
     '<div class="pvq-checkout-method-note" id="checkout-method-note">' +
-    '<strong>Phương thức hiện tại:</strong> Chuyển khoản mock. Sau khi xác nhận, hệ thống sẽ cấp quyền trực tiếp cho tài khoản đang đăng nhập.' +
+    '<strong>Phương thức hiện tại:</strong> Chuyển khoản mock. Xác nhận sẽ gọi POST /api/orders/confirm.' +
     '</div>' +
     '<label class="pvq-checkout-confirm">' +
     '<input type="checkbox" id="checkout-confirm-checkbox"> ' +
-    'Tôi hiểu đây là mock checkout để test flow cấp quyền học.' +
+    'Tôi hiểu thanh toán là mô phỏng; dữ liệu đơn và enrollment là thật trên MongoDB.' +
     '</label>' +
     '<div class="pvq-course-access-actions">' +
-    '<button type="button" id="checkout-submit-btn" class="cta-btn cta-btn-primary" style="border:none;cursor:pointer">Hoàn tất checkout demo</button>' +
+    '<button type="button" id="checkout-submit-btn" class="cta-btn cta-btn-primary" style="border:none;cursor:pointer">Xác nhận thanh toán mock</button>' +
     '<a href="course-detail.html?id=' + encodeURIComponent(course.id) + '" class="cta-btn cta-btn-secondary">Quay lại khóa học</a>' +
     '</div>' +
     '<p class="pvq-muted pvq-course-access-feedback" id="checkout-feedback"></p>' +
@@ -223,62 +244,65 @@ function renderCheckoutState(course) {
       if (!methodNote) return;
       if (selectedMethod === 'momo') {
         methodNote.innerHTML =
-          '<strong>Phương thức hiện tại:</strong> Ví điện tử mock. Trang sẽ mô phỏng callback thanh toán thành công rồi cấp quyền học.';
+          '<strong>Phương thức hiện tại:</strong> Ví điện tử mock. Vẫn dùng POST /api/orders/confirm.';
       } else if (selectedMethod === 'card') {
         methodNote.innerHTML =
-          '<strong>Phương thức hiện tại:</strong> Thẻ mock. Trang sẽ mô phỏng xác thực giao dịch thành công trước khi mở khóa học.';
+          '<strong>Phương thức hiện tại:</strong> Thẻ mock. Vẫn dùng POST /api/orders/confirm.';
       } else {
         methodNote.innerHTML =
-          '<strong>Phương thức hiện tại:</strong> Chuyển khoản mock. Sau khi xác nhận, hệ thống sẽ cấp quyền trực tiếp cho tài khoản đang đăng nhập.';
+          '<strong>Phương thức hiện tại:</strong> Chuyển khoản mock. Xác nhận sẽ gọi POST /api/orders/confirm.';
       }
     });
   });
 
   submitBtn.addEventListener('click', function () {
     if (!confirmCheckbox.checked) {
-      if (feedbackEl) feedbackEl.textContent = 'Hãy xác nhận đây là mock checkout trước khi tiếp tục.';
+      if (feedbackEl) {
+        feedbackEl.textContent =
+          'Hãy xác nhận bạn hiểu thanh toán là mock trước khi tiếp tục.';
+      }
       return;
     }
 
     submitBtn.disabled = true;
-    if (feedbackEl) feedbackEl.textContent = 'Đang xử lý checkout demo...';
-    var orderMeta = createDemoOrderMeta(course, selectedMethod);
+    if (feedbackEl) feedbackEl.textContent = 'Đang gọi /api/orders/confirm...';
     renderCheckoutStatus(
       'processing',
-      'Hệ thống đang mô phỏng thanh toán qua ' +
-        (selectedMethod === 'momo'
-          ? 'ví điện tử mock'
-          : selectedMethod === 'card'
-          ? 'thẻ mock'
-          : 'chuyển khoản mock') +
-        '.'
+      'Đang xác nhận đơn và tạo enrollment trên server.'
     );
-    renderOrderSummary(course, orderMeta);
 
-    checkoutFetch('/api/courses/' + encodeURIComponent(course.id) + '/unlock-mock', {
+    checkoutFetch('/api/orders/confirm', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: '{}',
+      body: JSON.stringify({ orderId: pendingOrder.id }),
     })
-      .then(function () {
-        return window.PVQ_Auth.refreshSession();
+      .then(function (payload) {
+        return window.PVQ_Auth.refreshSession().then(function () {
+          return payload;
+        });
       })
-      .then(function () {
+      .then(function (payload) {
+        var ord = payload.order || {};
+        var mergedOrder = Object.assign({}, pendingOrder, ord);
         renderCheckoutStatus(
           'success',
-          'Thanh toán mock đã hoàn tất. Quyền học đã được cấp cho tài khoản hiện tại.'
+          'Đơn đã paid; enrollment đã ghi. Quyền học kiểm tra qua API lesson và DB.'
         );
-        renderOrderSummary(course, orderMeta);
-        renderUnlockedState(course, orderMeta);
+        renderOrderSummary(course, mergedOrder);
+        renderUnlockedState(course, {
+          orderId: ord.id || pendingOrder.id,
+          paidAt: new Date(),
+          method: selectedMethod,
+        });
       })
       .catch(function (error) {
         if (feedbackEl) feedbackEl.textContent = error.message;
-        renderOrderSummary(course);
+        renderOrderSummary(course, pendingOrder);
         renderCheckoutStatus(
           'idle',
-          'Checkout mock chưa hoàn tất. Bạn có thể kiểm tra lại xác nhận rồi thử lại.'
+          'Chưa xác nhận xong. Kiểm tra lại và thử lại.'
         );
         submitBtn.disabled = false;
       });
@@ -293,22 +317,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (!courseId || !window.PVQ_Content) {
     if (titleEl) titleEl.textContent = 'Không tìm thấy khóa học';
-    if (summaryEl) summaryEl.textContent = 'Thiếu courseId cho checkout demo.';
+    if (summaryEl) summaryEl.textContent = 'Thiếu courseId cho checkout.';
     return;
   }
 
   window.PVQ_Content.loadCourseWithLessons(courseId)
     .then(function (course) {
-      document.title = 'Checkout Demo — ' + course.title + ' — Piano Vinh Quang';
+      document.title = 'Checkout — ' + course.title + ' — Piano Vinh Quang';
       if (titleEl) titleEl.textContent = course.title;
       if (summaryEl) {
         summaryEl.textContent =
-          course.summary + ' Bước này mô phỏng thanh toán trước khi cấp quyền.';
+          course.summary + ' Tạo đơn hàng thật trên server, thanh toán mock.';
       }
 
       renderCheckoutStatus(
         'idle',
-        'Chọn phương thức thanh toán mock rồi xác nhận để mô phỏng bước checkout.'
+        'Đang kiểm tra quyền học và tạo đơn nếu cần.'
       );
       renderOrderSummary(course);
 
@@ -322,16 +346,44 @@ document.addEventListener('DOMContentLoaded', function () {
             return null;
           }
 
-          return checkoutFetch('/api/courses/' + encodeURIComponent(course.id) + '/access')
+          return checkoutFetch(
+            '/api/courses/' + encodeURIComponent(course.id) + '/access'
+          )
             .then(function (payload) {
               if (payload.hasAccess) {
                 renderUnlockedState(course);
-                return;
+                return null;
               }
-              renderCheckoutState(course);
+
+              renderCheckoutStatus(
+                'processing',
+                'Đang tạo đơn hàng (POST /api/orders/create)...'
+              );
+
+              return checkoutFetch('/api/orders/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ courseId: course.id }),
+              })
+                .then(function (body) {
+                  var ord = body.order;
+                  renderCheckoutStatus(
+                    'idle',
+                    'Đơn pending đã tạo. Chọn phương thức mock và xác nhận.'
+                  );
+                  renderOrderSummary(course, ord);
+                  renderCheckoutState(course, ord);
+                })
+                .catch(function (error) {
+                  renderCreateOrderFailed(course, error.message);
+                  renderCheckoutStatus('idle', error.message);
+                });
             })
             .catch(function () {
-              renderCheckoutState(course);
+              renderCreateOrderFailed(
+                course,
+                'Không kiểm tra được quyền học. Đăng nhập lại hoặc thử sau.'
+              );
             });
         });
     })

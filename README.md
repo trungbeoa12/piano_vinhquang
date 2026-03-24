@@ -47,7 +47,8 @@ Lưu ý: vì partial đang được load bằng `fetch()`, không nên mở page
 - `GET /api/my/enrollments`
 - `GET /api/my/progress`
 - `GET /api/courses/:courseId/access`
-- `POST /api/courses/:courseId/unlock-mock`
+- `POST /api/orders/create` (body: `{ "courseId": "..." }`) — tạo đơn `pending`
+- `POST /api/orders/confirm` (body: `{ "orderId": "<ObjectId>" }`) — mock thanh toán thành công, ghi `enrollment`
 - `GET /api/courses/:courseId/lessons/:lessonId`
 - `POST /api/courses/:courseId/lessons/:lessonId/progress`
 - `GET /api/resources/:refId/open?token=...`

@@ -45,10 +45,10 @@ function renderCourseAccessCard(course, hasAccess) {
 
   accessEl.innerHTML =
     '<div class="pvq-course-access-card">' +
-    '<p class="pvq-course-access-badge">Mock Payment</p>' +
-    '<h3>Đăng ký khóa học demo</h3>' +
-    '<p class="pvq-muted">Tài khoản hiện tại chưa có quyền khóa học này. Hãy đi tới trang checkout mock để mô phỏng bước thanh toán và kích hoạt quyền học.</p>' +
-    '<div class="pvq-course-access-price">Miễn phí demo / mock unlock</div>' +
+    '<p class="pvq-course-access-badge">Thanh toán demo</p>' +
+    '<h3>Đăng ký khóa học</h3>' +
+    '<p class="pvq-muted">Tài khoản hiện tại chưa có quyền khóa học này. Vào trang checkout để tạo đơn và xác nhận thanh toán mô phỏng; quyền học được lưu trên server.</p>' +
+    '<div class="pvq-course-access-price">' + (course.priceLabel || 'Xem checkout') + '</div>' +
     '<div class="pvq-course-access-actions">' +
     '<a href="' + checkoutHref + '" class="cta-btn cta-btn-primary">Tới checkout demo</a>' +
     '<a href="account.html" class="cta-btn cta-btn-secondary">Tài khoản</a>' +
@@ -192,14 +192,8 @@ document.addEventListener('DOMContentLoaded', function () {
 	              renderLessons(c, hasAccess);
 	            })
 	            .catch(function () {
-              var hasAccess =
-                window.PVQ_Auth.hasCourseAccess &&
-                window.PVQ_Auth.hasCourseAccess(c.id);
-	              renderCourseAccessCard(
-	                c,
-	                hasAccess
-	              );
-	              renderLessons(c, hasAccess);
+	              renderCourseAccessCard(c, false);
+	              renderLessons(c, false);
 	            });
 	        });
 

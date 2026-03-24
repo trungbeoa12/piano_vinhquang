@@ -21,6 +21,7 @@ const {
   getPrivateResourceEntry,
   DEFAULT_RESOURCE_LINK_TTL_SECONDS,
 } = require('./lib/resource-service');
+const { priceVndFromCourse } = require('./lib/order-service');
 
 loadEnvFile(path.join(__dirname, '.env'));
 
@@ -40,6 +41,8 @@ const collectionName = process.env.MONGODB_CUSTOMERS_COLLECTION || 'customers';
 const usersCollectionName = process.env.MONGODB_USERS_COLLECTION || 'users';
 const enrollmentsCollectionName =
   process.env.MONGODB_ENROLLMENTS_COLLECTION || 'enrollments';
+const ordersCollectionName =
+  process.env.MONGODB_ORDERS_COLLECTION || 'orders';
 const lessonProgressCollectionName =
   process.env.MONGODB_LESSON_PROGRESS_COLLECTION || 'lesson_progress';
 const authJwtSecret =
@@ -68,6 +71,7 @@ const demoEnrollmentCourseIds = String(
 let customersCollection;
 let usersCollection;
 let enrollmentsCollection;
+let ordersCollection;
 let lessonProgressCollection;
 let mongoClient;
 let httpServer;
@@ -105,6 +109,7 @@ async function connectToMongo() {
   customersCollection = db.collection(collectionName);
   usersCollection = db.collection(usersCollectionName);
   enrollmentsCollection = db.collection(enrollmentsCollectionName);
+  ordersCollection = db.collection(ordersCollectionName);
   lessonProgressCollection = db.collection(lessonProgressCollectionName);
 
   await customersCollection.createIndex({ createdAt: -1 });
@@ -114,6 +119,8 @@ async function connectToMongo() {
     { unique: true }
   );
   await enrollmentsCollection.createIndex({ userId: 1, status: 1 });
+  await ordersCollection.createIndex({ userId: 1, createdAt: -1 });
+  await ordersCollection.createIndex({ userId: 1, courseId: 1, status: 1 });
   await lessonProgressCollection.createIndex(
     { userId: 1, courseId: 1, lessonId: 1 },
     { unique: true }
@@ -122,12 +129,13 @@ async function connectToMongo() {
   await ensureDemoUserAndEnrollments();
 
   console.log(
-    '[mongo] connected to %s, db=%s, collections=%s,%s,%s,%s',
+    '[mongo] connected to %s, db=%s, collections=%s,%s,%s,%s,%s',
     mongoUri,
     dbName,
     collectionName,
     usersCollectionName,
     enrollmentsCollectionName,
+    ordersCollectionName,
     lessonProgressCollectionName
   );
 }
@@ -381,6 +389,7 @@ app.get('/api/health', function (req, res) {
       customers: collectionName,
       users: usersCollectionName,
       enrollments: enrollmentsCollectionName,
+      orders: ordersCollectionName,
       lessonProgress: lessonProgressCollectionName,
     },
   });
@@ -534,54 +543,185 @@ app.get('/api/courses/:courseId/access', requireAuth, async function (req, res) 
   });
 });
 
-app.post(
-  '/api/courses/:courseId/unlock-mock',
-  requireAuth,
-  async function (req, res) {
-    try {
-      const courseId = String(req.params.courseId || '').trim();
-      if (!courseId) {
-        return res.status(400).json({
-          ok: false,
-          message: 'courseId is required.',
-        });
-      }
-
-      await loadCourseById(courseId);
-
-      const now = new Date();
-      await enrollmentsCollection.updateOne(
-        {
-          userId: String(req.auth.user._id),
-          courseId: courseId,
-        },
-        {
-          $set: {
-            status: 'active',
-            source: 'mock_unlock',
-            updatedAt: now,
-          },
-          $setOnInsert: {
-            createdAt: now,
-          },
-        },
-        { upsert: true }
-      );
-
-      return res.json({
-        ok: true,
-        courseId: courseId,
-        hasAccess: true,
-        enrolledCourseIds: await listEnrollmentCourseIds(req.auth.user._id),
+app.post('/api/orders/create', requireAuth, async function (req, res) {
+  try {
+    if (!ordersCollection) {
+      return res.status(503).json({
+        ok: false,
+        message: 'MongoDB connection is not ready yet.',
       });
-    } catch (error) {
+    }
+
+    const courseId = String(req.body.courseId || '').trim();
+    if (!courseId) {
+      return res.status(400).json({
+        ok: false,
+        message: 'courseId is required.',
+      });
+    }
+
+    const course = await loadCourseById(courseId);
+    const userIdStr = String(req.auth.user._id);
+    const price = priceVndFromCourse(course);
+    const now = new Date();
+
+    const insertResult = await ordersCollection.insertOne({
+      userId: userIdStr,
+      courseId: courseId,
+      price: price,
+      status: 'pending',
+      createdAt: now,
+    });
+
+    return res.status(201).json({
+      ok: true,
+      order: {
+        id: insertResult.insertedId.toString(),
+        userId: userIdStr,
+        courseId: courseId,
+        price: price,
+        status: 'pending',
+        createdAt: now.toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error('[api/orders/create] failed:', error);
+    if (error && error.code === 'ENOENT') {
       return res.status(404).json({
         ok: false,
         message: 'Course not found.',
       });
     }
+    return res.status(500).json({
+      ok: false,
+      message: 'Failed to create order.',
+    });
   }
-);
+});
+
+app.post('/api/orders/confirm', requireAuth, async function (req, res) {
+  try {
+    if (!ordersCollection || !enrollmentsCollection) {
+      return res.status(503).json({
+        ok: false,
+        message: 'MongoDB connection is not ready yet.',
+      });
+    }
+
+    const orderIdRaw = String(req.body.orderId || '').trim();
+    if (!orderIdRaw || !ObjectId.isValid(orderIdRaw)) {
+      return res.status(400).json({
+        ok: false,
+        message: 'Valid orderId is required.',
+      });
+    }
+
+    const orderId = new ObjectId(orderIdRaw);
+    const userIdStr = String(req.auth.user._id);
+
+    const order = await ordersCollection.findOne({ _id: orderId });
+    if (!order || order.userId !== userIdStr) {
+      return res.status(404).json({
+        ok: false,
+        message: 'Order not found.',
+      });
+    }
+
+    if (order.status === 'paid') {
+      return res.json({
+        ok: true,
+        order: {
+          id: order._id.toString(),
+          userId: order.userId,
+          courseId: order.courseId,
+          price: order.price,
+          status: 'paid',
+          createdAt:
+            order.createdAt instanceof Date
+              ? order.createdAt.toISOString()
+              : order.createdAt,
+        },
+        enrolledCourseIds: await listEnrollmentCourseIds(req.auth.user._id),
+      });
+    }
+
+    if (order.status !== 'pending') {
+      return res.status(400).json({
+        ok: false,
+        message: 'Order cannot be confirmed.',
+      });
+    }
+
+    const confirmResult = await ordersCollection.updateOne(
+      { _id: orderId, userId: userIdStr, status: 'pending' },
+      { $set: { status: 'paid' } }
+    );
+
+    if (confirmResult.matchedCount === 0) {
+      const again = await ordersCollection.findOne({ _id: orderId });
+      if (again && again.status === 'paid' && again.userId === userIdStr) {
+        return res.json({
+          ok: true,
+          order: {
+            id: again._id.toString(),
+            userId: again.userId,
+            courseId: again.courseId,
+            price: again.price,
+            status: 'paid',
+            createdAt:
+              again.createdAt instanceof Date
+                ? again.createdAt.toISOString()
+                : again.createdAt,
+          },
+          enrolledCourseIds: await listEnrollmentCourseIds(req.auth.user._id),
+        });
+      }
+      return res.status(409).json({
+        ok: false,
+        message: 'Order state changed; refresh and try again.',
+      });
+    }
+
+    const now = new Date();
+    await enrollmentsCollection.updateOne(
+      { userId: userIdStr, courseId: order.courseId },
+      {
+        $set: {
+          status: 'active',
+          source: 'order_confirm',
+          updatedAt: now,
+        },
+        $setOnInsert: {
+          createdAt: now,
+        },
+      },
+      { upsert: true }
+    );
+
+    const paidOrder = await ordersCollection.findOne({ _id: orderId });
+    return res.json({
+      ok: true,
+      order: {
+        id: paidOrder._id.toString(),
+        userId: paidOrder.userId,
+        courseId: paidOrder.courseId,
+        price: paidOrder.price,
+        status: 'paid',
+        createdAt:
+          paidOrder.createdAt instanceof Date
+            ? paidOrder.createdAt.toISOString()
+            : paidOrder.createdAt,
+      },
+      enrolledCourseIds: await listEnrollmentCourseIds(req.auth.user._id),
+    });
+  } catch (error) {
+    console.error('[api/orders/confirm] failed:', error);
+    return res.status(500).json({
+      ok: false,
+      message: 'Failed to confirm order.',
+    });
+  }
+});
 
 app.get(
   '/api/courses/:courseId/lessons/:lessonId',
