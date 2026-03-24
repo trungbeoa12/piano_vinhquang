@@ -4,52 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Khóa học piano online — Piano Vinh Quang</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="templatemo-604-christmas-piano.css">
-    <link rel="stylesheet" href="css/app-components.css">
+    <meta name="description" content="Danh sách khóa học piano online với lộ trình, thời lượng và học liệu theo từng bài.">
+    <script src="js/common-head.js"></script>
 </head>
-<body>
+<body data-page="courses" data-nav-current="courses" data-footer-contact-href="index.html#contact">
     <div class="snowflakes" id="snowflakes"></div>
     <div id="site-header-mount"></div>
 
     <main class="page-main">
-        <div class="page-hero-block">
-            <span class="section-badge" style="display:inline-block;margin-bottom:14px">Khóa học</span>
-            <h1>Khóa học piano online</h1>
-            <p class="lead">Video và sheet nhạc được tổ chức theo từng bài; sau khi mua khóa, bạn mở học liệu trong mục Tài khoản (không công khai link Drive trên trang ngoài).</p>
-        </div>
+        <div
+            data-site-hero
+            data-badge="Khóa học"
+            data-title="Khóa học piano online"
+            data-lead="Video và sheet nhạc được tổ chức theo từng bài; sau khi mua khóa, bạn mở học liệu trong mục Tài khoản (không công khai link Drive trên trang ngoài)."
+        ></div>
         <div id="courses-grid" class="pvq-catalog-grid"></div>
+        <div
+            data-site-cta
+            data-badge="Tư vấn lộ trình"
+            data-title="Chưa chắc nên học khóa nào trước?"
+            data-lead="Nếu bạn đang phân vân giữa học căn bản hay đệm hát, hãy bắt đầu từ một buổi tư vấn ngắn để chọn lộ trình và nhịp học phù hợp."
+            data-primary-href="index.html#contact"
+            data-primary-label="Nhận tư vấn"
+            data-secondary-href="account.html"
+            data-secondary-label="Xem tài khoản demo"
+        ></div>
     </main>
 
-    <footer>
-        <div class="footer-content">
-            <div class="footer-logo">
-                <img src="images/branding/logo-pianovinhquang-main.png" alt="" class="footer-logo-image">
-                <span>Piano Vinh Quang</span>
-            </div>
-            <div class="footer-links">
-                <a href="index.html">Trang chủ</a>
-                <a href="products.html">Đàn piano</a>
-                <a href="courses.html">Khóa học</a>
-                <a href="account.html">Tài khoản</a>
-                <a href="index.html#contact">Liên hệ</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>Copyright © 2026 TfatTech</p>
-        </div>
-    </footer>
+    <div id="site-footer-mount"></div>
 
     <script src="js/auth.js"></script>
     <script src="js/app-common.js"></script>
     <script src="js/site-header.js"></script>
+    <script src="js/site-shell.js"></script>
     <script src="js/data/content-loader.js"></script>
     <script src="js/pages/courses-list.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            window.PVQ_injectSiteHeader('courses');
-            window.PVQ_appCommon.createSnowflakes();
-        });
-    </script>
 </body>
 </html>

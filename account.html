@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tài khoản — Piano Vinh Quang</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="templatemo-604-christmas-piano.css">
-    <link rel="stylesheet" href="css/app-components.css">
+    <meta name="description" content="Trang tài khoản demo để đăng nhập và truy cập các khóa học đã được cấp quyền.">
+    <script src="js/common-head.js"></script>
 </head>
-<body>
+<body data-page="account" data-nav-current="account" data-footer-contact-href="index.html#contact">
     <div class="snowflakes" id="snowflakes"></div>
     <div id="site-header-mount"></div>
 
     <main class="page-main">
-        <div class="page-hero-block">
-            <h1>Tài khoản</h1>
-            <p class="lead">Đăng nhập demo để xem luồng “Khóa học của tôi”. Trên môi trường thật, bước này thay bằng SSO / email magic link / backend của bạn.</p>
-        </div>
+        <div
+            data-site-hero
+            data-title="Tài khoản"
+            data-lead="Đăng nhập demo để xem luồng “Khóa học của tôi”. Trên môi trường thật, bước này thay bằng SSO / email magic link / backend của bạn."
+        ></div>
 
         <div class="pvq-account-grid">
             <div id="account-guest" class="pvq-panel">
@@ -40,37 +40,23 @@
                 <div id="account-courses-list"></div>
             </div>
         </div>
+        <div
+            data-site-cta
+            data-badge="Hỗ trợ truy cập"
+            data-title="Muốn triển khai luồng đăng nhập thật?"
+            data-lead="Phần demo hiện giữ mục tiêu minh họa quyền truy cập học liệu. Sau này bạn có thể nối tiếp bằng SSO, magic link hoặc backend học viên riêng."
+            data-primary-href="index.html#contact"
+            data-primary-label="Trao đổi giải pháp"
+        ></div>
     </main>
 
-    <footer>
-        <div class="footer-content">
-            <div class="footer-logo">
-                <img src="images/branding/logo-pianovinhquang-main.png" alt="" class="footer-logo-image">
-                <span>Piano Vinh Quang</span>
-            </div>
-            <div class="footer-links">
-                <a href="index.html">Trang chủ</a>
-                <a href="products.html">Đàn piano</a>
-                <a href="courses.html">Khóa học</a>
-                <a href="account.html">Tài khoản</a>
-                <a href="index.html#contact">Liên hệ</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>Copyright © 2026 TfatTech</p>
-        </div>
-    </footer>
+    <div id="site-footer-mount"></div>
 
     <script src="js/auth.js"></script>
     <script src="js/app-common.js"></script>
     <script src="js/site-header.js"></script>
+    <script src="js/site-shell.js"></script>
     <script src="js/data/content-loader.js"></script>
     <script src="js/pages/account.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            window.PVQ_injectSiteHeader('account');
-            window.PVQ_appCommon.createSnowflakes();
-        });
-    </script>
 </body>
 </html>

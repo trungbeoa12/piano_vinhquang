@@ -76,7 +76,7 @@
           followCursor: false,
           disableCursor: true,
           // OSMD dark mode giúp đổi màu nốt/chữ sang sáng để nhìn rõ trên nền tối.
-          darkMode: true,
+          darkMode: false,
         });
 
         return osmd.load(musicxmlUrl).then(function () {

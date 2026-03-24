@@ -1,6 +1,7 @@
 function createSnowflakes() {
   var container = document.getElementById('snowflakes');
   if (!container) return;
+  container.innerHTML = '';
   var flakes = ['♪', '♫', '♩', '♬', '•'];
   var count = 18;
 
@@ -22,9 +23,17 @@ function initNavigation() {
   var navLinks = document.getElementById('navLinks');
   if (!navToggle || !navLinks) return;
 
-  navToggle.addEventListener('click', function () {
+  function toggleNav() {
     navToggle.classList.toggle('active');
     navLinks.classList.toggle('active');
+  }
+
+  navToggle.addEventListener('click', toggleNav);
+  navToggle.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      toggleNav();
+    }
   });
 
   document.querySelectorAll('.nav-links a').forEach(function (link) {
@@ -162,9 +171,41 @@ function initContactForm() {
   });
 }
 
+var partialCache = {};
+
+function loadPartial(path) {
+  if (!partialCache[path]) {
+    partialCache[path] = fetch(path).then(function (response) {
+      if (!response.ok) {
+        throw new Error('Failed to load partial: ' + path);
+      }
+      return response.text();
+    });
+  }
+
+  return partialCache[path];
+}
+
+function renderTemplate(template, data) {
+  return template.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, function (_, key) {
+    return Object.prototype.hasOwnProperty.call(data, key) ? data[key] : '';
+  });
+}
+
+function mountPartial(mount, path, data) {
+  if (!mount) return Promise.resolve();
+
+  return loadPartial(path).then(function (template) {
+    mount.innerHTML = renderTemplate(template, data || {});
+  });
+}
+
 window.PVQ_appCommon = {
   createSnowflakes: createSnowflakes,
   initNavigation: initNavigation,
   initGallery: initGallery,
   initContactForm: initContactForm,
+  loadPartial: loadPartial,
+  renderTemplate: renderTemplate,
+  mountPartial: mountPartial,
 };

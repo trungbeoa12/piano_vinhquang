@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chi tiết đàn piano — Piano Vinh Quang</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="templatemo-604-christmas-piano.css">
-    <link rel="stylesheet" href="css/app-components.css">
+    <meta name="description" content="Chi tiết đàn piano với hình ảnh, giá, tình trạng và chính sách mua hàng.">
+    <script src="js/common-head.js"></script>
 </head>
-<body>
+<body data-page="product-detail" data-nav-current="products" data-footer-contact-href="index.html#contact">
     <div class="snowflakes" id="snowflakes"></div>
     <div id="site-header-mount"></div>
 
@@ -28,38 +27,26 @@
                 <a href="index.html#contact" class="cta-btn cta-btn-primary">Liên hệ tư vấn / đặt mua</a>
             </div>
         </div>
+        <div
+            data-site-cta
+            data-badge="Tư vấn chọn đàn"
+            data-title="Muốn so sánh model này với lựa chọn khác?"
+            data-lead="Hãy chia sẻ ngân sách, diện tích phòng và mục tiêu sử dụng để nhận tư vấn model phù hợp hơn trước khi quyết định."
+            data-primary-href="index.html#contact"
+            data-primary-label="Liên hệ tư vấn"
+            data-secondary-href="products.html"
+            data-secondary-label="Xem thêm đàn"
+        ></div>
     </main>
 
-    <footer>
-        <div class="footer-content">
-            <div class="footer-logo">
-                <img src="images/branding/logo-pianovinhquang-main.png" alt="" class="footer-logo-image">
-                <span>Piano Vinh Quang</span>
-            </div>
-            <div class="footer-links">
-                <a href="index.html">Trang chủ</a>
-                <a href="products.html">Đàn piano</a>
-                <a href="courses.html">Khóa học</a>
-                <a href="account.html">Tài khoản</a>
-                <a href="index.html#contact">Liên hệ</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>Copyright © 2026 TfatTech</p>
-        </div>
-    </footer>
+    <div id="site-footer-mount"></div>
 
     <script src="js/auth.js"></script>
     <script src="js/app-common.js"></script>
     <script src="js/site-header.js"></script>
+    <script src="js/site-shell.js"></script>
     <script src="js/utils/url.js"></script>
     <script src="js/data/content-loader.js"></script>
     <script src="js/pages/product-detail.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            window.PVQ_injectSiteHeader('products');
-            window.PVQ_appCommon.createSnowflakes();
-        });
-    </script>
 </body>
 </html>

@@ -10,22 +10,24 @@
 }
 
 :root {
-	--bg-dark: #06070b;
-	--bg-section: #0d1320;
-	--bg-soft: #121a2b;
-	--surface: rgba(255, 255, 255, 0.05);
-	--surface-strong: rgba(255, 255, 255, 0.08);
-	--border: rgba(255, 255, 255, 0.12);
-	--border-strong: rgba(138, 164, 212, 0.35);
-	--text: #f5f4ef;
-	--text-muted: #b5bdd0;
-	--text-soft: #8a93a8;
-	--accent: #243a73;
-	--accent-strong: #16264d;
-	--accent-soft: #8ea5df;
-	--accent-ink: #dfe7ff;
-	--ivory: #f7f2e8;
-	--shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+	--bg-dark: #ffffff;
+	--bg-section: #f8fafc;
+	--bg-soft: #f1f5f9;
+	--surface: rgba(15, 23, 42, 0.04);
+	--surface-strong: rgba(15, 23, 42, 0.07);
+	--border: rgba(15, 23, 42, 0.1);
+	--border-strong: rgba(59, 130, 246, 0.35);
+	--text: #111827;
+	--text-muted: #4b5563;
+	--text-soft: #6b7280;
+	--accent: #2563eb;
+	--accent-strong: #1d4ed8;
+	--accent-soft: #3b82f6;
+	--accent-ink: #2563eb;
+	--accent-warm: #f59e0b;
+	--ivory: #111827;
+	--shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+	--shadow-card: 0 4px 20px rgba(15, 23, 42, 0.06);
 	--radius-lg: 28px;
 	--radius-md: 20px;
 	--radius-sm: 14px;
@@ -38,9 +40,9 @@ html {
 body.pvq-piano-studio-page {
 	font-family: 'Outfit', sans-serif;
 	background:
-		radial-gradient(circle at top left, rgba(142, 165, 223, 0.12), transparent 26%),
-		radial-gradient(circle at top right, rgba(36, 58, 115, 0.22), transparent 28%),
-		linear-gradient(180deg, #07090f 0%, #0b111c 45%, #090d16 100%);
+		radial-gradient(circle at top left, rgba(59, 130, 246, 0.08), transparent 32%),
+		radial-gradient(circle at top right, rgba(245, 158, 11, 0.06), transparent 30%),
+		linear-gradient(180deg, #ffffff 0%, #f8fafc 55%, #f1f5f9 100%);
 	color: var(--text);
 	line-height: 1.6;
 	overflow-x: hidden;
@@ -90,8 +92,8 @@ body.pvq-piano-studio-page {
 }
 
 .mini-player {
-	background: linear-gradient(180deg, rgba(18, 26, 43, 0.88), rgba(8, 11, 18, 0.94));
-	border: 1px solid rgba(255, 255, 255, 0.08);
+	background: #ffffff;
+	border: 1px solid rgba(15, 23, 42, 0.08);
 	border-radius: var(--radius-lg);
 	padding: 32px;
 	max-width: 720px;
@@ -108,7 +110,7 @@ body.pvq-piano-studio-page {
 	inset: 0;
 	border-radius: inherit;
 	padding: 1px;
-	background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.02));
+	background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(245, 158, 11, 0.06));
 	-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
 	-webkit-mask-composite: xor;
 	mask-composite: exclude;
@@ -163,18 +165,18 @@ body.pvq-piano-studio-page {
 	width: 56px;
 	height: 56px;
 	border-radius: 50%;
-	background: linear-gradient(135deg, var(--accent-soft), #bfd0ff);
-	color: #07101f;
+	background: linear-gradient(135deg, var(--accent-soft), var(--accent-strong));
+	color: #ffffff;
 	font-size: 1.15rem;
-	box-shadow: 0 12px 28px rgba(142, 165, 223, 0.28);
+	box-shadow: 0 12px 28px rgba(59, 130, 246, 0.35);
 }
 
 .nav-btn {
 	width: 42px;
 	height: 42px;
 	border-radius: 50%;
-	background: rgba(255, 255, 255, 0.05);
-	border: 1px solid rgba(255, 255, 255, 0.1);
+	background: var(--bg-soft);
+	border: 1px solid rgba(15, 23, 42, 0.1);
 	color: var(--text-muted);
 	font-size: 0.9rem;
 }
@@ -182,8 +184,8 @@ body.pvq-piano-studio-page {
 .nav-btn:hover,
 .nav-btn:focus-visible {
 	color: var(--text);
-	border-color: rgba(142, 165, 223, 0.4);
-	background: rgba(142, 165, 223, 0.1);
+	border-color: rgba(59, 130, 246, 0.35);
+	background: rgba(59, 130, 246, 0.08);
 }
 
 .song-selector {
@@ -196,8 +198,8 @@ body.pvq-piano-studio-page {
 .song-tab {
 	min-height: 58px;
 	padding: 10px 14px;
-	background: rgba(255, 255, 255, 0.02);
-	border: 1px solid rgba(255, 255, 255, 0.1);
+	background: var(--bg-soft);
+	border: 1px solid rgba(15, 23, 42, 0.08);
 	border-radius: 16px;
 	color: var(--text-muted);
 	font-family: 'Outfit', sans-serif;
@@ -213,15 +215,15 @@ body.pvq-piano-studio-page {
 
 .song-tab:hover,
 .song-tab:focus-visible {
-	border-color: rgba(142, 165, 223, 0.45);
+	border-color: rgba(59, 130, 246, 0.35);
 	color: var(--text);
 	outline: none;
 }
 
 .song-tab.active {
-	background: linear-gradient(135deg, rgba(142, 165, 223, 0.18), rgba(36, 58, 115, 0.18));
+	background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(245, 158, 11, 0.06));
 	border-color: var(--border-strong);
-	color: var(--accent-ink);
+	color: var(--accent-strong);
 }
 
 .progress-container {
@@ -230,7 +232,7 @@ body.pvq-piano-studio-page {
 
 .progress-bar {
 	height: 6px;
-	background: rgba(255, 255, 255, 0.08);
+	background: rgba(15, 23, 42, 0.08);
 	border-radius: 999px;
 	overflow: hidden;
 	cursor: pointer;
@@ -239,7 +241,7 @@ body.pvq-piano-studio-page {
 .progress-fill {
 	height: 100%;
 	width: 0%;
-	background: linear-gradient(90deg, var(--accent-soft), var(--ivory));
+	background: linear-gradient(90deg, var(--accent-soft), var(--accent-warm));
 	border-radius: inherit;
 	transition: width 0.1s linear;
 }
@@ -253,11 +255,11 @@ body.pvq-piano-studio-page {
 }
 
 .mini-piano-container {
-	background: linear-gradient(180deg, #171b23 0%, #090b10 100%);
+	background: linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 100%);
 	border-radius: 20px;
 	padding: 18px 14px 22px;
 	overflow: hidden;
-	border: 1px solid rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .mini-piano {
@@ -328,7 +330,7 @@ body.pvq-piano-studio-page {
 	height: 4px;
 	-webkit-appearance: none;
 	appearance: none;
-	background: rgba(255, 255, 255, 0.1);
+	background: rgba(15, 23, 42, 0.1);
 	border-radius: 999px;
 	cursor: pointer;
 }
@@ -369,7 +371,7 @@ body.pvq-piano-studio-page {
 	position: relative;
 	width: 46px;
 	height: 24px;
-	background: rgba(255, 255, 255, 0.12);
+	background: rgba(15, 23, 42, 0.12);
 	border-radius: 999px;
 	cursor: pointer;
 	transition: all 0.3s ease;
@@ -388,7 +390,7 @@ body.pvq-piano-studio-page {
 }
 
 .toggle-switch.active {
-	background: rgba(142, 165, 223, 0.35);
+	background: rgba(59, 130, 246, 0.3);
 }
 
 .toggle-switch.active::after {
@@ -413,7 +415,7 @@ body.pvq-piano-studio-page {
 	color: var(--text-soft);
 	margin-top: 16px;
 	padding-top: 16px;
-	border-top: 1px solid rgba(255, 255, 255, 0.08);
+	border-top: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 @media (max-width: 768px) {

@@ -8,10 +8,10 @@ html {
 body.pvq-piano-studio-page {
 	font-family: 'Outfit', system-ui, sans-serif;
 	background:
-		radial-gradient(circle at top left, rgba(142, 165, 223, 0.12), transparent 26%),
-		radial-gradient(circle at top right, rgba(36, 58, 115, 0.22), transparent 28%),
-		linear-gradient(180deg, #07090f 0%, #0b111c 45%, #090d16 100%);
-	color: #f5f4ef;
+		radial-gradient(circle at top left, rgba(59, 130, 246, 0.08), transparent 32%),
+		radial-gradient(circle at top right, rgba(245, 158, 11, 0.06), transparent 30%),
+		linear-gradient(180deg, #ffffff 0%, #f8fafc 55%, #f1f5f9 100%);
+	color: #111827;
 	line-height: 1.6;
 	overflow-x: hidden;
 	min-height: 100vh;
@@ -28,12 +28,12 @@ body.pvq-piano-studio-page {
 	font-family: 'Cormorant Garamond', 'Times New Roman', serif;
 	font-size: clamp(1.75rem, 4vw, 2.25rem);
 	font-weight: 600;
-	color: #f7f2e8;
+	color: #111827;
 	margin-bottom: 10px;
 }
 
 .pvq-piano-studio-lead {
-	color: #b5bdd0;
+	color: #4b5563;
 	font-size: 0.95rem;
 	margin-bottom: 28px;
 	max-width: 40rem;
@@ -41,15 +41,16 @@ body.pvq-piano-studio-page {
 
 .pvq-piano-studio-lead code {
 	font-size: 0.85em;
-	background: rgba(255, 255, 255, 0.06);
+	background: #f1f5f9;
 	padding: 2px 6px;
 	border-radius: 6px;
+	border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .pvq-piano-back {
 	display: inline-block;
 	margin-bottom: 24px;
-	color: #8ea5df;
+	color: #2563eb;
 	text-decoration: none;
 	font-size: 0.9rem;
 	font-weight: 500;
