@@ -1,7 +1,14 @@
 {
   "id": "pcb-l01",
   "title": "Làm quen bàn phím và tư thế",
+  "description": "Làm quen với bố cục bàn phím, tư thế ngồi và cách đặt tay cơ bản.",
+  "order": 1,
   "durationMin": 35,
+  "videoUrl": null,
+  "sheetUrl": null,
+  "audioUrl": null,
+  "isPreview": true,
+  "status": "placeholder",
   "resources": [
     {
       "refId": "pvq-pcb-l01-vid",

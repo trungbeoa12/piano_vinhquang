@@ -64,6 +64,9 @@ Nếu frontend deploy trên Vercel/Netlify và backend deploy riêng (Render/Rai
 - `GET /api/my/enrollments`
 - `GET /api/my/progress`
 - `GET /api/courses/:courseId/access`
+- `GET /api/courses`
+- `GET /api/courses/:courseId`
+- `GET /api/courses/:courseId/lessons`
 - `POST /api/orders/create` (body: `{ "courseId": "..." }`) — tạo đơn `pending`
 - `POST /api/orders/confirm` (body: `{ "orderId": "<ObjectId>" }`) — mock thanh toán thành công, ghi `enrollment`
 - `GET /api/courses/:courseId/lessons/:lessonId`
@@ -90,6 +93,19 @@ Authorization: Bearer <token>
 `GET /api/courses/:courseId/lessons/:lessonId` giờ trả luôn `items` đã được resolve thành signed backend URL. Frontend không còn load file map học liệu private ở phía client nữa.
 
 `GET /api/resources/:refId/open?token=...` là signed redirect link ngắn hạn do backend tạo ra. URL Google Drive thật chỉ tồn tại ở server-side map.
+
+### Lesson data shape (future-proof)
+
+Mỗi `lesson.json` nên hỗ trợ các field sau để cắm URL thật về sau mà không đổi kiến trúc:
+
+- `title`
+- `description`
+- `order`
+- `videoUrl`
+- `sheetUrl`
+- `audioUrl`
+- `isPreview`
+- `status` (`draft` / `ready` / `placeholder`)
 
 ## Cấu hình học liệu private
 

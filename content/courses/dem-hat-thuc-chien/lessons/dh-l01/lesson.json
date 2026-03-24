@@ -1,7 +1,14 @@
 {
   "id": "dh-l01",
   "title": "Hợp âm major và minor và chuyển nhanh",
+  "description": "Luyện nhận diện và chuyển hợp âm nhanh để đệm hát liền mạch.",
+  "order": 1,
   "durationMin": 45,
+  "videoUrl": null,
+  "sheetUrl": null,
+  "audioUrl": null,
+  "isPreview": false,
+  "status": "placeholder",
   "resources": [
     {
       "refId": "pvq-dh-l01-vid",

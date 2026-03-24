@@ -13,6 +13,9 @@ const {
   DEFAULT_TOKEN_TTL_SECONDS,
 } = require('./lib/auth-service');
 const {
+  listCoursesSummary,
+  listLessonsByCourseId,
+  normalizeLessonShape,
   loadCourseById,
   loadCourseLessonPayload,
 } = require('./lib/content-service');
@@ -622,6 +625,87 @@ app.get('/api/my/progress', requireAuth, async function (req, res) {
   });
 });
 
+app.get('/api/courses', async function (req, res) {
+  try {
+    return res.json({
+      ok: true,
+      items: await listCoursesSummary(),
+    });
+  } catch (error) {
+    console.error('[api/courses] failed:', error);
+    return res.status(500).json({
+      ok: false,
+      message: 'Failed to load courses.',
+    });
+  }
+});
+
+app.get('/api/courses/:courseId', async function (req, res) {
+  try {
+    const courseId = String(req.params.courseId || '').trim();
+    if (!courseId) {
+      return res.status(400).json({
+        ok: false,
+        message: 'courseId is required.',
+      });
+    }
+
+    const courses = await listCoursesSummary();
+    const course = courses.find(function (item) {
+      return item.id === courseId;
+    });
+    if (!course) {
+      return res.status(404).json({
+        ok: false,
+        message: 'Course not found.',
+      });
+    }
+
+    return res.json({
+      ok: true,
+      course: course,
+    });
+  } catch (error) {
+    console.error('[api/course-detail] failed:', error);
+    return res.status(500).json({
+      ok: false,
+      message: 'Failed to load course detail.',
+    });
+  }
+});
+
+app.get('/api/courses/:courseId/lessons', async function (req, res) {
+  try {
+    const courseId = String(req.params.courseId || '').trim();
+    if (!courseId) {
+      return res.status(400).json({
+        ok: false,
+        message: 'courseId is required.',
+      });
+    }
+
+    await loadCourseById(courseId);
+    const lessons = await listLessonsByCourseId(courseId);
+    return res.json({
+      ok: true,
+      courseId: courseId,
+      items: lessons,
+    });
+  } catch (error) {
+    if (error && error.code === 'ENOENT') {
+      return res.status(404).json({
+        ok: false,
+        message: 'Course not found.',
+      });
+    }
+    console.error('[api/course-lessons] failed:', error);
+    return res.status(500).json({
+      ok: false,
+      message: 'Failed to load lessons.',
+    });
+  }
+});
+
 app.get('/api/courses/:courseId/access', requireAuth, async function (req, res) {
   const courseId = String(req.params.courseId || '').trim();
   if (!courseId) {
@@ -842,10 +926,18 @@ app.get(
       }
 
       const payload = await loadCourseLessonPayload(courseId, lessonId);
+      const lessonOrder = Array.isArray(payload.course.lessonOrder)
+        ? payload.course.lessonOrder
+        : [];
+      const lessonPosition = lessonOrder.indexOf(payload.lesson.id);
+      const normalizedLesson = normalizeLessonShape(
+        payload.lesson,
+        lessonPosition === -1 ? 0 : lessonPosition + 1
+      );
       return res.json({
         ok: true,
         course: payload.course,
-        lesson: payload.lesson,
+        lesson: normalizedLesson,
         items: resolveLessonResources(
           payload.course,
           payload.lesson,

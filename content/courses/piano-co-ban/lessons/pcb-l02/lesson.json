@@ -1,7 +1,14 @@
 {
   "id": "pcb-l02",
   "title": "Nhịp điệu và đệm tay trái đơn giản",
+  "description": "Rèn nhịp ổn định và kỹ thuật đệm tay trái cơ bản theo mẫu pop.",
+  "order": 2,
   "durationMin": 40,
+  "videoUrl": null,
+  "sheetUrl": null,
+  "audioUrl": null,
+  "isPreview": false,
+  "status": "placeholder",
   "resources": [
     {
       "refId": "pvq-pcb-l02-vid",

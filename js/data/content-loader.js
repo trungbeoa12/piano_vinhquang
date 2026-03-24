@@ -1,68 +1,80 @@
 (function () {
   var jsonCache = {};
 
-  function fetchJson(path) {
-    if (!jsonCache[path]) {
-      jsonCache[path] = fetch(path).then(function (response) {
+  function withApiBase(path) {
+    if (window.PVQ_withApiBase) return window.PVQ_withApiBase(path);
+    return path;
+  }
+
+  function fetchJson(path, isApi) {
+    var targetPath = isApi ? withApiBase(path) : path;
+    if (!jsonCache[targetPath]) {
+      jsonCache[targetPath] = fetch(targetPath).then(function (response) {
         if (!response.ok) {
-          throw new Error('Failed to load ' + path + ' (' + response.status + ')');
+          throw new Error('Failed to load ' + targetPath + ' (' + response.status + ')');
         }
         return response.json();
       });
     }
 
-    return jsonCache[path];
+    return jsonCache[targetPath];
   }
 
   function loadCourseById(id) {
-    return fetchJson('content/courses/' + encodeURIComponent(id) + '/course.json');
+    return fetchJson('/api/courses/' + encodeURIComponent(id), true).then(function (payload) {
+      return payload.course;
+    });
   }
 
   function loadLessonById(courseId, lessonId) {
     return fetchJson(
-      'content/courses/' +
-        encodeURIComponent(courseId) +
-        '/lessons/' +
-        encodeURIComponent(lessonId) +
-        '/lesson.json'
-    );
-  }
-
-  function loadCourseWithLessons(id) {
-    return loadCourseById(id).then(function (course) {
-      var lessonOrder = Array.isArray(course.lessonOrder) ? course.lessonOrder : [];
-
-      return Promise.all(
-        lessonOrder.map(function (lessonId) {
-          return loadLessonById(course.id, lessonId);
-        })
-      ).then(function (lessons) {
-        return Object.assign({}, course, { lessons: lessons });
-      });
-    });
-  }
-
-  function loadCourses() {
-    return fetchJson('content/courses/index.json').then(function (courseIds) {
-      return Promise.all(
-        courseIds.map(function (courseId) {
-          return loadCourseWithLessons(courseId);
-        })
+      '/api/courses/' + encodeURIComponent(courseId) + '/lessons',
+      true
+    ).then(function (payload) {
+      var lessons = Array.isArray(payload.items) ? payload.items : [];
+      return (
+        lessons.find(function (lesson) {
+          return lesson && lesson.id === lessonId;
+        }) || null
       );
     });
   }
 
+  function loadCourseWithLessons(id) {
+    return Promise.all([loadCourseById(id), loadLessonsByCourseId(id)]).then(function (results) {
+      var course = results[0] || {};
+      var lessons = results[1] || [];
+      return Object.assign({}, course, { lessons: lessons });
+    });
+  }
+
+  function loadCourses() {
+    return fetchJson('/api/courses', true).then(function (payload) {
+      return Array.isArray(payload.items) ? payload.items : [];
+    });
+  }
+
+  function loadLessonsByCourseId(courseId) {
+    return fetchJson(
+      '/api/courses/' + encodeURIComponent(courseId) + '/lessons',
+      true
+    ).then(function (payload) {
+      return Array.isArray(payload.items) ? payload.items : [];
+    });
+  }
+
   function findLesson(courseId, lessonId) {
-    return Promise.all([loadCourseById(courseId), loadLessonById(courseId, lessonId)])
-      .then(function (results) {
+    return Promise.all([loadCourseById(courseId), loadLessonById(courseId, lessonId)]).then(
+      function (results) {
+        if (!results[0] || !results[1]) return null;
         return {
           course: results[0],
           lesson: results[1],
         };
-      })
-      .catch(function () {
-        return null;
-      });
+      }
+    ).catch(function () {
+      return null;
+    });
   }
 
   function loadProductById(id) {
@@ -85,6 +97,7 @@
     loadCourses: loadCourses,
     loadCourseById: loadCourseById,
     loadCourseWithLessons: loadCourseWithLessons,
+    loadLessonsByCourseId: loadLessonsByCourseId,
     loadLessonById: loadLessonById,
     findLesson: findLesson,
     loadProducts: loadProducts,

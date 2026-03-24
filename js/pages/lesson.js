@@ -45,7 +45,36 @@ function renderLessonContent(data) {
   var sideEl = getSidebarColumn();
   if (!sideEl) return;
 
-  var itemsHtml = data.items
+  var lesson = data.lesson || {};
+  var statusLabel = lesson.status || 'placeholder';
+  var videoHtml = lesson.videoUrl
+    ? '<div class="pvq-resource-item"><div><strong>Video bài học</strong><div class="pvq-resource-kind">' +
+      statusLabel +
+      '</div></div><a href="' +
+      lesson.videoUrl +
+      '" target="_blank" rel="noopener noreferrer" class="cta-btn cta-btn-secondary" style="min-height:44px;padding:10px 18px;font-size:0.88rem">Mở video</a></div>'
+    : '<div class="pvq-resource-item"><div><strong>Video bài học</strong><div class="pvq-resource-kind">' +
+      statusLabel +
+      '</div></div><span class="pvq-muted">Video sẽ được cập nhật sau</span></div>';
+  var sheetHtml = lesson.sheetUrl
+    ? '<div class="pvq-resource-item"><div><strong>Sheet nhạc</strong><div class="pvq-resource-kind">' +
+      statusLabel +
+      '</div></div><a href="' +
+      lesson.sheetUrl +
+      '" target="_blank" rel="noopener noreferrer" class="cta-btn cta-btn-secondary" style="min-height:44px;padding:10px 18px;font-size:0.88rem">Mở sheet</a></div>'
+    : '<div class="pvq-resource-item"><div><strong>Sheet nhạc</strong><div class="pvq-resource-kind">' +
+      statusLabel +
+      '</div></div><span class="pvq-muted">Sheet sẽ được cập nhật sau</span></div>';
+  var audioHtml = lesson.audioUrl
+    ? '<div class="pvq-resource-item"><div><strong>Audio luyện tập</strong><div class="pvq-resource-kind">' +
+      statusLabel +
+      '</div></div><a href="' +
+      lesson.audioUrl +
+      '" target="_blank" rel="noopener noreferrer" class="cta-btn cta-btn-secondary" style="min-height:44px;padding:10px 18px;font-size:0.88rem">Mở audio</a></div>'
+    : '<div class="pvq-resource-item"><div><strong>Audio luyện tập</strong><div class="pvq-resource-kind">' +
+      statusLabel +
+      '</div></div><span class="pvq-muted">Audio sẽ được cập nhật sau</span></div>';
+  var itemsHtml = (Array.isArray(data.items) ? data.items : [])
     .map(function (item) {
       if (!item.url) {
         return (
@@ -69,8 +98,11 @@ function renderLessonContent(data) {
     .join('');
 
   sideEl.innerHTML =
-    '<p class="pvq-muted" style="margin-bottom:16px">Học liệu được lưu trên Google Drive / tài liệu đi kèm. Chỉ chia sẻ trong phạm vi học viên.</p>' +
+    '<p class="pvq-muted" style="margin-bottom:16px">Bài học có thể đang ở trạng thái placeholder. Bạn vẫn có thể theo dõi flow học, tiến độ và mở tài nguyên ngay khi URL thật được cập nhật.</p>' +
     '<div class="pvq-resource-list">' +
+    videoHtml +
+    sheetHtml +
+    audioHtml +
     itemsHtml +
     '</div>';
 
@@ -233,8 +265,12 @@ document.addEventListener('DOMContentLoaded', async function () {
       var subEl = document.getElementById('lesson-subtitle');
       if (titleEl) titleEl.textContent = found.lesson.title;
       if (subEl) {
-        subEl.textContent =
-          found.course.title + ' — ' + found.lesson.durationMin + ' phút';
+        var parts = [
+          found.course.title,
+          String(found.lesson.durationMin || 0) + ' phút',
+          found.lesson.status ? ('trạng thái: ' + found.lesson.status) : '',
+        ].filter(Boolean);
+        subEl.textContent = parts.join(' — ');
       }
       if (bc) {
         bc.innerHTML =
