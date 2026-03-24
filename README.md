@@ -32,6 +32,41 @@ Nếu chỉ cần test phần frontend static và partial:
 
 Lưu ý: vì partial đang được load bằng `fetch()`, không nên mở page bằng cách double-click file HTML trực tiếp từ file system.
 
+## Environment variables
+
+### Required for production
+
+- `NODE_ENV=production`
+- `MONGODB_URI`
+- `MONGODB_DB`
+- `AUTH_JWT_SECRET`
+- `RESOURCE_LINK_SECRET`
+- `CORS_ALLOW_ORIGIN` (explicit origin list, no `*`)
+
+### Common optional
+
+- `PORT` (platform thường tự inject)
+- `AUTH_TOKEN_TTL_SECONDS`
+- `RESOURCE_LINK_TTL_SECONDS`
+- `CORS_ALLOW_CREDENTIALS`
+- `VERCEL_FRONTEND_ORIGIN`
+- `AUTH_RATE_LIMIT_WINDOW_MS`
+- `AUTH_RATE_LIMIT_MAX`
+- `ORDER_RATE_LIMIT_WINDOW_MS`
+- `ORDER_RATE_LIMIT_MAX`
+- `CONTACT_RATE_LIMIT_WINDOW_MS`
+- `CONTACT_RATE_LIMIT_MAX`
+- `MONGODB_CUSTOMERS_COLLECTION`
+- `MONGODB_USERS_COLLECTION`
+- `MONGODB_ENROLLMENTS_COLLECTION`
+- `MONGODB_ORDERS_COLLECTION`
+- `MONGODB_LESSON_PROGRESS_COLLECTION`
+
+### Development notes
+
+- Nếu thiếu `MONGODB_URI` trong local dev, backend fallback `mongodb://localhost:27017`.
+- Trên production/Railway, thiếu `MONGODB_URI` sẽ fail-fast để tránh kết nối nhầm localhost.
+
 ## Deploy frontend + backend khác domain
 
 Nếu frontend deploy trên Vercel/Netlify và backend deploy riêng (Render/Railway/VPS), cần cấu hình 2 chỗ:
@@ -73,6 +108,19 @@ Nếu frontend deploy trên Vercel/Netlify và backend deploy riêng (Render/Rai
 - `POST /api/courses/:courseId/lessons/:lessonId/progress`
 - `GET /api/resources/:refId/open?token=...`
 - `POST /api/customers`
+
+Error format thống nhất cho API lỗi:
+
+```json
+{
+  "ok": false,
+  "message": "Human readable message",
+  "error": {
+    "code": "MACHINE_READABLE_CODE",
+    "message": "Human readable message"
+  }
+}
+```
 
 Auth API mẫu:
 

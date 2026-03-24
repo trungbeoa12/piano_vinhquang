@@ -2,6 +2,7 @@ const fs = require('fs');
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 const { MongoClient, ObjectId } = require('mongodb');
 const {
   normalizeEmail,
@@ -72,6 +73,12 @@ const demoEnrollmentCourseIds = String(
   })
   .filter(Boolean);
 const corsConfig = resolveCorsConfig();
+const authRateLimitWindowMs = Number(process.env.AUTH_RATE_LIMIT_WINDOW_MS) || (15 * 60 * 1000);
+const authRateLimitMax = Number(process.env.AUTH_RATE_LIMIT_MAX) || 10;
+const orderRateLimitWindowMs = Number(process.env.ORDER_RATE_LIMIT_WINDOW_MS) || (10 * 60 * 1000);
+const orderRateLimitMax = Number(process.env.ORDER_RATE_LIMIT_MAX) || 30;
+const contactRateLimitWindowMs = Number(process.env.CONTACT_RATE_LIMIT_WINDOW_MS) || (10 * 60 * 1000);
+const contactRateLimitMax = Number(process.env.CONTACT_RATE_LIMIT_MAX) || 20;
 
 let customersCollection;
 let usersCollection;
@@ -89,6 +96,10 @@ function isRailwayEnvironment() {
     process.env.RAILWAY_SERVICE_ID ||
     process.env.RAILWAY_STATIC_URL
   );
+}
+
+function isProductionEnvironment() {
+  return String(process.env.NODE_ENV || '').trim() === 'production';
 }
 
 function resolveMongoUri() {
@@ -110,7 +121,7 @@ function resolveMongoUri() {
 }
 
 function resolveCorsConfig() {
-  const isProduction = String(process.env.NODE_ENV || '').trim() === 'production';
+  const isProduction = isProductionEnvironment();
   const isHosted = isProduction || isRailwayEnvironment();
   const configuredOrigins = String(process.env.CORS_ALLOW_ORIGIN || '')
     .split(',')
@@ -155,6 +166,61 @@ function resolveCorsConfig() {
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   };
+}
+
+function sendError(res, statusCode, code, message, details) {
+  const payload = {
+    ok: false,
+    message: message,
+    error: {
+      code: code,
+      message: message,
+    },
+  };
+  if (details !== undefined) {
+    payload.error.details = details;
+  }
+  return res.status(statusCode).json(payload);
+}
+
+function logServerError(scope, error, meta) {
+  const extra = meta ? ` meta=${JSON.stringify(meta)}` : '';
+  console.error(`[${scope}] failed:${extra}`, error);
+}
+
+function requireMongoCollection(collectionRef, res) {
+  if (!collectionRef) {
+    sendError(
+      res,
+      503,
+      'SERVICE_UNAVAILABLE',
+      'MongoDB connection is not ready yet.'
+    );
+    return false;
+  }
+  return true;
+}
+
+function getRequiredTrimmedString(value) {
+  return String(value || '').trim();
+}
+
+function createApiRateLimiter(windowMs, max, scopeName) {
+  return rateLimit({
+    windowMs: windowMs,
+    max: max,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: function (req, res) {
+      return sendError(
+        res,
+        429,
+        'RATE_LIMITED',
+        'Too many requests. Please try again later.',
+        { scope: scopeName }
+      );
+    },
+  });
 }
 
 function loadEnvFile(filePath) {
@@ -306,6 +372,7 @@ async function shutdown(signal) {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.disable('x-powered-by');
 const corsMiddleware = cors({
   origin: function (origin, callback) {
     if (!origin) {
@@ -323,6 +390,23 @@ const corsMiddleware = cors({
 });
 app.use(corsMiddleware);
 app.options('*', corsMiddleware);
+
+const authRateLimiter = createApiRateLimiter(
+  authRateLimitWindowMs,
+  authRateLimitMax,
+  'auth'
+);
+const orderRateLimiter = createApiRateLimiter(
+  orderRateLimitWindowMs,
+  orderRateLimitMax,
+  'orders'
+);
+const contactRateLimiter = createApiRateLimiter(
+  contactRateLimitWindowMs,
+  contactRateLimitMax,
+  'contact'
+);
+
 app.use(express.static(path.join(__dirname)));
 
 async function listEnrollmentCourseIds(userId) {
@@ -429,29 +513,18 @@ async function issueAuthResponse(user) {
 
 async function requireAuth(req, res, next) {
   try {
-    if (!usersCollection) {
-      return res.status(503).json({
-        ok: false,
-        message: 'MongoDB connection is not ready yet.',
-      });
-    }
+    if (!requireMongoCollection(usersCollection, res)) return;
 
     const authHeader = String(req.headers.authorization || '').trim();
     if (!authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({
-        ok: false,
-        message: 'Missing Bearer token.',
-      });
+      return sendError(res, 401, 'AUTH_MISSING_TOKEN', 'Missing Bearer token.');
     }
 
     const token = authHeader.slice('Bearer '.length).trim();
     const payload = verifyJwt(token, authJwtSecret);
 
     if (!payload.sub || !ObjectId.isValid(payload.sub)) {
-      return res.status(401).json({
-        ok: false,
-        message: 'Invalid token payload.',
-      });
+      return sendError(res, 401, 'AUTH_INVALID_TOKEN', 'Invalid token payload.');
     }
 
     const user = await usersCollection.findOne({
@@ -459,10 +532,7 @@ async function requireAuth(req, res, next) {
     });
 
     if (!user) {
-      return res.status(401).json({
-        ok: false,
-        message: 'User not found for token.',
-      });
+      return sendError(res, 401, 'AUTH_USER_NOT_FOUND', 'User not found for token.');
     }
 
     req.auth = {
@@ -472,10 +542,7 @@ async function requireAuth(req, res, next) {
     };
     next();
   } catch (error) {
-    return res.status(401).json({
-      ok: false,
-      message: 'Invalid or expired token.',
-    });
+    return sendError(res, 401, 'AUTH_INVALID_OR_EXPIRED', 'Invalid or expired token.');
   }
 }
 
@@ -493,42 +560,33 @@ app.get('/api/health', function (req, res) {
   });
 });
 
-app.post('/api/auth/register', async function (req, res) {
+app.post('/api/auth/register', authRateLimiter, async function (req, res) {
   try {
-    if (!usersCollection) {
-      return res.status(503).json({
-        ok: false,
-        message: 'MongoDB connection is not ready yet.',
-      });
-    }
+    if (!requireMongoCollection(usersCollection, res)) return;
 
-    const emailRaw = String(req.body.email || '').trim();
+    const emailRaw = getRequiredTrimmedString(req.body.email);
     const emailNormalized = normalizeEmail(emailRaw);
     const password = String(req.body.password || '');
-    const displayName = String(req.body.displayName || '').trim();
+    const displayName = getRequiredTrimmedString(req.body.displayName);
 
     if (!emailNormalized || !emailNormalized.includes('@')) {
-      return res.status(400).json({
-        ok: false,
-        message: 'A valid email is required.',
-      });
+      return sendError(res, 400, 'VALIDATION_EMAIL', 'A valid email is required.');
     }
 
     if (password.length < 8) {
-      return res.status(400).json({
-        ok: false,
-        message: 'Password must be at least 8 characters.',
-      });
+      return sendError(
+        res,
+        400,
+        'VALIDATION_PASSWORD',
+        'Password must be at least 8 characters.'
+      );
     }
 
     const existingUser = await usersCollection.findOne({
       emailNormalized: emailNormalized,
     });
     if (existingUser) {
-      return res.status(409).json({
-        ok: false,
-        message: 'Email already registered.',
-      });
+      return sendError(res, 409, 'AUTH_EMAIL_EXISTS', 'Email already registered.');
     }
 
     const passwordHash = await createPasswordHash(password);
@@ -548,58 +606,43 @@ app.post('/api/auth/register', async function (req, res) {
 
     return res.status(201).json(await issueAuthResponse(createdUser));
   } catch (error) {
-    console.error('[api/auth/register] failed:', error);
-    return res.status(500).json({
-      ok: false,
-      message: 'Failed to register user.',
-    });
+    logServerError('api/auth/register', error);
+    return sendError(res, 500, 'AUTH_REGISTER_FAILED', 'Failed to register user.');
   }
 });
 
-app.post('/api/auth/login', async function (req, res) {
+app.post('/api/auth/login', authRateLimiter, async function (req, res) {
   try {
-    if (!usersCollection) {
-      return res.status(503).json({
-        ok: false,
-        message: 'MongoDB connection is not ready yet.',
-      });
-    }
+    if (!requireMongoCollection(usersCollection, res)) return;
 
     const emailNormalized = normalizeEmail(req.body.email);
     const password = String(req.body.password || '');
 
     if (!emailNormalized || !password) {
-      return res.status(400).json({
-        ok: false,
-        message: 'Email and password are required.',
-      });
+      return sendError(
+        res,
+        400,
+        'VALIDATION_LOGIN_REQUIRED',
+        'Email and password are required.'
+      );
     }
 
     const user = await usersCollection.findOne({
       emailNormalized: emailNormalized,
     });
     if (!user) {
-      return res.status(401).json({
-        ok: false,
-        message: 'Invalid email or password.',
-      });
+      return sendError(res, 401, 'AUTH_INVALID_CREDENTIALS', 'Invalid email or password.');
     }
 
     const isValidPassword = await verifyPassword(password, user.passwordHash);
     if (!isValidPassword) {
-      return res.status(401).json({
-        ok: false,
-        message: 'Invalid email or password.',
-      });
+      return sendError(res, 401, 'AUTH_INVALID_CREDENTIALS', 'Invalid email or password.');
     }
 
     return res.json(await issueAuthResponse(user));
   } catch (error) {
-    console.error('[api/auth/login] failed:', error);
-    return res.status(500).json({
-      ok: false,
-      message: 'Failed to login.',
-    });
+    logServerError('api/auth/login', error);
+    return sendError(res, 500, 'AUTH_LOGIN_FAILED', 'Failed to login.');
   }
 });
 
@@ -632,22 +675,16 @@ app.get('/api/courses', async function (req, res) {
       items: await listCoursesSummary(),
     });
   } catch (error) {
-    console.error('[api/courses] failed:', error);
-    return res.status(500).json({
-      ok: false,
-      message: 'Failed to load courses.',
-    });
+    logServerError('api/courses', error);
+    return sendError(res, 500, 'COURSES_LIST_FAILED', 'Failed to load courses.');
   }
 });
 
 app.get('/api/courses/:courseId', async function (req, res) {
   try {
-    const courseId = String(req.params.courseId || '').trim();
+    const courseId = getRequiredTrimmedString(req.params.courseId);
     if (!courseId) {
-      return res.status(400).json({
-        ok: false,
-        message: 'courseId is required.',
-      });
+      return sendError(res, 400, 'VALIDATION_COURSE_ID', 'courseId is required.');
     }
 
     const courses = await listCoursesSummary();
@@ -655,10 +692,7 @@ app.get('/api/courses/:courseId', async function (req, res) {
       return item.id === courseId;
     });
     if (!course) {
-      return res.status(404).json({
-        ok: false,
-        message: 'Course not found.',
-      });
+      return sendError(res, 404, 'COURSE_NOT_FOUND', 'Course not found.');
     }
 
     return res.json({
@@ -666,22 +700,16 @@ app.get('/api/courses/:courseId', async function (req, res) {
       course: course,
     });
   } catch (error) {
-    console.error('[api/course-detail] failed:', error);
-    return res.status(500).json({
-      ok: false,
-      message: 'Failed to load course detail.',
-    });
+    logServerError('api/course-detail', error);
+    return sendError(res, 500, 'COURSE_DETAIL_FAILED', 'Failed to load course detail.');
   }
 });
 
 app.get('/api/courses/:courseId/lessons', async function (req, res) {
   try {
-    const courseId = String(req.params.courseId || '').trim();
+    const courseId = getRequiredTrimmedString(req.params.courseId);
     if (!courseId) {
-      return res.status(400).json({
-        ok: false,
-        message: 'courseId is required.',
-      });
+      return sendError(res, 400, 'VALIDATION_COURSE_ID', 'courseId is required.');
     }
 
     await loadCourseById(courseId);
@@ -693,26 +721,17 @@ app.get('/api/courses/:courseId/lessons', async function (req, res) {
     });
   } catch (error) {
     if (error && error.code === 'ENOENT') {
-      return res.status(404).json({
-        ok: false,
-        message: 'Course not found.',
-      });
+      return sendError(res, 404, 'COURSE_NOT_FOUND', 'Course not found.');
     }
-    console.error('[api/course-lessons] failed:', error);
-    return res.status(500).json({
-      ok: false,
-      message: 'Failed to load lessons.',
-    });
+    logServerError('api/course-lessons', error);
+    return sendError(res, 500, 'COURSE_LESSONS_FAILED', 'Failed to load lessons.');
   }
 });
 
 app.get('/api/courses/:courseId/access', requireAuth, async function (req, res) {
-  const courseId = String(req.params.courseId || '').trim();
+  const courseId = getRequiredTrimmedString(req.params.courseId);
   if (!courseId) {
-    return res.status(400).json({
-      ok: false,
-      message: 'courseId is required.',
-    });
+    return sendError(res, 400, 'VALIDATION_COURSE_ID', 'courseId is required.');
   }
 
   return res.json({
@@ -722,21 +741,13 @@ app.get('/api/courses/:courseId/access', requireAuth, async function (req, res) 
   });
 });
 
-app.post('/api/orders/create', requireAuth, async function (req, res) {
+app.post('/api/orders/create', orderRateLimiter, requireAuth, async function (req, res) {
   try {
-    if (!ordersCollection) {
-      return res.status(503).json({
-        ok: false,
-        message: 'MongoDB connection is not ready yet.',
-      });
-    }
+    if (!requireMongoCollection(ordersCollection, res)) return;
 
-    const courseId = String(req.body.courseId || '').trim();
+    const courseId = getRequiredTrimmedString(req.body.courseId);
     if (!courseId) {
-      return res.status(400).json({
-        ok: false,
-        message: 'courseId is required.',
-      });
+      return sendError(res, 400, 'VALIDATION_COURSE_ID', 'courseId is required.');
     }
 
     const course = await loadCourseById(courseId);
@@ -764,35 +775,22 @@ app.post('/api/orders/create', requireAuth, async function (req, res) {
       },
     });
   } catch (error) {
-    console.error('[api/orders/create] failed:', error);
+    logServerError('api/orders/create', error);
     if (error && error.code === 'ENOENT') {
-      return res.status(404).json({
-        ok: false,
-        message: 'Course not found.',
-      });
+      return sendError(res, 404, 'COURSE_NOT_FOUND', 'Course not found.');
     }
-    return res.status(500).json({
-      ok: false,
-      message: 'Failed to create order.',
-    });
+    return sendError(res, 500, 'ORDER_CREATE_FAILED', 'Failed to create order.');
   }
 });
 
-app.post('/api/orders/confirm', requireAuth, async function (req, res) {
+app.post('/api/orders/confirm', orderRateLimiter, requireAuth, async function (req, res) {
   try {
-    if (!ordersCollection || !enrollmentsCollection) {
-      return res.status(503).json({
-        ok: false,
-        message: 'MongoDB connection is not ready yet.',
-      });
-    }
+    if (!requireMongoCollection(ordersCollection, res)) return;
+    if (!requireMongoCollection(enrollmentsCollection, res)) return;
 
-    const orderIdRaw = String(req.body.orderId || '').trim();
+    const orderIdRaw = getRequiredTrimmedString(req.body.orderId);
     if (!orderIdRaw || !ObjectId.isValid(orderIdRaw)) {
-      return res.status(400).json({
-        ok: false,
-        message: 'Valid orderId is required.',
-      });
+      return sendError(res, 400, 'VALIDATION_ORDER_ID', 'Valid orderId is required.');
     }
 
     const orderId = new ObjectId(orderIdRaw);
@@ -800,10 +798,7 @@ app.post('/api/orders/confirm', requireAuth, async function (req, res) {
 
     const order = await ordersCollection.findOne({ _id: orderId });
     if (!order || order.userId !== userIdStr) {
-      return res.status(404).json({
-        ok: false,
-        message: 'Order not found.',
-      });
+      return sendError(res, 404, 'ORDER_NOT_FOUND', 'Order not found.');
     }
 
     if (order.status === 'paid') {
@@ -825,10 +820,7 @@ app.post('/api/orders/confirm', requireAuth, async function (req, res) {
     }
 
     if (order.status !== 'pending') {
-      return res.status(400).json({
-        ok: false,
-        message: 'Order cannot be confirmed.',
-      });
+      return sendError(res, 400, 'ORDER_INVALID_STATE', 'Order cannot be confirmed.');
     }
 
     const confirmResult = await ordersCollection.updateOne(
@@ -855,10 +847,12 @@ app.post('/api/orders/confirm', requireAuth, async function (req, res) {
           enrolledCourseIds: await listEnrollmentCourseIds(req.auth.user._id),
         });
       }
-      return res.status(409).json({
-        ok: false,
-        message: 'Order state changed; refresh and try again.',
-      });
+      return sendError(
+        res,
+        409,
+        'ORDER_STATE_CONFLICT',
+        'Order state changed; refresh and try again.'
+      );
     }
 
     const now = new Date();
@@ -894,11 +888,8 @@ app.post('/api/orders/confirm', requireAuth, async function (req, res) {
       enrolledCourseIds: await listEnrollmentCourseIds(req.auth.user._id),
     });
   } catch (error) {
-    console.error('[api/orders/confirm] failed:', error);
-    return res.status(500).json({
-      ok: false,
-      message: 'Failed to confirm order.',
-    });
+    logServerError('api/orders/confirm', error);
+    return sendError(res, 500, 'ORDER_CONFIRM_FAILED', 'Failed to confirm order.');
   }
 });
 
@@ -907,22 +898,26 @@ app.get(
   requireAuth,
   async function (req, res) {
     try {
-      const courseId = String(req.params.courseId || '').trim();
-      const lessonId = String(req.params.lessonId || '').trim();
+      const courseId = getRequiredTrimmedString(req.params.courseId);
+      const lessonId = getRequiredTrimmedString(req.params.lessonId);
 
       if (!courseId || !lessonId) {
-        return res.status(400).json({
-          ok: false,
-          message: 'courseId and lessonId are required.',
-        });
+        return sendError(
+          res,
+          400,
+          'VALIDATION_COURSE_LESSON_ID',
+          'courseId and lessonId are required.'
+        );
       }
 
       const hasAccess = await hasActiveEnrollment(req.auth.user._id, courseId);
       if (!hasAccess) {
-        return res.status(403).json({
-          ok: false,
-          message: 'You do not have access to this course.',
-        });
+        return sendError(
+          res,
+          403,
+          'COURSE_ACCESS_DENIED',
+          'You do not have access to this course.'
+        );
       }
 
       const payload = await loadCourseLessonPayload(courseId, lessonId);
@@ -946,11 +941,8 @@ app.get(
         ),
       });
     } catch (error) {
-      console.error('[api/course-lesson] failed:', error);
-      return res.status(404).json({
-        ok: false,
-        message: 'Course or lesson not found.',
-      });
+      logServerError('api/course-lesson', error);
+      return sendError(res, 404, 'COURSE_OR_LESSON_NOT_FOUND', 'Course or lesson not found.');
     }
   }
 );
@@ -960,22 +952,26 @@ app.post(
   requireAuth,
   async function (req, res) {
     try {
-      const courseId = String(req.params.courseId || '').trim();
-      const lessonId = String(req.params.lessonId || '').trim();
+      const courseId = getRequiredTrimmedString(req.params.courseId);
+      const lessonId = getRequiredTrimmedString(req.params.lessonId);
 
       if (!courseId || !lessonId) {
-        return res.status(400).json({
-          ok: false,
-          message: 'courseId and lessonId are required.',
-        });
+        return sendError(
+          res,
+          400,
+          'VALIDATION_COURSE_LESSON_ID',
+          'courseId and lessonId are required.'
+        );
       }
 
       const hasAccess = await hasActiveEnrollment(req.auth.user._id, courseId);
       if (!hasAccess) {
-        return res.status(403).json({
-          ok: false,
-          message: 'You do not have access to this course.',
-        });
+        return sendError(
+          res,
+          403,
+          'COURSE_ACCESS_DENIED',
+          'You do not have access to this course.'
+        );
       }
 
       await loadCourseLessonPayload(courseId, lessonId);
@@ -995,66 +991,56 @@ app.post(
         item: item,
       });
     } catch (error) {
-      return res.status(404).json({
-        ok: false,
-        message: 'Course or lesson not found.',
-      });
+      logServerError('api/course-lesson-progress', error);
+      return sendError(res, 404, 'COURSE_OR_LESSON_NOT_FOUND', 'Course or lesson not found.');
     }
   }
 );
 
 app.get('/api/resources/:refId/open', function (req, res) {
   try {
-    const refId = String(req.params.refId || '').trim();
-    const token = String(req.query.token || '').trim();
+    const refId = getRequiredTrimmedString(req.params.refId);
+    const token = getRequiredTrimmedString(req.query.token);
 
     if (!refId || !token) {
-      return res.status(400).json({
-        ok: false,
-        message: 'refId and token are required.',
-      });
+      return sendError(res, 400, 'VALIDATION_RESOURCE_TOKEN', 'refId and token are required.');
     }
 
     verifySignedResourceToken(token, refId, resourceLinkSecret);
 
     const entry = getPrivateResourceEntry(refId);
     if (!entry || !entry.url) {
-      return res.status(404).json({
-        ok: false,
-        message: 'Resource not found.',
-      });
+      return sendError(res, 404, 'RESOURCE_NOT_FOUND', 'Resource not found.');
     }
 
     return res.redirect(entry.url);
   } catch (error) {
-    return res.status(401).json({
-      ok: false,
-      message: 'Invalid or expired resource link.',
-    });
+    return sendError(res, 401, 'RESOURCE_LINK_INVALID', 'Invalid or expired resource link.');
   }
 });
 
-app.post('/api/customers', async function (req, res) {
+app.post('/api/customers', contactRateLimiter, async function (req, res) {
   try {
-    if (!customersCollection) {
-      return res.status(503).json({
-        ok: false,
-        message: 'MongoDB connection is not ready yet.',
-      });
-    }
+    if (!requireMongoCollection(customersCollection, res)) return;
 
-    const name = String(req.body.name || '').trim();
-    const email = String(req.body.email || '').trim();
-    const phone = String(req.body.phone || '').trim();
-    const message = String(req.body.message || '').trim();
-    const interest = String(req.body.interest || '').trim();
-    const interestLabel = String(req.body.interestLabel || '').trim();
+    const name = getRequiredTrimmedString(req.body.name);
+    const email = getRequiredTrimmedString(req.body.email);
+    const phone = getRequiredTrimmedString(req.body.phone);
+    const message = getRequiredTrimmedString(req.body.message);
+    const interest = getRequiredTrimmedString(req.body.interest);
+    const interestLabel = getRequiredTrimmedString(req.body.interestLabel);
 
     if (!name || !email || !interest) {
-      return res.status(400).json({
-        ok: false,
-        message: 'Missing required fields: name, email, interest.',
-      });
+      return sendError(
+        res,
+        400,
+        'VALIDATION_CONTACT_REQUIRED',
+        'Missing required fields: name, email, interest.'
+      );
+    }
+
+    if (!normalizeEmail(email)) {
+      return sendError(res, 400, 'VALIDATION_EMAIL', 'A valid email is required.');
     }
 
     const doc = {
@@ -1076,12 +1062,25 @@ app.post('/api/customers', async function (req, res) {
       message: 'Customer lead saved successfully.',
     });
   } catch (error) {
-    console.error('[api/customers] insert failed:', error);
-    return res.status(500).json({
-      ok: false,
-      message: 'Failed to save customer lead.',
-    });
+    logServerError('api/customers', error);
+    return sendError(res, 500, 'CUSTOMER_SAVE_FAILED', 'Failed to save customer lead.');
   }
+});
+
+app.use(function (err, req, res, next) {
+  logServerError('express/unhandled', err, {
+    method: req.method,
+    path: req.path,
+  });
+  if (res.headersSent) {
+    return next(err);
+  }
+  return sendError(
+    res,
+    500,
+    'INTERNAL_SERVER_ERROR',
+    'Unexpected server error.'
+  );
 });
 
 app.get('*', function (req, res) {
