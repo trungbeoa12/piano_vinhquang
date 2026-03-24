@@ -1,6 +1,7 @@
 const fs = require('fs');
 const express = require('express');
 const path = require('path');
+const cors = require('cors');
 const { MongoClient, ObjectId } = require('mongodb');
 const {
   normalizeEmail,
@@ -67,7 +68,7 @@ const demoEnrollmentCourseIds = String(
     return value.trim();
   })
   .filter(Boolean);
-const corsAllowOrigin = String(process.env.CORS_ALLOW_ORIGIN || '*').trim();
+const corsConfig = resolveCorsConfig();
 
 let customersCollection;
 let usersCollection;
@@ -103,6 +104,54 @@ function resolveMongoUri() {
     fallbackUri
   );
   return fallbackUri;
+}
+
+function resolveCorsConfig() {
+  const isProduction = String(process.env.NODE_ENV || '').trim() === 'production';
+  const isHosted = isProduction || isRailwayEnvironment();
+  const configuredOrigins = String(process.env.CORS_ALLOW_ORIGIN || '')
+    .split(',')
+    .map(function (value) {
+      return value.trim();
+    })
+    .filter(Boolean);
+  const vercelFrontendOrigin = String(process.env.VERCEL_FRONTEND_ORIGIN || '').trim();
+  if (vercelFrontendOrigin) {
+    configuredOrigins.push(vercelFrontendOrigin);
+  }
+
+  const dedupedConfiguredOrigins = Array.from(new Set(configuredOrigins));
+  if (isHosted && dedupedConfiguredOrigins.indexOf('*') !== -1) {
+    throw new Error(
+      '[config] CORS_ALLOW_ORIGIN cannot contain "*" in production. Set explicit frontend origins.'
+    );
+  }
+
+  if (isHosted && dedupedConfiguredOrigins.length === 0) {
+    throw new Error(
+      '[config] Missing CORS_ALLOW_ORIGIN. Set your Vercel frontend domain in Railway Variables.'
+    );
+  }
+
+  const localDevOrigins = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:4173',
+    'http://127.0.0.1:4173',
+  ];
+  const origins = dedupedConfiguredOrigins.length
+    ? dedupedConfiguredOrigins
+    : localDevOrigins;
+  const credentials = String(process.env.CORS_ALLOW_CREDENTIALS || 'true')
+    .trim()
+    .toLowerCase() !== 'false';
+
+  return {
+    origins: origins,
+    credentials: credentials,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  };
 }
 
 function loadEnvFile(filePath) {
@@ -254,32 +303,23 @@ async function shutdown(signal) {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(function (req, res, next) {
-  var requestOrigin = req.headers.origin;
-  var allowAny = corsAllowOrigin === '*';
-  var allowedOrigins = corsAllowOrigin
-    .split(',')
-    .map(function (item) {
-      return item.trim();
-    })
-    .filter(Boolean);
-  var canUseOrigin = allowAny || (
-    requestOrigin && allowedOrigins.indexOf(requestOrigin) !== -1
-  );
-
-  if (canUseOrigin) {
-    res.setHeader('Access-Control-Allow-Origin', allowAny ? '*' : requestOrigin);
-    res.setHeader('Vary', 'Origin');
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
-  }
-
-  return next();
+const corsMiddleware = cors({
+  origin: function (origin, callback) {
+    if (!origin) {
+      return callback(null, true);
+    }
+    if (corsConfig.origins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
+  credentials: corsConfig.credentials,
+  methods: corsConfig.methods,
+  allowedHeaders: corsConfig.allowedHeaders,
+  optionsSuccessStatus: 204,
 });
+app.use(corsMiddleware);
+app.options('*', corsMiddleware);
 app.use(express.static(path.join(__dirname)));
 
 async function listEnrollmentCourseIds(userId) {

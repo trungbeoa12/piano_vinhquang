@@ -46,6 +46,8 @@ Nếu frontend deploy trên Vercel/Netlify và backend deploy riêng (Render/Rai
    - Set env `CORS_ALLOW_ORIGIN` trên backend:
    - Ví dụ: `https://piano-vinhquang.vercel.app`
    - Có thể khai báo nhiều domain, phân tách bằng dấu phẩy.
+   - Production không cho phép wildcard `*`.
+   - Có thể set thêm `CORS_ALLOW_CREDENTIALS=true` (mặc định true).
 
 ## MongoDB local
 
