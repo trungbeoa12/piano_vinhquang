@@ -77,7 +77,116 @@ function renderLessonContent(data) {
   ensurePianoMounted();
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+function fetchAuthJson(path, options) {
+  var requestOptions = options || {};
+  requestOptions.headers = Object.assign({}, requestOptions.headers || {}, {
+    Authorization: 'Bearer ' + window.PVQ_Auth.getToken(),
+  });
+
+  return fetch(path, requestOptions).then(function (response) {
+    return response.json().then(function (payload) {
+      if (!response.ok || !payload.ok) {
+        var error = new Error(
+          (payload && payload.message) || 'Không thể xử lý yêu cầu.'
+        );
+        error.status = response.status;
+        throw error;
+      }
+      return payload;
+    });
+  });
+}
+
+function renderProgressCard(found, progressItem) {
+  var mount = document.getElementById('lesson-progress-mount');
+  if (!mount || !found || !found.lesson) return;
+
+  var lessonOrder = Array.isArray(found.course.lessonOrder)
+    ? found.course.lessonOrder
+    : [];
+  var currentIndex = lessonOrder.indexOf(found.lesson.id);
+  var nextLessonId =
+    currentIndex !== -1 && currentIndex < lessonOrder.length - 1
+      ? lessonOrder[currentIndex + 1]
+      : '';
+  var nextLessonHref = nextLessonId
+    ? 'lesson.html?courseId=' +
+      encodeURIComponent(found.course.id) +
+      '&lessonId=' +
+      encodeURIComponent(nextLessonId)
+    : 'dashboard.html';
+  var completed = !!(progressItem && progressItem.completed);
+  var statusLabel = completed ? 'Đã hoàn thành bài này' : 'Đang học';
+  var actionLabel = completed ? 'Đã hoàn thành' : 'Đánh dấu đã học xong';
+
+  mount.innerHTML =
+    '<div class="pvq-lesson-progress-card">' +
+    '<div><strong>' + statusLabel + '</strong><p class="pvq-muted">Tiến độ của bài học này được lưu theo tài khoản để bạn tiếp tục học trên dashboard.</p></div>' +
+    '<div class="pvq-course-access-actions">' +
+    '<button type="button" id="lesson-complete-btn" class="cta-btn cta-btn-primary" style="border:none;cursor:pointer" ' +
+    (completed ? 'disabled' : '') +
+    '>' + actionLabel + '</button>' +
+    '<a href="' + nextLessonHref + '" class="cta-btn cta-btn-secondary">' +
+    (nextLessonId ? 'Bài tiếp theo' : 'Về dashboard') +
+    '</a>' +
+    '</div>' +
+    '<p class="pvq-muted pvq-course-access-feedback" id="lesson-progress-feedback"></p>' +
+    '</div>';
+}
+
+function saveLessonProgress(courseId, lessonId, payload) {
+  return fetchAuthJson(
+    '/api/courses/' +
+      encodeURIComponent(courseId) +
+      '/lessons/' +
+      encodeURIComponent(lessonId) +
+      '/progress',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload || {}),
+    }
+  );
+}
+
+function bindProgressAction(found, progressItem) {
+  renderProgressCard(found, progressItem);
+
+  var button = document.getElementById('lesson-complete-btn');
+  var feedbackEl = document.getElementById('lesson-progress-feedback');
+  if (!button || button.disabled) return;
+
+  button.addEventListener('click', function () {
+    button.disabled = true;
+    if (feedbackEl) feedbackEl.textContent = 'Đang lưu tiến độ...';
+
+    saveLessonProgress(found.course.id, found.lesson.id, {
+      completed: true,
+      resumeAtSec: 0,
+    })
+      .then(function (payload) {
+        renderProgressCard(found, payload.item);
+        if (feedbackEl) feedbackEl.textContent = 'Đã đánh dấu hoàn thành bài học.';
+      })
+      .catch(function (error) {
+        if (feedbackEl) feedbackEl.textContent = error.message;
+        button.disabled = false;
+      });
+  });
+}
+
+function loadProtectedLesson(courseId, lessonId) {
+  return fetchAuthJson(
+    '/api/courses/' +
+      encodeURIComponent(courseId) +
+      '/lessons/' +
+      encodeURIComponent(lessonId)
+  );
+}
+
+document.addEventListener('DOMContentLoaded', async function () {
   var courseId = window.PVQ_getQueryParam('courseId');
   var lessonId = window.PVQ_getQueryParam('lessonId');
   var bc = document.getElementById('lesson-breadcrumb');
@@ -88,60 +197,76 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
-  window.PVQ_Content.findLesson(courseId, lessonId).then(function (found) {
-    if (!found) {
-      renderLocked('Không tìm thấy bài học.');
-      ensurePianoMounted();
-      return;
-    }
+  Promise.resolve(window.PVQ_Auth.refreshSession())
+    .catch(function () {
+      return null;
+    })
+    .then(function () {
+      if (!window.PVQ_Auth.isLoggedIn()) {
+        renderLocked(
+          '<strong>Cần đăng nhập.</strong> Vui lòng vào trang Tài khoản để đăng nhập, sau đó quay lại bài học này.'
+        );
+        ensurePianoMounted();
+        return null;
+      }
 
-    var titleEl = document.getElementById('lesson-title');
-    var subEl = document.getElementById('lesson-subtitle');
-    if (titleEl) titleEl.textContent = found.lesson.title;
-    if (subEl) {
-      subEl.textContent =
-        found.course.title + ' — ' + found.lesson.durationMin + ' phút';
-    }
-    if (bc) {
-      bc.innerHTML =
-        '<a href="course-detail.html?id=' +
-        encodeURIComponent(courseId) +
-        '" style="color:inherit">' +
-        found.course.title +
-        '</a> / ' +
-        found.lesson.title;
-    }
-    document.title = found.lesson.title + ' — Piano Vinh Quang';
-
-    if (!window.PVQ_Auth.isLoggedIn()) {
-      renderLocked(
-        '<strong>Cần đăng nhập.</strong> Vui lòng vào trang Tài khoản để đăng nhập (demo), sau đó quay lại bài học này.'
-      );
-      ensurePianoMounted();
-      return;
-    }
-
-    if (!window.PVQ_Auth.hasCourseAccess(courseId)) {
-      renderLocked(
-        '<strong>Chưa có quyền truy cập khóa học này.</strong> Sau khi mua khóa, quản trị viên sẽ cấp quyền trong hệ thống (ở bản demo: dùng nút đăng nhập thử để xem luồng).'
-      );
-      ensurePianoMounted();
-      return;
-    }
-
-    var s = document.createElement('script');
-    s.src = 'js/data/course-resources-private.js';
-    s.onload = function () {
-      var merged = window.PVQ_mergeLessonResources(found);
-      if (!merged) {
-        renderLocked('Không tải được học liệu.');
+      return loadProtectedLesson(courseId, lessonId);
+    })
+    .then(function (payload) {
+      if (!payload) return;
+      if (!payload.ok || !payload.course || !payload.lesson) {
+        renderLocked('Không tìm thấy bài học.');
+        ensurePianoMounted();
         return;
       }
-      renderLessonContent(merged);
-    };
-    s.onerror = function () {
-      renderLocked('Không tải được cấu hình học liệu. Kiểm tra đường dẫn file.');
-    };
-    document.body.appendChild(s);
-  });
+
+	      var found = {
+	        course: payload.course,
+	        lesson: payload.lesson,
+	        items: Array.isArray(payload.items) ? payload.items : [],
+	      };
+
+      var titleEl = document.getElementById('lesson-title');
+      var subEl = document.getElementById('lesson-subtitle');
+      if (titleEl) titleEl.textContent = found.lesson.title;
+      if (subEl) {
+        subEl.textContent =
+          found.course.title + ' — ' + found.lesson.durationMin + ' phút';
+      }
+      if (bc) {
+        bc.innerHTML =
+          '<a href="course-detail.html?id=' +
+          encodeURIComponent(courseId) +
+          '" style="color:inherit">' +
+          found.course.title +
+          '</a> / ' +
+          found.lesson.title;
+	      }
+	      document.title = found.lesson.title + ' — Piano Vinh Quang';
+        Promise.resolve(
+          saveLessonProgress(found.course.id, found.lesson.id, {
+            completed: false,
+            resumeAtSec: 0,
+          })
+        )
+          .catch(function () {
+            return { item: null };
+          })
+          .then(function (progressPayload) {
+            bindProgressAction(found, progressPayload ? progressPayload.item : null);
+          });
+	      renderLessonContent(found);
+	    })
+    .catch(function (error) {
+      if (error && error.status === 403) {
+        renderLocked(
+          '<strong>Chưa có quyền truy cập khóa học này.</strong> Tài khoản hiện tại chưa được cấp quyền học khóa này.'
+        );
+      } else if (error && error.status === 404) {
+        renderLocked('Không tìm thấy bài học.');
+      } else {
+        renderLocked('Không thể tải dữ liệu bài học từ server.');
+      }
+      ensurePianoMounted();
+    });
 });

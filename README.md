@@ -41,7 +41,69 @@ Lưu ý: vì partial đang được load bằng `fetch()`, không nên mở page
 ## API
 
 - `GET /api/health`
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/me`
+- `GET /api/my/enrollments`
+- `GET /api/my/progress`
+- `GET /api/courses/:courseId/access`
+- `POST /api/courses/:courseId/unlock-mock`
+- `GET /api/courses/:courseId/lessons/:lessonId`
+- `POST /api/courses/:courseId/lessons/:lessonId/progress`
+- `GET /api/resources/:refId/open?token=...`
 - `POST /api/customers`
+
+Auth API mẫu:
+
+```json
+{
+  "email": "hocvien@example.com",
+  "password": "matkhau123",
+  "displayName": "Hoc vien demo"
+}
+```
+
+`GET /api/me` cần header:
+
+```http
+Authorization: Bearer <token>
+```
+
+`GET /api/courses/:courseId/lessons/:lessonId` giờ trả luôn `items` đã được resolve thành signed backend URL. Frontend không còn load file map học liệu private ở phía client nữa.
+
+`GET /api/resources/:refId/open?token=...` là signed redirect link ngắn hạn do backend tạo ra. URL Google Drive thật chỉ tồn tại ở server-side map.
+
+## Cấu hình học liệu private
+
+- Tạo file `config/resources.private.json` dựa trên [config/resources.private.example.json](/media/trungdt2/New%20Volume/Work/piano_vinhquang/config/resources.private.example.json).
+- File này được ignore khỏi git và chỉ dùng ở server-side.
+- Mỗi `refId` trong lesson JSON nên map tới một object như:
+
+```json
+{
+  "pvq-pcb-l01-vid": {
+    "type": "video_embed",
+    "provider": "google_drive",
+    "url": "https://drive.google.com/file/d/REAL_ID/preview"
+  }
+}
+```
+
+Bạn có thể thay `provider` bằng giá trị mô tả thực tế bạn dùng sau này, ví dụ `google_drive`, `vimeo`, `bunny_stream`, `cloudflare_stream`. Logic signed link của backend không phụ thuộc vào provider, miễn là `url` đích là URL bạn muốn redirect tới.
+
+Nếu chưa tạo `config/resources.private.json`, server sẽ fallback sang map placeholder trong [lib/private-resource-map.js](/media/trungdt2/New%20Volume/Work/piano_vinhquang/lib/private-resource-map.js).
+
+Demo auth mặc định sau khi server khởi động:
+
+- email: `hocvien@demo.vn`
+- password: `matkhau123`
+
+Frontend auth pages:
+
+- `account.html`: đăng nhập
+- `register.html`: tạo tài khoản mới
+- `checkout.html`: checkout mock để cấp quyền khóa học
+- `dashboard.html`: tiếp tục học và xem tiến độ
 
 Payload mẫu:
 

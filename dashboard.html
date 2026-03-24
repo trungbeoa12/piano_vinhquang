@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng điều khiển học tập — Piano Vinh Quang</title>
+    <meta name="description" content="Theo dõi khóa học đã được cấp quyền, tiếp tục bài học gần nhất và xem tiến độ học piano trực tiếp trên web.">
+    <script src="js/common-head.js"></script>
+</head>
+<body data-page="dashboard" data-nav-current="account" data-footer-contact-href="index.html#contact">
+    <div class="snowflakes" id="snowflakes"></div>
+    <div id="site-header-mount"></div>
+
+    <main class="page-main page-main--account">
+        <div class="pvq-account-shell pvq-dashboard-shell">
+            <div
+                data-site-hero
+                data-title="Bảng điều khiển học tập"
+                data-lead="Tiếp tục bài học đang học dở, mở nhanh các khóa đã được cấp quyền và theo dõi trạng thái hoàn thành ngay trên web."
+            ></div>
+
+            <section id="dashboard-guest" class="pvq-dashboard-layout">
+                <section class="pvq-panel pvq-dashboard-section">
+                    <p class="pvq-account-kicker">Learning Dashboard</p>
+                    <h2>Đăng nhập để xem tiến độ học</h2>
+                    <p class="pvq-muted">Sau khi đăng nhập, bạn sẽ thấy bài học gần nhất, khóa học đã mở và các bài đã hoàn thành.</p>
+                    <div class="pvq-course-access-actions">
+                        <a href="account.html" class="cta-btn cta-btn-primary">Mở trang tài khoản</a>
+                        <a href="courses.html" class="cta-btn cta-btn-secondary">Xem danh sách khóa học</a>
+                    </div>
+                </section>
+            </section>
+
+            <section id="dashboard-user" class="pvq-dashboard-layout" style="display:none">
+                <aside class="pvq-dashboard-layout__aside">
+                    <section class="pvq-panel pvq-dashboard-section">
+                        <p class="pvq-account-kicker">Account</p>
+                        <h2 id="dashboard-greeting">Xin chào</h2>
+                        <p class="pvq-muted" id="dashboard-email">—</p>
+                        <div class="pvq-dashboard-stats" id="dashboard-stats"></div>
+                        <div class="pvq-course-access-actions">
+                            <a href="account.html" class="cta-btn cta-btn-secondary">Mở tài khoản</a>
+                            <button type="button" id="dashboard-logout-btn" class="cta-btn cta-btn-primary" style="border:none;cursor:pointer">Đăng xuất</button>
+                        </div>
+                    </section>
+                </aside>
+
+                <div class="pvq-dashboard-layout__main">
+                    <section class="pvq-panel pvq-dashboard-section">
+                        <p class="pvq-account-kicker">Continue Learning</p>
+                        <h2>Tiếp tục học</h2>
+                        <div id="dashboard-continue-list"></div>
+                    </section>
+
+                    <section class="pvq-panel pvq-dashboard-section">
+                        <p class="pvq-account-kicker">My Courses</p>
+                        <h2>Khóa học của tôi</h2>
+                        <div id="dashboard-courses-list"></div>
+                    </section>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="site-footer-mount"></div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/app-common.js"></script>
+    <script src="js/site-header.js"></script>
+    <script src="js/site-shell.js"></script>
+    <script src="js/data/content-loader.js"></script>
+    <script src="js/pages/dashboard.js"></script>
+</body>
+</html>

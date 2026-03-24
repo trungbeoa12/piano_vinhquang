@@ -16,7 +16,7 @@
         <div
             data-site-hero
             data-title="Tài khoản"
-            data-lead="Đăng nhập demo để xem luồng “Khóa học của tôi”. Trên môi trường thật, bước này thay bằng SSO / email magic link / backend của bạn."
+            data-lead="Đăng nhập để xem “Khóa học của tôi”, lesson đã được cấp quyền và luồng học trực tiếp trên web."
         ></div>
 
         <section id="account-guest" class="pvq-account-layout">
@@ -26,18 +26,26 @@
                         <div class="pvq-account-avatar" aria-hidden="true">PVQ</div>
                         <div>
                             <p class="pvq-account-kicker">Account Info</p>
-                            <h2>Đăng nhập demo</h2>
-                            <p class="pvq-muted">Dùng email bất kỳ để xem luồng học viên, danh sách khóa học đã cấp quyền và cách mở bài học.</p>
+                            <h2>Đăng nhập</h2>
+                            <p class="pvq-muted">Dùng tài khoản học viên để xem danh sách khóa học đã được cấp quyền và tiếp tục học trực tiếp trên web.</p>
                         </div>
                     </div>
                     <form id="demo-login-form" class="pvq-form-stack">
                         <div class="form-group">
-                            <label for="demo-email">Email (tuỳ chọn)</label>
-                            <input type="email" id="demo-email" name="email" placeholder="ban@email.com" autocomplete="username">
+                            <label for="demo-email">Email</label>
+                            <input type="email" id="demo-email" name="email" placeholder="hocvien@demo.vn" autocomplete="username" value="hocvien@demo.vn">
                         </div>
-                        <button type="submit" class="cta-btn cta-btn-primary pvq-account-action">Đăng nhập thử</button>
+                        <div class="form-group">
+                            <label for="demo-password">Mật khẩu</label>
+                            <input type="password" id="demo-password" name="password" placeholder="Nhập mật khẩu" autocomplete="current-password" value="matkhau123">
+                        </div>
+                        <p id="account-feedback" class="pvq-muted pvq-account-feedback" aria-live="polite"></p>
+                        <button type="submit" class="cta-btn cta-btn-primary pvq-account-action">Đăng nhập</button>
                     </form>
-                    <p class="pvq-muted pvq-account-note">Demo gán sẵn quyền hai khóa trong catalog để bạn mở bài học và học liệu.</p>
+                    <div class="pvq-course-access-actions" style="margin-top:16px">
+                        <a href="register.html" class="cta-btn cta-btn-secondary">Tạo tài khoản mới</a>
+                    </div>
+                    <p class="pvq-muted pvq-account-note">Tài khoản demo mặc định đã được cấp quyền hai khóa: <strong>hocvien@demo.vn</strong> / <strong>matkhau123</strong>.</p>
                 </section>
             </div>
 
@@ -83,6 +91,9 @@
                             <span>Quyền truy cập</span>
                             <strong>Khóa học demo</strong>
                         </div>
+                    </div>
+                    <div class="pvq-course-access-actions" style="margin-bottom:16px">
+                        <a href="dashboard.html" class="cta-btn cta-btn-primary">Mở dashboard học tập</a>
                     </div>
                     <button type="button" id="logout-btn" class="cta-btn cta-btn-secondary pvq-account-action" style="border:none;cursor:pointer">Đăng xuất</button>
                 </section>

@@ -1,0 +1,32 @@
+{
+  "pvq-pcb-l01-vid": {
+    "type": "video_embed",
+    "provider": "google_drive",
+    "url": "https://drive.google.com/file/d/REPLACE_WITH_REAL_FILE_ID/preview"
+  },
+  "pvq-pcb-l01-sheet": {
+    "type": "sheet_view",
+    "provider": "google_drive",
+    "url": "https://drive.google.com/file/d/REPLACE_WITH_REAL_FILE_ID/view"
+  },
+  "pvq-pcb-l02-vid": {
+    "type": "video_embed",
+    "provider": "google_drive",
+    "url": "https://drive.google.com/file/d/REPLACE_WITH_REAL_FILE_ID/preview"
+  },
+  "pvq-pcb-l02-pdf": {
+    "type": "pdf",
+    "provider": "google_drive",
+    "url": "https://drive.google.com/file/d/REPLACE_WITH_REAL_FILE_ID/view"
+  },
+  "pvq-dh-l01-vid": {
+    "type": "video_embed",
+    "provider": "google_drive",
+    "url": "https://drive.google.com/file/d/REPLACE_WITH_REAL_FILE_ID/preview"
+  },
+  "pvq-dh-l01-sheet": {
+    "type": "sheet_view",
+    "provider": "google_drive",
+    "url": "https://drive.google.com/file/d/REPLACE_WITH_REAL_FILE_ID/view"
+  }
+}

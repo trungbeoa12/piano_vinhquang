@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo tài khoản — Piano Vinh Quang</title>
+    <meta name="description" content="Tạo tài khoản học viên để nhận quyền khóa học, mở dashboard và học trực tiếp trên web.">
+    <script src="js/common-head.js"></script>
+</head>
+<body data-page="register" data-nav-current="account" data-footer-contact-href="index.html#contact">
+    <div class="snowflakes" id="snowflakes"></div>
+    <div id="site-header-mount"></div>
+
+    <main class="page-main page-main--account">
+        <div class="pvq-account-shell">
+            <div
+                data-site-hero
+                data-title="Tạo tài khoản học viên"
+                data-lead="Tạo tài khoản mới để vào dashboard, nhận quyền khóa học demo và bắt đầu flow học thử trực tiếp trên web."
+            ></div>
+
+            <section class="pvq-account-layout">
+                <div class="pvq-account-layout__aside">
+                    <section class="pvq-panel pvq-account-section">
+                        <div class="pvq-account-profile">
+                            <div class="pvq-account-avatar" aria-hidden="true">PVQ</div>
+                            <div>
+                                <p class="pvq-account-kicker">Register</p>
+                                <h2>Tạo tài khoản</h2>
+                                <p class="pvq-muted">Sau khi tạo tài khoản, bạn có thể quay lại trang khóa học để dùng mock payment và mở quyền học thử.</p>
+                            </div>
+                        </div>
+                        <form id="register-form" class="pvq-form-stack">
+                            <div class="form-group">
+                                <label for="register-display-name">Họ tên</label>
+                                <input type="text" id="register-display-name" name="displayName" placeholder="Tên học viên" autocomplete="name">
+                            </div>
+                            <div class="form-group">
+                                <label for="register-email">Email</label>
+                                <input type="email" id="register-email" name="email" placeholder="ban@example.com" autocomplete="email">
+                            </div>
+                            <div class="form-group">
+                                <label for="register-password">Mật khẩu</label>
+                                <input type="password" id="register-password" name="password" placeholder="Tối thiểu 8 ký tự" autocomplete="new-password">
+                            </div>
+                            <p id="register-feedback" class="pvq-muted pvq-account-feedback" aria-live="polite"></p>
+                            <button type="submit" class="cta-btn cta-btn-primary pvq-account-action">Tạo tài khoản</button>
+                        </form>
+                    </section>
+                </div>
+
+                <div class="pvq-account-layout__main">
+                    <section class="pvq-panel pvq-account-section">
+                        <p class="pvq-account-kicker">Flow</p>
+                        <h2>Sau khi đăng ký bạn sẽ làm gì?</h2>
+                        <div class="pvq-account-empty-state">
+                            <strong>1. Vào trang khóa học</strong>
+                            <p class="pvq-muted">Chọn một khóa học trong catalog rồi bấm đăng ký khóa học demo.</p>
+                        </div>
+                        <div class="pvq-account-empty-state" style="margin-top:16px">
+                            <strong>2. Mở dashboard</strong>
+                            <p class="pvq-muted">Dashboard sẽ hiện bài đang học dở, khóa đã mở và trạng thái hoàn thành.</p>
+                        </div>
+                        <div class="pvq-course-access-actions" style="margin-top:20px">
+                            <a href="courses.html" class="cta-btn cta-btn-primary">Xem khóa học</a>
+                            <a href="account.html" class="cta-btn cta-btn-secondary">Đã có tài khoản?</a>
+                        </div>
+                    </section>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="site-footer-mount"></div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/app-common.js"></script>
+    <script src="js/site-header.js"></script>
+    <script src="js/site-shell.js"></script>
+    <script src="js/pages/register.js"></script>
+</body>
+</html>

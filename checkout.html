@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout Demo — Piano Vinh Quang</title>
+    <meta name="description" content="Trang checkout mock để mô phỏng bước đăng ký khóa học và cấp quyền học trực tiếp trên web.">
+    <script src="js/common-head.js"></script>
+</head>
+<body data-page="checkout" data-nav-current="courses" data-footer-contact-href="index.html#contact">
+    <div class="snowflakes" id="snowflakes"></div>
+    <div id="site-header-mount"></div>
+
+    <main class="page-main page-main--account">
+        <div class="pvq-account-shell pvq-checkout-shell">
+            <div
+                data-site-hero
+                data-title="Checkout Demo"
+                data-lead="Mô phỏng bước thanh toán/đăng ký khóa học trước khi cấp quyền học cho tài khoản hiện tại."
+            ></div>
+
+            <section class="pvq-checkout-layout">
+                <div class="pvq-checkout-layout__main">
+                    <section class="pvq-panel pvq-dashboard-section" id="checkout-main-card">
+                        <p class="pvq-account-kicker">Checkout</p>
+                        <h2 id="checkout-title">Đang tải khóa học...</h2>
+                        <p class="pvq-muted" id="checkout-summary"></p>
+                        <div id="checkout-status-mount"></div>
+                        <div id="checkout-flow"></div>
+                    </section>
+                </div>
+
+                <aside class="pvq-checkout-layout__aside">
+                    <section class="pvq-panel pvq-dashboard-section">
+                        <p class="pvq-account-kicker">Order Summary</p>
+                        <h2>Thông tin đơn demo</h2>
+                        <div id="checkout-order-summary"></div>
+                    </section>
+                </aside>
+            </section>
+        </div>
+    </main>
+
+    <div id="site-footer-mount"></div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/app-common.js"></script>
+    <script src="js/site-header.js"></script>
+    <script src="js/site-shell.js"></script>
+    <script src="js/utils/url.js"></script>
+    <script src="js/data/content-loader.js"></script>
+    <script src="js/pages/checkout.js"></script>
+</body>
+</html>
