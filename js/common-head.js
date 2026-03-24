@@ -1,8 +1,19 @@
 (function () {
+  var DEFAULT_API_BASE = 'https://pianovinhquang-production.up.railway.app';
+
   function ensureTag(selector, createTag) {
     if (document.head.querySelector(selector)) return;
     document.head.appendChild(createTag());
   }
+
+  ensureTag('meta[name="pvq-api-base"]', function () {
+    var meta = document.createElement('meta');
+    meta.name = 'pvq-api-base';
+    meta.content = String(window.PVQ_API_BASE || DEFAULT_API_BASE || '')
+      .trim()
+      .replace(/\/+$/, '');
+    return meta;
+  });
 
   ensureTag('meta[name="theme-color"]', function () {
     var meta = document.createElement('meta');
