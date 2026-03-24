@@ -1,42 +1,49 @@
+function getPlayerColumn() {
+  return document.getElementById('lesson-player-column');
+}
+
+function getSidebarColumn() {
+  return document.getElementById('lesson-sidebar-column');
+}
+
 function renderLocked(message) {
-  var el = document.getElementById('lesson-access-body');
-  if (!el) return;
-  el.innerHTML = '<div class="pvq-alert"><p>' + message + '</p></div>';
+  var playerCol = getPlayerColumn();
+  var sideCol = getSidebarColumn();
+  if (sideCol) sideCol.innerHTML = '';
+  if (!playerCol) return;
+  playerCol.innerHTML = '<div class="pvq-alert"><p>' + message + '</p></div>';
 }
 
 function ensurePianoMounted() {
-  var bodyEl = document.getElementById('lesson-access-body');
-  if (!bodyEl) return;
+  var playerCol = getPlayerColumn();
+  if (!playerCol) return;
 
-  // Nhúng piano module (MusicXML + MIDI) vào bài học.
-  // Demo file nằm trong module: assets/scores/waltz-in-a-minorchopin.(xml|mid)
   var mountEl = document.getElementById('pvq-piano-mount');
   if (!mountEl) {
     var pianoMountHtml =
-      '<div style="margin: 18px 0 26px;">' +
+      '<div class="pvq-lesson-piano-wrap">' +
       '<div id="pvq-piano-mount" ' +
       'data-pvq-score-musicxml="assets/scores/waltz-in-a-minorchopin.musicxml" ' +
       'data-pvq-score-midi="assets/scores/waltz-in-a-minorchopin.mid">' +
       '</div>' +
       '</div>';
-    bodyEl.insertAdjacentHTML('afterbegin', pianoMountHtml);
+    playerCol.insertAdjacentHTML('afterbegin', pianoMountHtml);
   }
 
-  // Loader sẽ tự render UI + sheet.
-  var existingScript = bodyEl.querySelector(
-    'script[src=\"module_piano_self_build/piano-loader.js\"]'
+  var existingScript = playerCol.querySelector(
+    'script[src*="module_piano_self_build/piano-loader.js"]'
   );
   if (!existingScript) {
     var s = document.createElement('script');
     s.src = 'module_piano_self_build/piano-loader.js';
     s.setAttribute('data-mount', '#pvq-piano-mount');
-    bodyEl.appendChild(s);
+    playerCol.appendChild(s);
   }
 }
 
 function renderLessonContent(data) {
-  var bodyEl = document.getElementById('lesson-access-body');
-  if (!bodyEl) return;
+  var sideEl = getSidebarColumn();
+  if (!sideEl) return;
 
   var itemsHtml = data.items
     .map(function (item) {
@@ -61,7 +68,7 @@ function renderLessonContent(data) {
     })
     .join('');
 
-  bodyEl.innerHTML =
+  sideEl.innerHTML =
     '<p class="pvq-muted" style="margin-bottom:16px">Học liệu được lưu trên Google Drive / tài liệu đi kèm. Chỉ chia sẻ trong phạm vi học viên.</p>' +
     '<div class="pvq-resource-list">' +
     itemsHtml +

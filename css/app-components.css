@@ -1,17 +1,41 @@
 /* Bổ sung layout & component chuẩn hóa — dùng cùng templatemo-604-christmas-piano.css */
+/* `.container` định nghĩa trong templatemo-604-christmas-piano.css */
 
 .nav-links a.active {
 	color: var(--text) !important;
 	background: rgba(59, 130, 246, 0.12) !important;
 }
 
-/* --- Page shell --- */
+/* --- Page shell (full-bleed main + .container bên trong) --- */
 .page-main {
-	max-width: 1100px;
-	margin: 0 auto;
-	padding: clamp(120px, 24vw, 160px) 24px clamp(56px, 12vw, 80px);
+	width: 100%;
+	max-width: none;
+	margin: 0;
+	padding: clamp(104px, 12vw, 140px) 0 clamp(40px, 6vw, 64px);
 	position: relative;
 	z-index: 2;
+}
+
+.page-main--lesson {
+	padding-bottom: clamp(28px, 5vw, 44px);
+}
+
+.page-main--account {
+	padding-bottom: clamp(32px, 5vw, 52px);
+}
+
+body[data-page="courses"] .pvq-common-cta-shell,
+body[data-page="products"] .pvq-common-cta-shell,
+body[data-page="course-detail"] .pvq-common-cta-shell,
+body[data-page="product-detail"] .pvq-common-cta-shell,
+body[data-page="account"] .pvq-common-cta-shell {
+	max-width: min(1000px, 100%);
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.pvq-lesson-sidebar-cta .pvq-common-cta {
+	margin-top: 0;
 }
 
 .page-hero-block {
@@ -49,7 +73,7 @@
 
 .pvq-pillar-card {
 	display: block;
-	padding: 28px 26px;
+	padding: 24px 22px;
 	border-radius: var(--radius-md);
 	background: #ffffff;
 	border: 1px solid rgba(15, 23, 42, 0.08);
@@ -99,8 +123,8 @@
 /* --- Catalog grid (products / courses list) --- */
 .pvq-catalog-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-	gap: 20px;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+	gap: 24px;
 }
 
 .pvq-catalog-card {
@@ -198,6 +222,16 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 12px;
+}
+
+/* CTA cuối trang: bóng đổ nhẹ, đồng bộ theme (tránh glow quá đậm) */
+.pvq-common-cta .cta-btn-primary {
+	box-shadow: 0 10px 28px rgba(59, 130, 246, 0.22);
+}
+
+.pvq-common-cta .cta-btn-primary:hover,
+.pvq-common-cta .cta-btn-primary:focus-visible {
+	box-shadow: 0 14px 34px rgba(37, 99, 235, 0.28);
 }
 
 @media (max-width: 760px) {
@@ -320,13 +354,115 @@
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
+	max-width: min(720px, 100%);
+}
+
+.pvq-lesson-shell {
+	width: min(1280px, 100%);
+	margin: 0 auto;
+	padding: 0 24px;
+}
+
+.pvq-lesson-head {
+	margin-bottom: 28px;
+	padding: 28px 32px;
+	border-radius: 24px;
+	background:
+		linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.94)),
+		radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 34%);
+	border: 1px solid rgba(15, 23, 42, 0.08);
+	box-shadow: var(--shadow-card, 0 4px 20px rgba(15, 23, 42, 0.06));
+}
+
+.pvq-lesson-head h1 {
+	margin-top: 12px;
+	margin-bottom: 8px;
+	line-height: 1.08;
+}
+
+.pvq-lesson-layout {
+	display: grid;
+	grid-template-columns: minmax(680px, 2fr) minmax(320px, 1fr);
+	gap: 32px;
+	align-items: start;
+}
+
+.pvq-lesson-layout__main {
+	min-width: 0;
+}
+
+.pvq-lesson-layout__aside {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	min-width: 0;
+}
+
+.pvq-lesson-sidebar-group,
+.pvq-lesson-sidebar-cta {
+	width: 100%;
+	min-width: 0;
+}
+
+.pvq-lesson-sidebar-group {
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+
+.pvq-lesson-sidebar-cta .pvq-common-cta-shell {
+	max-width: none;
+	grid-template-columns: 1fr;
+	padding: 24px;
+	gap: 18px;
+	min-width: 0;
+	align-items: stretch;
+}
+
+.pvq-lesson-sidebar-cta .pvq-common-cta-copy,
+.pvq-lesson-sidebar-cta .pvq-common-cta-copy h2,
+.pvq-lesson-sidebar-cta .pvq-common-cta-copy p {
+	min-width: 0;
+	max-width: none;
+	word-break: normal;
+	overflow-wrap: break-word;
+}
+
+.pvq-lesson-sidebar-cta .pvq-common-cta-copy h2 {
+	font-size: clamp(1.45rem, 2vw, 1.85rem);
+	line-height: 1.18;
+	margin-bottom: 10px;
+}
+
+.pvq-lesson-sidebar-cta .pvq-common-cta-copy p {
+	line-height: 1.72;
+}
+
+.pvq-lesson-sidebar-cta .pvq-common-cta-actions {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	width: 100%;
+}
+
+.pvq-lesson-sidebar-cta .pvq-common-cta-actions .cta-btn {
+	width: 100%;
+	justify-content: center;
+	white-space: normal;
+}
+
+@media (max-width: 1023px) {
+	.pvq-lesson-layout {
+		grid-template-columns: 1fr;
+		gap: 28px;
+	}
 }
 
 .pvq-resource-item {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: 14px;
+	justify-content: flex-start;
+	gap: 14px 16px;
 	flex-wrap: wrap;
 	padding: 16px 18px;
 	border-radius: var(--radius-sm);
@@ -335,9 +471,23 @@
 	box-shadow: var(--shadow-card, 0 4px 20px rgba(15, 23, 42, 0.06));
 }
 
+.pvq-resource-item > div:first-child {
+	flex: 1 1 220px;
+	min-width: 0;
+	max-width: 100%;
+}
+
+.pvq-resource-item .cta-btn,
+.pvq-resource-item > span.pvq-muted {
+	flex-shrink: 0;
+	max-width: 100%;
+}
+
 .pvq-resource-item strong {
 	color: var(--ivory);
 	font-weight: 600;
+	display: block;
+	line-height: 1.4;
 }
 
 .pvq-resource-kind {
@@ -345,6 +495,108 @@
 	color: var(--text-soft);
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
+}
+
+/* Cột chính lesson: piano + sheet rộng, không giới hạn 720px */
+.pvq-lesson-layout__main .pvq-lesson-piano-wrap {
+	display: block;
+	width: 100%;
+	margin: 0;
+}
+
+.pvq-lesson-layout__main #lesson-player-column {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	min-width: 0;
+}
+
+.pvq-lesson-layout__main .pvq-piano-module,
+.pvq-lesson-layout__main .pvq-piano-module .mini-player {
+	width: 100%;
+	max-width: none;
+}
+
+.pvq-lesson-layout__main .pvq-piano-module .mini-player {
+	padding: 34px;
+}
+
+.pvq-lesson-layout__aside #lesson-sidebar-column {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	width: 100%;
+	min-width: 0;
+}
+
+.pvq-lesson-layout__aside .pvq-muted:first-child {
+	margin-bottom: 0 !important;
+	padding: 20px 22px;
+	border-radius: var(--radius-md);
+	background: #ffffff;
+	border: 1px solid rgba(15, 23, 42, 0.08);
+	box-shadow: var(--shadow-card, 0 4px 20px rgba(15, 23, 42, 0.06));
+	line-height: 1.7;
+}
+
+.pvq-lesson-layout__aside .pvq-resource-list {
+	max-width: none;
+	width: 100%;
+	gap: 14px;
+}
+
+.pvq-lesson-layout__main .pvq-piano-module .pvq-score {
+	min-height: 280px;
+	max-height: min(62vh, 640px);
+}
+
+.pvq-lesson-layout__main .pvq-piano-module .pvq-score-container {
+	margin-top: 26px;
+}
+
+.pvq-lesson-layout__aside .pvq-resource-item {
+	width: 100%;
+	min-width: 0;
+	align-items: flex-start;
+}
+
+.pvq-lesson-layout__aside .pvq-resource-item .cta-btn {
+	margin-left: auto;
+}
+
+.pvq-lesson-layout__aside .pvq-resource-item > span.pvq-muted {
+	margin-left: auto;
+}
+
+@media (min-width: 1024px) {
+	.pvq-lesson-layout__aside {
+		position: sticky;
+		top: 108px;
+	}
+}
+
+@media (max-width: 767px) {
+	.pvq-lesson-shell {
+		padding: 0 18px;
+	}
+
+	.pvq-lesson-head {
+		padding: 22px 20px;
+		margin-bottom: 22px;
+	}
+
+	.pvq-lesson-layout__main .pvq-piano-module .mini-player {
+		padding: 24px 20px;
+	}
+
+	.pvq-lesson-sidebar-cta .pvq-common-cta-shell {
+		padding: 20px;
+	}
+
+	.pvq-lesson-layout__aside .pvq-resource-item .cta-btn,
+	.pvq-lesson-layout__aside .pvq-resource-item > span.pvq-muted {
+		margin-left: 0;
+	}
 }
 
 .pvq-alert {
@@ -361,15 +613,36 @@
 }
 
 /* --- Account --- */
-.pvq-account-grid {
+.pvq-account-shell {
+	width: min(1100px, 100%);
+	margin: 0 auto;
+	padding: 0 24px;
+}
+
+.pvq-account-layout {
 	display: grid;
-	grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-	gap: 28px;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+	gap: 32px;
 	align-items: start;
 }
 
-@media (max-width: 800px) {
-	.pvq-account-grid {
+.pvq-account-layout__aside,
+.pvq-account-layout__main {
+	min-width: 0;
+}
+
+.pvq-account-layout__main {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+
+@media (max-width: 900px) {
+	.pvq-account-shell {
+		padding: 0 18px;
+	}
+
+	.pvq-account-layout {
 		grid-template-columns: 1fr;
 	}
 }
@@ -382,11 +655,123 @@
 	box-shadow: var(--shadow-card, 0 4px 20px rgba(15, 23, 42, 0.06));
 }
 
+.pvq-account-section {
+	padding: 24px;
+}
+
 .pvq-panel h2 {
 	font-family: 'Cormorant Garamond', serif;
 	font-size: 1.45rem;
 	margin-bottom: 16px;
 	color: var(--ivory);
+}
+
+.pvq-account-kicker {
+	font-size: 0.78rem;
+	text-transform: uppercase;
+	letter-spacing: 0.14em;
+	color: var(--accent-soft);
+	font-weight: 600;
+	margin-bottom: 10px;
+}
+
+.pvq-account-profile {
+	display: flex;
+	align-items: flex-start;
+	gap: 16px;
+	margin-bottom: 22px;
+}
+
+.pvq-account-avatar {
+	width: 68px;
+	height: 68px;
+	border-radius: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	background: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(245, 158, 11, 0.14));
+	border: 1px solid rgba(59, 130, 246, 0.18);
+	color: var(--accent-strong);
+	font-weight: 700;
+	letter-spacing: 0.08em;
+}
+
+.pvq-account-profile .pvq-muted {
+	line-height: 1.7;
+}
+
+.pvq-account-email {
+	margin-top: 6px;
+}
+
+.pvq-account-email strong {
+	font-size: 1.02rem;
+	color: var(--ivory);
+	word-break: break-word;
+}
+
+.pvq-account-meta-list {
+	display: grid;
+	gap: 12px;
+	margin-bottom: 20px;
+}
+
+.pvq-account-meta-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 14px 16px;
+	border-radius: 14px;
+	background: var(--bg-soft);
+	border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.pvq-account-meta-item span {
+	font-size: 0.88rem;
+	color: var(--text-soft);
+}
+
+.pvq-account-meta-item strong {
+	color: var(--ivory);
+	font-size: 0.95rem;
+}
+
+.pvq-account-action {
+	width: 100%;
+	justify-content: center;
+	border: none;
+	cursor: pointer;
+}
+
+.pvq-account-note {
+	margin-top: 14px;
+	line-height: 1.7;
+}
+
+.pvq-account-empty-state {
+	padding: 18px 20px;
+	border-radius: 16px;
+	background: var(--bg-soft);
+	border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.pvq-account-empty-state strong {
+	display: block;
+	color: var(--ivory);
+	margin-bottom: 8px;
+}
+
+.pvq-account-support .pvq-muted {
+	line-height: 1.75;
+}
+
+.pvq-account-support-actions {
+	margin-top: 18px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
 }
 
 .pvq-form-stack .form-group {
@@ -411,8 +796,12 @@
 }
 
 .pvq-course-owned {
-	padding: 14px 0;
+	padding: 18px 0;
 	border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.pvq-course-owned:first-child {
+	padding-top: 8px;
 }
 
 .pvq-course-owned:last-child {
@@ -422,6 +811,7 @@
 .pvq-course-owned a {
 	color: var(--accent-ink);
 	font-weight: 600;
+	font-size: 1.02rem;
 	text-decoration: none;
 }
 
@@ -434,9 +824,9 @@
 	font-size: 0.9rem;
 }
 
-/* --- Design tokens: spacing nhịp section --- */
+/* --- Design tokens: spacing nhịp section (đồng bộ --pvq-section-py templatemo) --- */
 :root {
-	--pvq-section-pad-y: clamp(3.25rem, 7vw, 5rem);
+	--pvq-section-pad-y: clamp(4rem, 6vw, 6rem);
 }
 
 .pvq-section-rhythm {
@@ -463,7 +853,7 @@
 .pvq-intro-band {
 	position: relative;
 	z-index: 2;
-	padding: clamp(2.5rem, 6vw, 4rem) 24px;
+	padding: clamp(2.5rem, 6vw, 4rem) 0;
 }
 
 .pvq-intro-head {
@@ -478,12 +868,19 @@
 }
 
 .pvq-intro-grid {
-	max-width: 1180px;
-	margin: 0 auto;
+	width: 100%;
+	max-width: none;
+	margin: 0;
 	display: grid;
-	grid-template-columns: 1.15fr 1fr 1fr;
-	gap: 20px;
+	grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
+	gap: 24px;
 	align-items: stretch;
+}
+
+@media (max-width: 900px) {
+	.pvq-intro-grid {
+		grid-template-columns: 1fr;
+	}
 }
 
 .pvq-intro-card {
@@ -554,12 +951,6 @@
 .pvq-intro-link:focus-visible {
 	text-decoration: underline;
 	outline: none;
-}
-
-/* --- Demo piano section: căn giữa player --- */
-#demo-piano .mini-player {
-	margin-left: auto;
-	margin-right: auto;
 }
 
 /* --- Card đồng bộ: ô “xem thêm” không ảnh --- */
@@ -724,9 +1115,21 @@
 }
 
 .pvq-demo-widget-inner {
-	max-width: 800px;
-	margin: 0 auto;
-	padding: 0 4px;
+	width: 100%;
+	max-width: none;
+	margin: 0;
+	padding: 0;
+}
+
+#demo-piano .mini-player--lite {
+	margin-left: auto;
+	margin-right: auto;
+	max-width: min(720px, 100%);
+}
+
+#demo-piano .mini-player:not(.mini-player--lite) {
+	margin-left: auto;
+	margin-right: auto;
 }
 
 .pvq-demo-widget-head {

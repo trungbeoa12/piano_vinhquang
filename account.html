@@ -11,43 +11,102 @@
     <div class="snowflakes" id="snowflakes"></div>
     <div id="site-header-mount"></div>
 
-    <main class="page-main">
+    <main class="page-main page-main--account">
+        <div class="pvq-account-shell">
         <div
             data-site-hero
             data-title="Tài khoản"
             data-lead="Đăng nhập demo để xem luồng “Khóa học của tôi”. Trên môi trường thật, bước này thay bằng SSO / email magic link / backend của bạn."
         ></div>
 
-        <div class="pvq-account-grid">
-            <div id="account-guest" class="pvq-panel">
-                <h2>Đăng nhập (demo)</h2>
-                <form id="demo-login-form" class="pvq-form-stack">
-                    <div class="form-group">
-                        <label for="demo-email">Email (tuỳ chọn)</label>
-                        <input type="email" id="demo-email" name="email" placeholder="ban@email.com" autocomplete="username">
+        <section id="account-guest" class="pvq-account-layout">
+            <div class="pvq-account-layout__aside">
+                <section class="pvq-panel pvq-account-section">
+                    <div class="pvq-account-profile">
+                        <div class="pvq-account-avatar" aria-hidden="true">PVQ</div>
+                        <div>
+                            <p class="pvq-account-kicker">Account Info</p>
+                            <h2>Đăng nhập demo</h2>
+                            <p class="pvq-muted">Dùng email bất kỳ để xem luồng học viên, danh sách khóa học đã cấp quyền và cách mở bài học.</p>
+                        </div>
                     </div>
-                    <button type="submit" class="cta-btn cta-btn-primary" style="width:100%;justify-content:center;border:none;cursor:pointer">Đăng nhập thử</button>
-                </form>
-                <p class="pvq-muted" style="margin-top:14px">Demo gán sẵn quyền hai khóa trong catalog để bạn mở bài học và học liệu.</p>
+                    <form id="demo-login-form" class="pvq-form-stack">
+                        <div class="form-group">
+                            <label for="demo-email">Email (tuỳ chọn)</label>
+                            <input type="email" id="demo-email" name="email" placeholder="ban@email.com" autocomplete="username">
+                        </div>
+                        <button type="submit" class="cta-btn cta-btn-primary pvq-account-action">Đăng nhập thử</button>
+                    </form>
+                    <p class="pvq-muted pvq-account-note">Demo gán sẵn quyền hai khóa trong catalog để bạn mở bài học và học liệu.</p>
+                </section>
             </div>
 
-            <div id="account-user" class="pvq-panel" style="display:none">
-                <h2>Xin chào</h2>
-                <p style="margin-bottom:8px"><strong id="account-email-display">—</strong></p>
-                <button type="button" id="logout-btn" class="cta-btn cta-btn-secondary" style="border:none;cursor:pointer;margin-bottom:24px">Đăng xuất</button>
+            <div class="pvq-account-layout__main">
+                <section class="pvq-panel pvq-account-section">
+                    <p class="pvq-account-kicker">My Courses</p>
+                    <h2>Khóa học của tôi</h2>
+                    <p class="pvq-muted">Sau khi đăng nhập, danh sách khóa học được cấp quyền sẽ xuất hiện tại đây để bạn đi thẳng vào lesson.</p>
+                    <div class="pvq-account-empty-state">
+                        <strong>Chưa đăng nhập</strong>
+                        <p class="pvq-muted">Đăng nhập demo ở cột bên trái để xem thử giao diện học viên và các khóa học đã được cấp quyền.</p>
+                    </div>
+                </section>
 
-                <h2 style="margin-top:8px">Khóa học của tôi</h2>
-                <div id="account-courses-list"></div>
+                <section class="pvq-panel pvq-account-section pvq-account-support">
+                    <p class="pvq-account-kicker">Support</p>
+                    <h2>Muốn triển khai luồng đăng nhập thật?</h2>
+                    <p class="pvq-muted">Phần demo hiện giữ mục tiêu minh họa quyền truy cập học liệu. Sau này bạn có thể nối tiếp bằng SSO, magic link hoặc backend học viên riêng.</p>
+                    <div class="pvq-account-support-actions">
+                        <a href="index.html#contact" class="cta-btn cta-btn-primary">Trao đổi giải pháp</a>
+                    </div>
+                </section>
             </div>
+        </section>
+
+        <section id="account-user" class="pvq-account-layout" style="display:none">
+            <div class="pvq-account-layout__aside">
+                <section class="pvq-panel pvq-account-section">
+                    <div class="pvq-account-profile">
+                        <div class="pvq-account-avatar" aria-hidden="true">PVQ</div>
+                        <div>
+                            <p class="pvq-account-kicker">Account Info</p>
+                            <h2>Xin chào</h2>
+                            <p class="pvq-account-email"><strong id="account-email-display">—</strong></p>
+                        </div>
+                    </div>
+                    <div class="pvq-account-meta-list">
+                        <div class="pvq-account-meta-item">
+                            <span>Trạng thái</span>
+                            <strong>Đã đăng nhập</strong>
+                        </div>
+                        <div class="pvq-account-meta-item">
+                            <span>Quyền truy cập</span>
+                            <strong>Khóa học demo</strong>
+                        </div>
+                    </div>
+                    <button type="button" id="logout-btn" class="cta-btn cta-btn-secondary pvq-account-action" style="border:none;cursor:pointer">Đăng xuất</button>
+                </section>
+            </div>
+
+            <div class="pvq-account-layout__main">
+                <section class="pvq-panel pvq-account-section">
+                    <p class="pvq-account-kicker">My Courses</p>
+                    <h2>Khóa học của tôi</h2>
+                    <p class="pvq-muted">Các khóa học bên dưới là những khóa đã được cấp quyền truy cập. Chọn một khóa để mở lesson và học liệu tương ứng.</p>
+                    <div id="account-courses-list"></div>
+                </section>
+
+                <section class="pvq-panel pvq-account-section pvq-account-support">
+                    <p class="pvq-account-kicker">Support</p>
+                    <h2>Muốn triển khai luồng đăng nhập thật?</h2>
+                    <p class="pvq-muted">Khi cần chuyển từ demo sang sản phẩm thật, phần này có thể nối sang SSO, magic link hoặc hệ thống học viên riêng mà không phải đổi toàn bộ luồng giao diện.</p>
+                    <div class="pvq-account-support-actions">
+                        <a href="index.html#contact" class="cta-btn cta-btn-primary">Trao đổi giải pháp</a>
+                    </div>
+                </section>
+            </div>
+        </section>
         </div>
-        <div
-            data-site-cta
-            data-badge="Hỗ trợ truy cập"
-            data-title="Muốn triển khai luồng đăng nhập thật?"
-            data-lead="Phần demo hiện giữ mục tiêu minh họa quyền truy cập học liệu. Sau này bạn có thể nối tiếp bằng SSO, magic link hoặc backend học viên riêng."
-            data-primary-href="index.html#contact"
-            data-primary-label="Trao đổi giải pháp"
-        ></div>
     </main>
 
     <div id="site-footer-mount"></div>

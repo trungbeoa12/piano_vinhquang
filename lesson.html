@@ -11,21 +11,35 @@
     <div class="snowflakes" id="snowflakes"></div>
     <div id="site-header-mount"></div>
 
-    <main class="page-main">
-        <p class="pvq-muted"><a href="courses.html" style="color:inherit;text-decoration:none">Khóa học</a> / <span id="lesson-breadcrumb">Bài học</span></p>
-        <h1 id="lesson-title" style="font-family:'Cormorant Garamond',serif;font-size:clamp(1.6rem,3vw,2.2rem);margin:12px 0 8px;color:var(--ivory)">Đang tải…</h1>
-        <p id="lesson-subtitle" class="pvq-muted" style="margin-bottom:24px"></p>
-        <div id="lesson-access-body"></div>
-        <div
-            data-site-cta
-            data-badge="Quyền truy cập"
-            data-title="Cần hỗ trợ mở học liệu hoặc cấp quyền?"
-            data-lead="Nếu bạn đã đăng ký nhưng chưa thấy học liệu, hãy liên hệ để kiểm tra quyền truy cập hoặc hướng dẫn lại luồng đăng nhập."
-            data-primary-href="index.html#contact"
-            data-primary-label="Liên hệ hỗ trợ"
-            data-secondary-href="account.html"
-            data-secondary-label="Mở tài khoản"
-        ></div>
+    <main class="page-main page-main--lesson">
+        <div class="pvq-lesson-shell">
+            <div class="pvq-lesson-layout">
+                <div class="pvq-lesson-layout__main">
+                    <header class="pvq-lesson-head">
+                        <p class="pvq-muted"><a href="courses.html" style="color:inherit;text-decoration:none">Khóa học</a> / <span id="lesson-breadcrumb">Bài học</span></p>
+                        <h1 id="lesson-title" style="font-family:'Cormorant Garamond',serif;font-size:clamp(1.9rem,3.2vw,2.8rem);color:var(--ivory)">Đang tải…</h1>
+                        <p id="lesson-subtitle" class="pvq-muted" style="margin-bottom:0"></p>
+                    </header>
+                    <div id="lesson-player-column"></div>
+                </div>
+                <aside class="pvq-lesson-layout__aside" aria-label="Học liệu và hỗ trợ">
+                    <div class="pvq-lesson-sidebar-group">
+                        <div id="lesson-sidebar-column"></div>
+                    </div>
+                    <div
+                        class="pvq-lesson-sidebar-cta"
+                        data-site-cta
+                        data-badge="Quyền truy cập"
+                        data-title="Cần hỗ trợ mở học liệu hoặc cấp quyền?"
+                        data-lead="Nếu bạn đã đăng ký nhưng chưa thấy học liệu, hãy liên hệ để kiểm tra quyền truy cập hoặc hướng dẫn lại luồng đăng nhập."
+                        data-primary-href="index.html#contact"
+                        data-primary-label="Liên hệ hỗ trợ"
+                        data-secondary-href="account.html"
+                        data-secondary-label="Mở tài khoản"
+                    ></div>
+                </aside>
+            </div>
+        </div>
     </main>
 
     <div id="site-footer-mount"></div>

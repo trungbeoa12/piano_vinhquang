@@ -50,9 +50,11 @@ body.pvq-piano-studio-page {
 }
 
 .pvq-piano-studio-shell {
-	max-width: 760px;
+	width: 100%;
+	max-width: 1200px;
 	margin: 0 auto;
 	padding: 88px 24px 48px;
+	box-sizing: border-box;
 }
 
 .pvq-piano-studio-page h1 {
