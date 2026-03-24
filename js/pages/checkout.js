@@ -99,6 +99,8 @@ function renderOrderSummary(course, order, checkoutData) {
 function renderGuestState(course) {
   var flowEl = document.getElementById('checkout-flow');
   if (!flowEl) return;
+  var redirectUrl = 'checkout.html?courseId=' + encodeURIComponent(course.id);
+  var accountHref = 'account.html?redirect=' + encodeURIComponent(redirectUrl);
 
   flowEl.innerHTML =
     '<div class="pvq-checkout-state">' +
@@ -108,7 +110,7 @@ function renderGuestState(course) {
     course.title +
     '</strong>.</p>' +
     '<div class="pvq-course-access-actions">' +
-    '<a href="account.html" class="cta-btn cta-btn-primary">Đăng nhập</a>' +
+    '<a href="' + accountHref + '" class="cta-btn cta-btn-primary">Đăng nhập</a>' +
     '<a href="register.html" class="cta-btn cta-btn-secondary">Tạo tài khoản</a>' +
     '</div>' +
     '</div>';

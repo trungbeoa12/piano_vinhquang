@@ -81,13 +81,17 @@ const contactRateLimitWindowMs = Number(process.env.CONTACT_RATE_LIMIT_WINDOW_MS
 const contactRateLimitMax = Number(process.env.CONTACT_RATE_LIMIT_MAX) || 20;
 const paymentBankCode = getRequiredTrimmedString(process.env.PAYMENT_BANK_CODE) || 'ICB';
 const paymentBankName = getRequiredTrimmedString(process.env.PAYMENT_BANK_NAME) || 'VietinBank';
-const paymentAccountNumber =
-  getRequiredTrimmedString(process.env.PAYMENT_ACCOUNT_NUMBER) || '103866619999';
-const paymentAccountName =
-  getRequiredTrimmedString(process.env.PAYMENT_ACCOUNT_NAME) || 'Đỗ Thành Trung';
+const paymentAccountNumber = getRequiredTrimmedString(
+  process.env.PAYMENT_BANK_ACCOUNT_NUMBER || process.env.PAYMENT_ACCOUNT_NUMBER
+) || '103866619999';
+const paymentAccountName = getRequiredTrimmedString(
+  process.env.PAYMENT_BANK_ACCOUNT_NAME || process.env.PAYMENT_ACCOUNT_NAME
+) || 'Đỗ Thành Trung';
 const orderTransferCodePrefix =
   getRequiredTrimmedString(process.env.ORDER_TRANSFER_CODE_PREFIX) || 'PVQ';
-const adminConfirmApiKey = getRequiredTrimmedString(process.env.ADMIN_CONFIRM_API_KEY);
+const adminConfirmApiKey = getRequiredTrimmedString(
+  process.env.ADMIN_ACTION_SECRET || process.env.ADMIN_CONFIRM_API_KEY
+);
 
 let customersCollection;
 let usersCollection;
@@ -135,7 +139,7 @@ function validateProductionSecrets() {
 
   if (!adminConfirmApiKey) {
     throw new Error(
-      '[config] Missing ADMIN_CONFIRM_API_KEY. Set a strong key for admin order confirmation API.'
+      '[config] Missing ADMIN_ACTION_SECRET (or ADMIN_CONFIRM_API_KEY). Set a strong key for admin order confirmation API.'
     );
   }
 }
@@ -258,25 +262,28 @@ function buildQrImageUrl(amount, transferCode) {
 }
 
 function buildCheckoutPayload(order) {
-  const amount = Number(order.price) || 0;
+  const amount = Number(order.amount !== undefined ? order.amount : order.price) || 0;
   const transferCode = String(order.transferCode || '');
+  const bankName = String(order.bankName || paymentBankName);
+  const bankAccountNumber = String(order.bankAccountNumber || paymentAccountNumber);
+  const bankAccountName = String(order.bankAccountName || paymentAccountName);
   return {
     amount: amount,
     bank: {
       bankCode: paymentBankCode,
-      bankName: paymentBankName,
-      accountNumber: paymentAccountNumber,
-      accountName: paymentAccountName,
+      bankName: bankName,
+      accountNumber: bankAccountNumber,
+      accountName: bankAccountName,
     },
     transferCode: transferCode,
     qr: {
       imageUrl: buildQrImageUrl(amount, transferCode),
-      data: `${paymentBankCode}|${paymentAccountNumber}|${amount}|${transferCode}`,
+      data: `${paymentBankCode}|${bankAccountNumber}|${amount}|${transferCode}`,
     },
   };
 }
 
-async function confirmOrderAsPaid(orderId) {
+async function confirmOrderAsPaid(orderId, confirmedBy, adminNote) {
   const order = await ordersCollection.findOne({ _id: orderId });
   if (!order) {
     return { ok: false, statusCode: 404, code: 'ORDER_NOT_FOUND', message: 'Order not found.' };
@@ -297,7 +304,14 @@ async function confirmOrderAsPaid(orderId) {
 
   const updated = await ordersCollection.findOneAndUpdate(
     { _id: orderId, status: 'pending' },
-    { $set: { status: 'paid', paidAt: new Date() } },
+    {
+      $set: {
+        status: 'paid',
+        confirmedAt: new Date(),
+        confirmedBy: confirmedBy || 'admin',
+        note: adminNote ? String(adminNote).trim().slice(0, 500) : order.note || null,
+      },
+    },
     { returnDocument: 'after' }
   );
   const paidOrder = updated && updated.value ? updated.value : await ordersCollection.findOne({ _id: orderId });
@@ -312,6 +326,7 @@ async function confirmOrderAsPaid(orderId) {
       $set: {
         status: 'active',
         source: 'order_confirm_admin',
+        sourceOrderId: paidOrder._id.toString(),
         updatedAt: now,
       },
       $setOnInsert: {
@@ -330,6 +345,33 @@ function requireAdminKey(req, res, next) {
     return sendError(res, 401, 'ADMIN_UNAUTHORIZED', 'Invalid admin key.');
   }
   return next();
+}
+
+function serializeOrder(orderDoc) {
+  if (!orderDoc) return null;
+  const amount = Number(orderDoc.amount !== undefined ? orderDoc.amount : orderDoc.price) || 0;
+  return {
+    id: orderDoc._id.toString(),
+    userId: orderDoc.userId,
+    courseId: orderDoc.courseId,
+    amount: amount,
+    price: amount,
+    transferCode: orderDoc.transferCode || null,
+    bankName: orderDoc.bankName || paymentBankName,
+    bankAccountNumber: orderDoc.bankAccountNumber || paymentAccountNumber,
+    bankAccountName: orderDoc.bankAccountName || paymentAccountName,
+    status: orderDoc.status,
+    createdAt:
+      orderDoc.createdAt instanceof Date
+        ? orderDoc.createdAt.toISOString()
+        : orderDoc.createdAt,
+    confirmedAt:
+      orderDoc.confirmedAt instanceof Date
+        ? orderDoc.confirmedAt.toISOString()
+        : orderDoc.confirmedAt || null,
+    confirmedBy: orderDoc.confirmedBy || null,
+    note: orderDoc.note || null,
+  };
 }
 
 function loadEnvFile(filePath) {
@@ -861,10 +903,10 @@ app.post('/api/orders/create', orderRateLimiter, requireAuth, async function (re
 
     const course = await loadCourseById(courseId);
     const userIdStr = String(req.auth.user._id);
-    const price = priceVndFromCourse(course);
+    const amount = priceVndFromCourse(course);
     const now = new Date();
 
-    if (!Number.isFinite(price) || price <= 0) {
+    if (!Number.isFinite(amount) || amount <= 0) {
       return sendError(
         res,
         422,
@@ -881,18 +923,7 @@ app.post('/api/orders/create', orderRateLimiter, requireAuth, async function (re
     if (latestPending) {
       return res.status(201).json({
         ok: true,
-        order: {
-          id: latestPending._id.toString(),
-          userId: latestPending.userId,
-          courseId: latestPending.courseId,
-          price: latestPending.price,
-          status: latestPending.status,
-          transferCode: latestPending.transferCode,
-          createdAt:
-            latestPending.createdAt instanceof Date
-              ? latestPending.createdAt.toISOString()
-              : latestPending.createdAt,
-        },
+        order: serializeOrder(latestPending),
         checkout: buildCheckoutPayload(latestPending),
       });
     }
@@ -901,24 +932,23 @@ app.post('/api/orders/create', orderRateLimiter, requireAuth, async function (re
     const insertResult = await ordersCollection.insertOne({
       userId: userIdStr,
       courseId: courseId,
-      price: price,
+      amount: amount,
+      price: amount,
       transferCode: transferCode,
+      bankName: paymentBankName,
+      bankAccountNumber: paymentAccountNumber,
+      bankAccountName: paymentAccountName,
       status: 'pending',
       createdAt: now,
+      confirmedAt: null,
+      confirmedBy: null,
+      note: null,
     });
     const createdOrder = await ordersCollection.findOne({ _id: insertResult.insertedId });
 
     return res.status(201).json({
       ok: true,
-      order: {
-        id: createdOrder._id.toString(),
-        userId: userIdStr,
-        courseId: courseId,
-        price: price,
-        transferCode: transferCode,
-        status: 'pending',
-        createdAt: now.toISOString(),
-      },
+      order: serializeOrder(createdOrder),
       checkout: buildCheckoutPayload(createdOrder),
     });
   } catch (error) {
@@ -927,6 +957,60 @@ app.post('/api/orders/create', orderRateLimiter, requireAuth, async function (re
       return sendError(res, 404, 'COURSE_NOT_FOUND', 'Course not found.');
     }
     return sendError(res, 500, 'ORDER_CREATE_FAILED', 'Failed to create order.');
+  }
+});
+
+app.get('/api/orders/:orderId', requireAuth, async function (req, res) {
+  try {
+    if (!requireMongoCollection(ordersCollection, res)) return;
+    const orderIdRaw = getRequiredTrimmedString(req.params.orderId);
+    if (!orderIdRaw || !ObjectId.isValid(orderIdRaw)) {
+      return sendError(res, 400, 'VALIDATION_ORDER_ID', 'Valid orderId is required.');
+    }
+
+    const order = await ordersCollection.findOne({ _id: new ObjectId(orderIdRaw) });
+    if (!order) {
+      return sendError(res, 404, 'ORDER_NOT_FOUND', 'Order not found.');
+    }
+
+    const isOwner = String(order.userId) === String(req.auth.user._id);
+    const adminKey = getRequiredTrimmedString(req.headers['x-admin-key']);
+    const isAdmin = !!adminConfirmApiKey && adminKey === adminConfirmApiKey;
+    if (!isOwner && !isAdmin) {
+      return sendError(res, 403, 'ORDER_FORBIDDEN', 'You cannot access this order.');
+    }
+
+    return res.json({
+      ok: true,
+      order: serializeOrder(order),
+      checkout: buildCheckoutPayload(order),
+    });
+  } catch (error) {
+    logServerError('api/orders/get', error);
+    return sendError(res, 500, 'ORDER_GET_FAILED', 'Failed to load order.');
+  }
+});
+
+app.get('/api/admin/orders', requireAdminKey, async function (req, res) {
+  try {
+    if (!requireMongoCollection(ordersCollection, res)) return;
+    const status = getRequiredTrimmedString(req.query.status);
+    const query = {};
+    if (status) {
+      if (['pending', 'paid', 'cancelled'].indexOf(status) === -1) {
+        return sendError(res, 400, 'VALIDATION_ORDER_STATUS', 'Invalid order status filter.');
+      }
+      query.status = status;
+    }
+
+    const items = await ordersCollection.find(query).sort({ createdAt: -1 }).limit(200).toArray();
+    return res.json({
+      ok: true,
+      items: items.map(serializeOrder),
+    });
+  } catch (error) {
+    logServerError('api/admin/orders/list', error);
+    return sendError(res, 500, 'ADMIN_ORDERS_LIST_FAILED', 'Failed to load orders.');
   }
 });
 
@@ -941,29 +1025,15 @@ app.post('/api/orders/confirm', orderRateLimiter, requireAdminKey, async functio
     }
 
     const orderId = new ObjectId(orderIdRaw);
-    const result = await confirmOrderAsPaid(orderId);
+    const adminNote = getRequiredTrimmedString(req.body.adminNote);
+    const result = await confirmOrderAsPaid(orderId, 'admin', adminNote);
     if (!result.ok) {
       return sendError(res, result.statusCode, result.code, result.message);
     }
     const paidOrder = result.order;
     return res.json({
       ok: true,
-      order: {
-        id: paidOrder._id.toString(),
-        userId: paidOrder.userId,
-        courseId: paidOrder.courseId,
-        price: paidOrder.price,
-        status: 'paid',
-        createdAt:
-          paidOrder.createdAt instanceof Date
-            ? paidOrder.createdAt.toISOString()
-            : paidOrder.createdAt,
-      },
-      transferCode: paidOrder.transferCode,
-      paidAt:
-        paidOrder.paidAt instanceof Date
-          ? paidOrder.paidAt.toISOString()
-          : paidOrder.paidAt || null,
+      order: serializeOrder(paidOrder),
       checkout: buildCheckoutPayload(paidOrder),
     });
   } catch (error) {
@@ -982,7 +1052,9 @@ app.post('/api/admin/orders/confirm', orderRateLimiter, requireAdminKey, async f
       return sendError(res, 400, 'VALIDATION_ORDER_ID', 'Valid orderId is required.');
     }
 
-    const result = await confirmOrderAsPaid(new ObjectId(orderIdRaw));
+    const adminNote = getRequiredTrimmedString(req.body.adminNote);
+    const adminId = getRequiredTrimmedString(req.body.confirmedBy) || 'admin';
+    const result = await confirmOrderAsPaid(new ObjectId(orderIdRaw), adminId, adminNote);
     if (!result.ok) {
       return sendError(res, result.statusCode, result.code, result.message);
     }
@@ -990,22 +1062,7 @@ app.post('/api/admin/orders/confirm', orderRateLimiter, requireAdminKey, async f
 
     return res.json({
       ok: true,
-      order: {
-        id: paidOrder._id.toString(),
-        userId: paidOrder.userId,
-        courseId: paidOrder.courseId,
-        price: paidOrder.price,
-        transferCode: paidOrder.transferCode,
-        status: paidOrder.status,
-        createdAt:
-          paidOrder.createdAt instanceof Date
-            ? paidOrder.createdAt.toISOString()
-            : paidOrder.createdAt,
-        paidAt:
-          paidOrder.paidAt instanceof Date
-            ? paidOrder.paidAt.toISOString()
-            : paidOrder.paidAt || null,
-      },
+      order: serializeOrder(paidOrder),
       checkout: buildCheckoutPayload(paidOrder),
     });
   } catch (error) {

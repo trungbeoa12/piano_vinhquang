@@ -45,29 +45,33 @@ function renderCourseAccessCard(course, hasAccess) {
 
   accessEl.innerHTML =
     '<div class="pvq-course-access-card">' +
-    '<p class="pvq-course-access-badge">Thanh toán demo</p>' +
-    '<h3>Đăng ký khóa học</h3>' +
-    '<p class="pvq-muted">Tài khoản hiện tại chưa có quyền khóa học này. Vào trang checkout để tạo đơn và xác nhận thanh toán mô phỏng; quyền học được lưu trên server.</p>' +
+    '<p class="pvq-course-access-badge">Checkout</p>' +
+    '<h3>Mua khóa học</h3>' +
+    '<p class="pvq-muted">Tài khoản hiện tại chưa có quyền khóa học này. Vào trang checkout để tạo đơn chuyển khoản và chờ admin xác nhận.</p>' +
     '<div class="pvq-course-access-price">' + (course.priceLabel || 'Xem checkout') + '</div>' +
     '<div class="pvq-course-access-actions">' +
-    '<a href="' + checkoutHref + '" class="cta-btn cta-btn-primary">Tới checkout demo</a>' +
+    '<a href="' + checkoutHref + '" class="cta-btn cta-btn-primary">Mua khóa học</a>' +
     '<a href="account.html" class="cta-btn cta-btn-secondary">Tài khoản</a>' +
     '<a href="dashboard.html" class="cta-btn cta-btn-secondary">Mở dashboard</a>' +
     '</div>' +
     '</div>';
 }
 
-function renderGuestAccessCard() {
+function renderGuestAccessCard(course) {
   var accessEl = document.getElementById('course-access-cta');
   if (!accessEl) return;
+  var checkoutHref = course
+    ? 'checkout.html?courseId=' + encodeURIComponent(course.id)
+    : 'account.html';
 
   accessEl.innerHTML =
     '<div class="pvq-course-access-card">' +
     '<p class="pvq-course-access-badge">Bước 1</p>' +
     '<h3>Đăng nhập hoặc tạo tài khoản</h3>' +
-    '<p class="pvq-muted">Sau khi đăng nhập hoặc tạo tài khoản mới, bạn có thể quay lại trang này để dùng mock payment và mở lesson trực tiếp.</p>' +
+    '<p class="pvq-muted">Bạn có thể bấm mua khóa học ngay, hệ thống sẽ yêu cầu đăng nhập rồi quay lại checkout.</p>' +
     '<div class="pvq-course-access-actions">' +
-    '<a href="account.html" class="cta-btn cta-btn-primary">Đăng nhập</a>' +
+    '<a href="' + checkoutHref + '" class="cta-btn cta-btn-primary">Mua khóa học</a>' +
+    '<a href="account.html" class="cta-btn cta-btn-secondary">Đăng nhập</a>' +
     '<a href="register.html" class="cta-btn cta-btn-secondary">Tạo tài khoản</a>' +
     '</div>' +
 	      '</div>';
@@ -170,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
             !window.PVQ_Auth.isLoggedIn ||
             !window.PVQ_Auth.isLoggedIn()
           ) {
-            renderGuestAccessCard();
+            renderGuestAccessCard(c);
             renderLessons(c, false);
             return;
           }

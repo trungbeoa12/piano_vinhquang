@@ -54,6 +54,9 @@ function refreshAccountView() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+  var redirectTo = window.PVQ_getQueryParam
+    ? window.PVQ_getQueryParam('redirect')
+    : '';
   Promise.resolve(window.PVQ_Auth.refreshSession())
     .catch(function () {
       return null;
@@ -80,6 +83,10 @@ document.addEventListener('DOMContentLoaded', function () {
         await window.PVQ_Auth.login(email, password);
         await window.PVQ_Auth.refreshSession();
         if (feedbackEl) feedbackEl.textContent = '';
+        if (redirectTo) {
+          window.location.href = redirectTo;
+          return;
+        }
         refreshAccountView();
         if (window.PVQ_injectSiteHeader) {
           window.PVQ_injectSiteHeader('account', {

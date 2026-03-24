@@ -58,15 +58,15 @@ Lưu ý: vì partial đang được load bằng `fetch()`, không nên mở page
 - `CONTACT_RATE_LIMIT_MAX`
 - `PAYMENT_BANK_CODE`
 - `PAYMENT_BANK_NAME`
-- `PAYMENT_ACCOUNT_NUMBER`
-- `PAYMENT_ACCOUNT_NAME`
+- `PAYMENT_BANK_ACCOUNT_NUMBER`
+- `PAYMENT_BANK_ACCOUNT_NAME`
 - `ORDER_TRANSFER_CODE_PREFIX`
 - `MONGODB_CUSTOMERS_COLLECTION`
 - `MONGODB_USERS_COLLECTION`
 - `MONGODB_ENROLLMENTS_COLLECTION`
 - `MONGODB_ORDERS_COLLECTION`
 - `MONGODB_LESSON_PROGRESS_COLLECTION`
-- `ADMIN_CONFIRM_API_KEY` (required in production for admin confirm APIs)
+- `ADMIN_ACTION_SECRET` (required in production for admin confirm APIs)
 
 ### Development notes
 
@@ -109,6 +109,8 @@ Nếu frontend deploy trên Vercel/Netlify và backend deploy riêng (Render/Rai
 - `GET /api/courses/:courseId`
 - `GET /api/courses/:courseId/lessons`
 - `POST /api/orders/create` (body: `{ "courseId": "..." }`) — tạo đơn `pending`
+- `GET /api/orders/:orderId` (owner hoặc admin với `x-admin-key`)
+- `GET /api/admin/orders?status=pending` (header: `x-admin-key`) — list orders chờ xác nhận
 - `POST /api/orders/confirm` (header: `x-admin-key`, body: `{ "orderId": "<ObjectId>" }`) — admin confirm thanh toán, ghi `enrollment`
 - `POST /api/admin/orders/confirm` (header: `x-admin-key`, body: `{ "orderId": "<ObjectId>" }`) — alias admin confirm (idempotent)
 - `GET /api/courses/:courseId/lessons/:lessonId`
