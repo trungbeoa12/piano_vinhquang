@@ -56,11 +56,17 @@ Lưu ý: vì partial đang được load bằng `fetch()`, không nên mở page
 - `ORDER_RATE_LIMIT_MAX`
 - `CONTACT_RATE_LIMIT_WINDOW_MS`
 - `CONTACT_RATE_LIMIT_MAX`
+- `PAYMENT_BANK_CODE`
+- `PAYMENT_BANK_NAME`
+- `PAYMENT_ACCOUNT_NUMBER`
+- `PAYMENT_ACCOUNT_NAME`
+- `ORDER_TRANSFER_CODE_PREFIX`
 - `MONGODB_CUSTOMERS_COLLECTION`
 - `MONGODB_USERS_COLLECTION`
 - `MONGODB_ENROLLMENTS_COLLECTION`
 - `MONGODB_ORDERS_COLLECTION`
 - `MONGODB_LESSON_PROGRESS_COLLECTION`
+- `ADMIN_CONFIRM_API_KEY` (required in production for admin confirm APIs)
 
 ### Development notes
 
@@ -103,7 +109,8 @@ Nếu frontend deploy trên Vercel/Netlify và backend deploy riêng (Render/Rai
 - `GET /api/courses/:courseId`
 - `GET /api/courses/:courseId/lessons`
 - `POST /api/orders/create` (body: `{ "courseId": "..." }`) — tạo đơn `pending`
-- `POST /api/orders/confirm` (body: `{ "orderId": "<ObjectId>" }`) — mock thanh toán thành công, ghi `enrollment`
+- `POST /api/orders/confirm` (header: `x-admin-key`, body: `{ "orderId": "<ObjectId>" }`) — admin confirm thanh toán, ghi `enrollment`
+- `POST /api/admin/orders/confirm` (header: `x-admin-key`, body: `{ "orderId": "<ObjectId>" }`) — alias admin confirm (idempotent)
 - `GET /api/courses/:courseId/lessons/:lessonId`
 - `POST /api/courses/:courseId/lessons/:lessonId/progress`
 - `GET /api/resources/:refId/open?token=...`
@@ -184,8 +191,18 @@ Frontend auth pages:
 
 - `account.html`: đăng nhập
 - `register.html`: tạo tài khoản mới
-- `checkout.html`: checkout mock để cấp quyền khóa học
+- `checkout.html`: checkout chuyển khoản thủ công (QR + mã nội dung chuyển khoản)
 - `dashboard.html`: tiếp tục học và xem tiến độ
+
+Checkout `POST /api/orders/create` trả thêm:
+
+- `checkout.amount`
+- `checkout.bank` (`bankName`, `bankCode`, `accountNumber`, `accountName`)
+- `checkout.transferCode`
+- `checkout.qr.imageUrl`
+- `checkout.qr.data`
+
+Sau khi người dùng chuyển khoản, admin gọi confirm API để đổi đơn sang `paid` và cấp enrollment.
 
 Payload mẫu:
 

@@ -79,6 +79,15 @@ const orderRateLimitWindowMs = Number(process.env.ORDER_RATE_LIMIT_WINDOW_MS) ||
 const orderRateLimitMax = Number(process.env.ORDER_RATE_LIMIT_MAX) || 30;
 const contactRateLimitWindowMs = Number(process.env.CONTACT_RATE_LIMIT_WINDOW_MS) || (10 * 60 * 1000);
 const contactRateLimitMax = Number(process.env.CONTACT_RATE_LIMIT_MAX) || 20;
+const paymentBankCode = getRequiredTrimmedString(process.env.PAYMENT_BANK_CODE) || 'ICB';
+const paymentBankName = getRequiredTrimmedString(process.env.PAYMENT_BANK_NAME) || 'VietinBank';
+const paymentAccountNumber =
+  getRequiredTrimmedString(process.env.PAYMENT_ACCOUNT_NUMBER) || '103866619999';
+const paymentAccountName =
+  getRequiredTrimmedString(process.env.PAYMENT_ACCOUNT_NAME) || 'Đỗ Thành Trung';
+const orderTransferCodePrefix =
+  getRequiredTrimmedString(process.env.ORDER_TRANSFER_CODE_PREFIX) || 'PVQ';
+const adminConfirmApiKey = getRequiredTrimmedString(process.env.ADMIN_CONFIRM_API_KEY);
 
 let customersCollection;
 let usersCollection;
@@ -118,6 +127,17 @@ function resolveMongoUri() {
     fallbackUri
   );
   return fallbackUri;
+}
+
+function validateProductionSecrets() {
+  const isHosted = isProductionEnvironment() || isRailwayEnvironment();
+  if (!isHosted) return;
+
+  if (!adminConfirmApiKey) {
+    throw new Error(
+      '[config] Missing ADMIN_CONFIRM_API_KEY. Set a strong key for admin order confirmation API.'
+    );
+  }
 }
 
 function resolveCorsConfig() {
@@ -221,6 +241,95 @@ function createApiRateLimiter(windowMs, max, scopeName) {
       );
     },
   });
+}
+
+function generateTransferCode() {
+  const randomPart = Math.random().toString(36).slice(2, 8).toUpperCase();
+  return `${orderTransferCodePrefix}${Date.now().toString(36).toUpperCase()}${randomPart}`;
+}
+
+function buildQrImageUrl(amount, transferCode) {
+  const query = new URLSearchParams({
+    amount: String(Math.round(Number(amount) || 0)),
+    addInfo: transferCode,
+    accountName: paymentAccountName,
+  });
+  return `https://img.vietqr.io/image/${paymentBankCode}-${paymentAccountNumber}-compact2.png?${query.toString()}`;
+}
+
+function buildCheckoutPayload(order) {
+  const amount = Number(order.price) || 0;
+  const transferCode = String(order.transferCode || '');
+  return {
+    amount: amount,
+    bank: {
+      bankCode: paymentBankCode,
+      bankName: paymentBankName,
+      accountNumber: paymentAccountNumber,
+      accountName: paymentAccountName,
+    },
+    transferCode: transferCode,
+    qr: {
+      imageUrl: buildQrImageUrl(amount, transferCode),
+      data: `${paymentBankCode}|${paymentAccountNumber}|${amount}|${transferCode}`,
+    },
+  };
+}
+
+async function confirmOrderAsPaid(orderId) {
+  const order = await ordersCollection.findOne({ _id: orderId });
+  if (!order) {
+    return { ok: false, statusCode: 404, code: 'ORDER_NOT_FOUND', message: 'Order not found.' };
+  }
+
+  if (order.status === 'paid') {
+    return { ok: true, order: order };
+  }
+
+  if (order.status !== 'pending') {
+    return {
+      ok: false,
+      statusCode: 400,
+      code: 'ORDER_INVALID_STATE',
+      message: 'Order cannot be confirmed.',
+    };
+  }
+
+  const updated = await ordersCollection.findOneAndUpdate(
+    { _id: orderId, status: 'pending' },
+    { $set: { status: 'paid', paidAt: new Date() } },
+    { returnDocument: 'after' }
+  );
+  const paidOrder = updated && updated.value ? updated.value : await ordersCollection.findOne({ _id: orderId });
+  if (!paidOrder) {
+    return { ok: false, statusCode: 404, code: 'ORDER_NOT_FOUND', message: 'Order not found.' };
+  }
+
+  const now = new Date();
+  await enrollmentsCollection.updateOne(
+    { userId: paidOrder.userId, courseId: paidOrder.courseId },
+    {
+      $set: {
+        status: 'active',
+        source: 'order_confirm_admin',
+        updatedAt: now,
+      },
+      $setOnInsert: {
+        createdAt: now,
+      },
+    },
+    { upsert: true }
+  );
+
+  return { ok: true, order: paidOrder };
+}
+
+function requireAdminKey(req, res, next) {
+  const key = getRequiredTrimmedString(req.headers['x-admin-key']);
+  if (!adminConfirmApiKey || !key || key !== adminConfirmApiKey) {
+    return sendError(res, 401, 'ADMIN_UNAUTHORIZED', 'Invalid admin key.');
+  }
+  return next();
 }
 
 function loadEnvFile(filePath) {
@@ -755,24 +864,62 @@ app.post('/api/orders/create', orderRateLimiter, requireAuth, async function (re
     const price = priceVndFromCourse(course);
     const now = new Date();
 
+    if (!Number.isFinite(price) || price <= 0) {
+      return sendError(
+        res,
+        422,
+        'COURSE_PRICE_NOT_READY',
+        'Course price is not ready for checkout yet.'
+      );
+    }
+
+    const latestPending = await ordersCollection.findOne(
+      { userId: userIdStr, courseId: courseId, status: 'pending' },
+      { sort: { createdAt: -1 } }
+    );
+
+    if (latestPending) {
+      return res.status(201).json({
+        ok: true,
+        order: {
+          id: latestPending._id.toString(),
+          userId: latestPending.userId,
+          courseId: latestPending.courseId,
+          price: latestPending.price,
+          status: latestPending.status,
+          transferCode: latestPending.transferCode,
+          createdAt:
+            latestPending.createdAt instanceof Date
+              ? latestPending.createdAt.toISOString()
+              : latestPending.createdAt,
+        },
+        checkout: buildCheckoutPayload(latestPending),
+      });
+    }
+
+    const transferCode = generateTransferCode();
     const insertResult = await ordersCollection.insertOne({
       userId: userIdStr,
       courseId: courseId,
       price: price,
+      transferCode: transferCode,
       status: 'pending',
       createdAt: now,
     });
+    const createdOrder = await ordersCollection.findOne({ _id: insertResult.insertedId });
 
     return res.status(201).json({
       ok: true,
       order: {
-        id: insertResult.insertedId.toString(),
+        id: createdOrder._id.toString(),
         userId: userIdStr,
         courseId: courseId,
         price: price,
+        transferCode: transferCode,
         status: 'pending',
         createdAt: now.toISOString(),
       },
+      checkout: buildCheckoutPayload(createdOrder),
     });
   } catch (error) {
     logServerError('api/orders/create', error);
@@ -783,7 +930,7 @@ app.post('/api/orders/create', orderRateLimiter, requireAuth, async function (re
   }
 });
 
-app.post('/api/orders/confirm', orderRateLimiter, requireAuth, async function (req, res) {
+app.post('/api/orders/confirm', orderRateLimiter, requireAdminKey, async function (req, res) {
   try {
     if (!requireMongoCollection(ordersCollection, res)) return;
     if (!requireMongoCollection(enrollmentsCollection, res)) return;
@@ -794,84 +941,11 @@ app.post('/api/orders/confirm', orderRateLimiter, requireAuth, async function (r
     }
 
     const orderId = new ObjectId(orderIdRaw);
-    const userIdStr = String(req.auth.user._id);
-
-    const order = await ordersCollection.findOne({ _id: orderId });
-    if (!order || order.userId !== userIdStr) {
-      return sendError(res, 404, 'ORDER_NOT_FOUND', 'Order not found.');
+    const result = await confirmOrderAsPaid(orderId);
+    if (!result.ok) {
+      return sendError(res, result.statusCode, result.code, result.message);
     }
-
-    if (order.status === 'paid') {
-      return res.json({
-        ok: true,
-        order: {
-          id: order._id.toString(),
-          userId: order.userId,
-          courseId: order.courseId,
-          price: order.price,
-          status: 'paid',
-          createdAt:
-            order.createdAt instanceof Date
-              ? order.createdAt.toISOString()
-              : order.createdAt,
-        },
-        enrolledCourseIds: await listEnrollmentCourseIds(req.auth.user._id),
-      });
-    }
-
-    if (order.status !== 'pending') {
-      return sendError(res, 400, 'ORDER_INVALID_STATE', 'Order cannot be confirmed.');
-    }
-
-    const confirmResult = await ordersCollection.updateOne(
-      { _id: orderId, userId: userIdStr, status: 'pending' },
-      { $set: { status: 'paid' } }
-    );
-
-    if (confirmResult.matchedCount === 0) {
-      const again = await ordersCollection.findOne({ _id: orderId });
-      if (again && again.status === 'paid' && again.userId === userIdStr) {
-        return res.json({
-          ok: true,
-          order: {
-            id: again._id.toString(),
-            userId: again.userId,
-            courseId: again.courseId,
-            price: again.price,
-            status: 'paid',
-            createdAt:
-              again.createdAt instanceof Date
-                ? again.createdAt.toISOString()
-                : again.createdAt,
-          },
-          enrolledCourseIds: await listEnrollmentCourseIds(req.auth.user._id),
-        });
-      }
-      return sendError(
-        res,
-        409,
-        'ORDER_STATE_CONFLICT',
-        'Order state changed; refresh and try again.'
-      );
-    }
-
-    const now = new Date();
-    await enrollmentsCollection.updateOne(
-      { userId: userIdStr, courseId: order.courseId },
-      {
-        $set: {
-          status: 'active',
-          source: 'order_confirm',
-          updatedAt: now,
-        },
-        $setOnInsert: {
-          createdAt: now,
-        },
-      },
-      { upsert: true }
-    );
-
-    const paidOrder = await ordersCollection.findOne({ _id: orderId });
+    const paidOrder = result.order;
     return res.json({
       ok: true,
       order: {
@@ -885,11 +959,58 @@ app.post('/api/orders/confirm', orderRateLimiter, requireAuth, async function (r
             ? paidOrder.createdAt.toISOString()
             : paidOrder.createdAt,
       },
-      enrolledCourseIds: await listEnrollmentCourseIds(req.auth.user._id),
+      transferCode: paidOrder.transferCode,
+      paidAt:
+        paidOrder.paidAt instanceof Date
+          ? paidOrder.paidAt.toISOString()
+          : paidOrder.paidAt || null,
+      checkout: buildCheckoutPayload(paidOrder),
     });
   } catch (error) {
     logServerError('api/orders/confirm', error);
     return sendError(res, 500, 'ORDER_CONFIRM_FAILED', 'Failed to confirm order.');
+  }
+});
+
+app.post('/api/admin/orders/confirm', orderRateLimiter, requireAdminKey, async function (req, res) {
+  try {
+    if (!requireMongoCollection(ordersCollection, res)) return;
+    if (!requireMongoCollection(enrollmentsCollection, res)) return;
+
+    const orderIdRaw = getRequiredTrimmedString(req.body.orderId);
+    if (!orderIdRaw || !ObjectId.isValid(orderIdRaw)) {
+      return sendError(res, 400, 'VALIDATION_ORDER_ID', 'Valid orderId is required.');
+    }
+
+    const result = await confirmOrderAsPaid(new ObjectId(orderIdRaw));
+    if (!result.ok) {
+      return sendError(res, result.statusCode, result.code, result.message);
+    }
+    const paidOrder = result.order;
+
+    return res.json({
+      ok: true,
+      order: {
+        id: paidOrder._id.toString(),
+        userId: paidOrder.userId,
+        courseId: paidOrder.courseId,
+        price: paidOrder.price,
+        transferCode: paidOrder.transferCode,
+        status: paidOrder.status,
+        createdAt:
+          paidOrder.createdAt instanceof Date
+            ? paidOrder.createdAt.toISOString()
+            : paidOrder.createdAt,
+        paidAt:
+          paidOrder.paidAt instanceof Date
+            ? paidOrder.paidAt.toISOString()
+            : paidOrder.paidAt || null,
+      },
+      checkout: buildCheckoutPayload(paidOrder),
+    });
+  } catch (error) {
+    logServerError('api/admin/orders/confirm', error);
+    return sendError(res, 500, 'ADMIN_ORDER_CONFIRM_FAILED', 'Failed to confirm order.');
   }
 });
 
@@ -1157,6 +1278,8 @@ function startHttpServer() {
     process.exit(1);
   });
 }
+
+validateProductionSecrets();
 
 connectToMongo()
   .then(function () {
