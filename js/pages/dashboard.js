@@ -1,5 +1,8 @@
 function apiFetch(path, options) {
-  return fetch(path, options || {}).then(function (response) {
+  var endpoint = window.PVQ_withApiBase
+    ? window.PVQ_withApiBase(path)
+    : path;
+  return fetch(endpoint, options || {}).then(function (response) {
     return response.json().then(function (payload) {
       if (!response.ok || !payload.ok) {
         var error = new Error(

@@ -1,6 +1,18 @@
 (function () {
   var STORAGE_KEY = 'pvq_session_v2';
-  var API_BASE = '';
+  var apiMeta = document.querySelector('meta[name="pvq-api-base"]');
+  var API_BASE = String(
+    window.PVQ_API_BASE || (apiMeta ? apiMeta.content : '') || ''
+  )
+    .trim()
+    .replace(/\/+$/, '');
+
+  function withApiBase(path) {
+    var safePath = String(path || '');
+    if (!safePath) return API_BASE;
+    if (/^https?:\/\//i.test(safePath)) return safePath;
+    return API_BASE + safePath;
+  }
 
   function getSession() {
     try {
@@ -44,7 +56,7 @@
   }
 
   function apiFetch(path, options) {
-    return fetch(API_BASE + path, options || {});
+    return fetch(withApiBase(path), options || {});
   }
 
   function getToken() {
@@ -162,6 +174,8 @@
     var session = getSession();
     return !!(session && session.token);
   }
+
+  window.PVQ_withApiBase = withApiBase;
 
   window.PVQ_Auth = {
     getSession: getSession,

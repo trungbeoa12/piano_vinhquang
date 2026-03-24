@@ -35,7 +35,7 @@ const MAX_FALLBACK_PORTS = 15;
 
 let listeningPort = preferredPort;
 
-const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+const mongoUriRaw = String(process.env.MONGODB_URI || '').trim();
 const dbName = process.env.MONGODB_DB || 'piano_vinhquang';
 const collectionName = process.env.MONGODB_CUSTOMERS_COLLECTION || 'customers';
 const usersCollectionName = process.env.MONGODB_USERS_COLLECTION || 'users';
@@ -67,6 +67,7 @@ const demoEnrollmentCourseIds = String(
     return value.trim();
   })
   .filter(Boolean);
+const corsAllowOrigin = String(process.env.CORS_ALLOW_ORIGIN || '*').trim();
 
 let customersCollection;
 let usersCollection;
@@ -76,6 +77,33 @@ let lessonProgressCollection;
 let mongoClient;
 let httpServer;
 let isShuttingDown = false;
+
+function isRailwayEnvironment() {
+  return !!(
+    process.env.RAILWAY_ENVIRONMENT ||
+    process.env.RAILWAY_PROJECT_ID ||
+    process.env.RAILWAY_SERVICE_ID ||
+    process.env.RAILWAY_STATIC_URL
+  );
+}
+
+function resolveMongoUri() {
+  if (mongoUriRaw) return mongoUriRaw;
+
+  const isProduction = String(process.env.NODE_ENV || '').trim() === 'production';
+  if (isProduction || isRailwayEnvironment()) {
+    throw new Error(
+      '[config] Missing MONGODB_URI. Set MONGODB_URI to your MongoDB Atlas connection string in Railway Variables.'
+    );
+  }
+
+  const fallbackUri = 'mongodb://localhost:27017';
+  console.warn(
+    '[config] MONGODB_URI is not set. Falling back to %s for local development.',
+    fallbackUri
+  );
+  return fallbackUri;
+}
 
 function loadEnvFile(filePath) {
   try {
@@ -102,6 +130,7 @@ function loadEnvFile(filePath) {
 }
 
 async function connectToMongo() {
+  const mongoUri = resolveMongoUri();
   mongoClient = new MongoClient(mongoUri);
   await mongoClient.connect();
 
@@ -225,6 +254,32 @@ async function shutdown(signal) {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(function (req, res, next) {
+  var requestOrigin = req.headers.origin;
+  var allowAny = corsAllowOrigin === '*';
+  var allowedOrigins = corsAllowOrigin
+    .split(',')
+    .map(function (item) {
+      return item.trim();
+    })
+    .filter(Boolean);
+  var canUseOrigin = allowAny || (
+    requestOrigin && allowedOrigins.indexOf(requestOrigin) !== -1
+  );
+
+  if (canUseOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', allowAny ? '*' : requestOrigin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
+  return next();
+});
 app.use(express.static(path.join(__dirname)));
 
 async function listEnrollmentCourseIds(userId) {

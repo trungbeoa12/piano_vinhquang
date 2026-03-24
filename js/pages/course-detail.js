@@ -175,7 +175,13 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
           }
 
-	          return fetch('/api/courses/' + encodeURIComponent(c.id) + '/access', {
+	          var accessPath =
+	            '/api/courses/' + encodeURIComponent(c.id) + '/access';
+	          return fetch(
+	            window.PVQ_withApiBase
+	              ? window.PVQ_withApiBase(accessPath)
+	              : accessPath,
+	            {
 	            headers: {
 	              Authorization: 'Bearer ' + window.PVQ_Auth.getToken(),
 	            },

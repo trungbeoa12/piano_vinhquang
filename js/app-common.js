@@ -18,6 +18,20 @@ function createSnowflakes() {
   }
 }
 
+function withApiBase(path) {
+  if (window.PVQ_withApiBase) return window.PVQ_withApiBase(path);
+  var apiMeta = document.querySelector('meta[name="pvq-api-base"]');
+  var base = String(
+    window.PVQ_API_BASE || (apiMeta ? apiMeta.content : '') || ''
+  )
+    .trim()
+    .replace(/\/+$/, '');
+  var safePath = String(path || '');
+  if (!safePath) return base;
+  if (/^https?:\/\//i.test(safePath)) return safePath;
+  return base + safePath;
+}
+
 function initNavigation() {
   var navToggle = document.getElementById('navToggle');
   var navLinks = document.getElementById('navLinks');
@@ -138,7 +152,7 @@ function initContactForm() {
     }
 
     try {
-      var response = await fetch('/api/customers', {
+      var response = await fetch(withApiBase('/api/customers'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

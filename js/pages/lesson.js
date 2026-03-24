@@ -83,7 +83,10 @@ function fetchAuthJson(path, options) {
     Authorization: 'Bearer ' + window.PVQ_Auth.getToken(),
   });
 
-  return fetch(path, requestOptions).then(function (response) {
+  var endpoint = window.PVQ_withApiBase
+    ? window.PVQ_withApiBase(path)
+    : path;
+  return fetch(endpoint, requestOptions).then(function (response) {
     return response.json().then(function (payload) {
       if (!response.ok || !payload.ok) {
         var error = new Error(

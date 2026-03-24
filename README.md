@@ -32,6 +32,21 @@ Nếu chỉ cần test phần frontend static và partial:
 
 Lưu ý: vì partial đang được load bằng `fetch()`, không nên mở page bằng cách double-click file HTML trực tiếp từ file system.
 
+## Deploy frontend + backend khác domain
+
+Nếu frontend deploy trên Vercel/Netlify và backend deploy riêng (Render/Railway/VPS), cần cấu hình 2 chỗ:
+
+1. **Frontend API base**
+   - Thêm vào `<head>` của trang (hoặc inject chung):
+   - `<meta name="pvq-api-base" content="https://your-backend-domain.com">`
+   - Hoặc set global trước khi load `js/auth.js`:
+   - `window.PVQ_API_BASE = 'https://your-backend-domain.com';`
+
+2. **Backend CORS**
+   - Set env `CORS_ALLOW_ORIGIN` trên backend:
+   - Ví dụ: `https://piano-vinhquang.vercel.app`
+   - Có thể khai báo nhiều domain, phân tách bằng dấu phẩy.
+
 ## MongoDB local
 
 - Host: `localhost:27017`
