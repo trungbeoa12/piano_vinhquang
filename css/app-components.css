@@ -546,13 +546,33 @@ body[data-page="account"] .pvq-common-cta-shell {
 	min-width: 0;
 }
 
-.pvq-lesson-layout__aside .pvq-muted:first-child {
-	margin-bottom: 0 !important;
+.pvq-lesson-sidecard {
 	padding: 20px 22px;
 	border-radius: var(--radius-md);
 	background: #ffffff;
 	border: 1px solid rgba(15, 23, 42, 0.08);
 	box-shadow: var(--shadow-card, 0 4px 20px rgba(15, 23, 42, 0.06));
+}
+
+.pvq-lesson-sidecard-kicker {
+	display: inline-block;
+	margin-bottom: 10px;
+	font-size: 0.78rem;
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	color: var(--accent-ink);
+	font-weight: 700;
+}
+
+.pvq-lesson-sidecard-title {
+	font-family: 'Cormorant Garamond', serif;
+	font-size: 1.85rem;
+	color: var(--ivory);
+	margin-bottom: 10px;
+}
+
+.pvq-lesson-sidecard-copy {
+	margin-bottom: 18px !important;
 	line-height: 1.7;
 }
 
@@ -560,6 +580,11 @@ body[data-page="account"] .pvq-common-cta-shell {
 	max-width: none;
 	width: 100%;
 	gap: 14px;
+}
+
+.pvq-resource-list--lesson {
+	display: grid;
+	grid-template-columns: 1fr;
 }
 
 .pvq-lesson-layout__main .pvq-piano-module .pvq-score {
@@ -574,15 +599,22 @@ body[data-page="account"] .pvq-common-cta-shell {
 .pvq-lesson-layout__aside .pvq-resource-item {
 	width: 100%;
 	min-width: 0;
-	align-items: flex-start;
+	align-items: center;
+	padding: 14px 16px;
 }
 
 .pvq-lesson-layout__aside .pvq-resource-item .cta-btn {
 	margin-left: auto;
+	min-width: 122px;
+	justify-content: center;
 }
 
 .pvq-lesson-layout__aside .pvq-resource-item > span.pvq-muted {
 	margin-left: auto;
+}
+
+.pvq-lesson-layout__aside .pvq-resource-item strong {
+	font-size: 1.02rem;
 }
 
 @media (min-width: 1024px) {
@@ -606,8 +638,12 @@ body[data-page="account"] .pvq-common-cta-shell {
 		padding: 24px 20px;
 	}
 
-	.pvq-lesson-sidebar-cta .pvq-common-cta-shell {
-		padding: 20px;
+.pvq-lesson-sidebar-cta .pvq-common-cta-shell {
+	padding: 20px;
+}
+
+	.pvq-lesson-sidecard {
+		padding: 18px;
 	}
 
 	.pvq-lesson-layout__aside .pvq-resource-item .cta-btn,
@@ -1112,6 +1148,20 @@ body[data-page="account"] .pvq-common-cta-shell {
 .pvq-lesson-progress-feedback {
 	grid-column: 1 / -1;
 	margin-top: -4px;
+}
+
+.pvq-lesson-sidebar-cta .pvq-common-cta-shell {
+	padding: 22px;
+	gap: 14px;
+}
+
+.pvq-lesson-sidebar-cta .pvq-common-cta-copy h2 {
+	font-size: clamp(1.3rem, 1.8vw, 1.65rem);
+}
+
+.pvq-lesson-sidebar-cta .pvq-common-cta-copy p {
+	font-size: 0.92rem;
+	line-height: 1.65;
 }
 
 @media (max-width: 1023px) {

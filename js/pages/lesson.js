@@ -97,6 +97,7 @@ function renderLessonContent(data) {
   if (!sideEl) return;
 
   var lesson = data.lesson || {};
+  var lessonDescription = lesson.description || '';
   function normalizeResourceUrl(url) {
     if (!url) return '';
     if (/^https?:\/\//i.test(url)) return url;
@@ -149,12 +150,18 @@ function renderLessonContent(data) {
 
   var hasAnyResource = !!(videoUrl || sheetUrl || audioUrl);
   sideEl.innerHTML =
-    '<p class="pvq-muted" style="margin-bottom:16px">Bạn có thể mở tài nguyên của bài học ở đây. Phần sheet sẽ được render trực tiếp khi MusicXML sẵn sàng.</p>' +
-    '<div class="pvq-resource-list">' +
+    '<section class="pvq-lesson-sidecard">' +
+    '<span class="pvq-lesson-sidecard-kicker">Tài nguyên bài học</span>' +
+    '<h2 class="pvq-lesson-sidecard-title">Học liệu đi kèm</h2>' +
+    '<p class="pvq-muted pvq-lesson-sidecard-copy">' +
+    (lessonDescription || 'Bạn có thể mở nhanh video, sheet nhạc và audio luyện tập ở đây trong khi phần chính hiển thị player và bản nhạc.') +
+    '</p>' +
+    '<div class="pvq-resource-list pvq-resource-list--lesson">' +
     (hasAnyResource
       ? videoHtml + sheetHtml + audioHtml
       : '<div class="pvq-muted">Bài học này hiện chưa có tài nguyên để mở.</div>') +
-    '</div>';
+    '</div>' +
+    '</section>';
 
   ensurePianoMounted({
     musicxmlUrl: normalizeResourceUrl(
