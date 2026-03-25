@@ -1,0 +1,26 @@
+{
+  "id": "piano-can-ban-cho-nguoi-moi",
+  "slug": "piano-can-ban-cho-nguoi-moi",
+  "isPublished": true,
+  "title": "Piano căn bản cho người mới",
+  "shortDescription": "Khóa nền tảng chính dành cho người mới bắt đầu học piano từ số 0.",
+  "summary": "Khóa nền tảng chính dành cho người mới bắt đầu học piano từ số 0.",
+  "audience": "Người mới bắt đầu học piano từ số 0 cần lộ trình nền tảng rõ ràng.",
+  "contentTopics": [
+    "Tư thế ngồi và cách đặt tay",
+    "Số ngón và nhịp cơ bản",
+    "Luyện ngón và bài thực hành tổng hợp"
+  ],
+  "outcomes": [
+    "Đặt tay đúng và chơi nhịp cơ bản theo bài tập",
+    "Vận dụng số ngón khi luyện tập",
+    "Hoàn thành bài thực hành tổng hợp đầu tiên"
+  ],
+  "priceLabel": "299.000đ",
+  "priceVnd": 299000,
+  "level": "beginner",
+  "durationWeeks": 8,
+  "heroImage": "images/courses/course-piano-basic-cover.jpg",
+  "lessonOrder": ["pcbn-l01", "pcbn-l02", "pcbn-l03", "pcbn-l04", "pcbn-l05", "pcbn-l06"]
+}
+

@@ -1,0 +1,26 @@
+{
+  "id": "dem-hat-piano-co-ban-1",
+  "slug": "dem-hat-piano-co-ban-1",
+  "isPublished": true,
+  "title": "Đệm hát piano cơ bản 1",
+  "shortDescription": "Học đệm hát piano cơ bản với hợp âm đơn giản, tay trái bass cơ bản và thực hành bài hát dễ.",
+  "summary": "Học đệm hát piano cơ bản với hợp âm đơn giản, tay trái bass cơ bản và thực hành bài hát dễ.",
+  "audience": "Người mới bắt đầu muốn học đệm hát với hợp âm và bass đơn giản.",
+  "contentTopics": [
+    "Hợp âm cơ bản cho đệm hát",
+    "Bass tay trái và cách vào hợp âm",
+    "Mẫu tiết tấu đệm hát đơn giản"
+  ],
+  "outcomes": [
+    "Biết cách chơi hợp âm đệm hát cơ bản",
+    "Tay trái đánh bass theo mẫu ổn định",
+    "Đệm được một bài hát đơn giản"
+  ],
+  "priceLabel": "199.000đ",
+  "priceVnd": 199000,
+  "level": "beginner",
+  "durationWeeks": 7,
+  "heroImage": "images/courses/course-piano-accompaniment-cover.jpg",
+  "lessonOrder": ["dhpb1-l01", "dhpb1-l02", "dhpb1-l03", "dhpb1-l04", "dhpb1-l05"]
+}
+

@@ -1,0 +1,26 @@
+{
+  "id": "doc-sheet-nhac-piano-tu-con-so-0",
+  "slug": "doc-sheet-nhac-piano-tu-con-so-0",
+  "isPublished": true,
+  "title": "Đọc sheet nhạc piano từ con số 0",
+  "shortDescription": "Học đọc nốt nhạc, trường độ, khóa Sol/Fa và áp dụng vào các bài piano cơ bản.",
+  "summary": "Học đọc nốt nhạc, trường độ, khóa Sol/Fa và áp dụng vào các bài piano cơ bản.",
+  "audience": "Người mới muốn học đọc sheet nhạc piano từ số 0.",
+  "contentTopics": [
+    "Khuông nhạc, vị trí nốt",
+    "Khóa Sol/Fa và nốt tay phải",
+    "Trường độ, nhịp và ký hiệu thường gặp"
+  ],
+  "outcomes": [
+    "Đọc được nốt cơ bản trên khóa Sol/Fa",
+    "Hiểu trường độ và áp dụng vào luyện tập",
+    "Đọc được một bản nhạc đơn giản hoàn chỉnh"
+  ],
+  "priceLabel": "299.000đ",
+  "priceVnd": 299000,
+  "level": "beginner",
+  "durationWeeks": 8,
+  "heroImage": "images/courses/course-piano-basic-cover.jpg",
+  "lessonOrder": ["ds0-l01", "ds0-l02", "ds0-l03", "ds0-l04", "ds0-l05", "ds0-l06"]
+}
+

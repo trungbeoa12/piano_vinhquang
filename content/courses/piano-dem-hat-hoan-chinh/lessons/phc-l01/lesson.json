@@ -1,0 +1,17 @@
+{
+  "id": "phc-l01",
+  "slug": "phc-l01",
+  "title": "Tư duy đệm hát hoàn chỉnh",
+  "description": "Khung tư duy đệm hát toàn bài để vào bài tự nhiên và giữ nhịp ổn định.",
+  "courseId": "piano-dem-hat-hoan-chinh",
+  "order": 1,
+  "durationMin": 35,
+  "videoUrl": null,
+  "sheetUrl": null,
+  "audioUrl": null,
+  "midiUrl": null,
+  "isPreview": true,
+  "status": "draft",
+  "resources": []
+}
+

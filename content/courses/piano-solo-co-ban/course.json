@@ -1,0 +1,26 @@
+{
+  "id": "piano-solo-co-ban",
+  "slug": "piano-solo-co-ban",
+  "isPublished": true,
+  "title": "Piano solo cơ bản: chơi giai điệu và phối tay trái",
+  "shortDescription": "Học chơi piano solo cơ bản với giai điệu tay phải và phần đệm tay trái đơn giản, dễ áp dụng.",
+  "summary": "Học chơi piano solo cơ bản với giai điệu tay phải và phần đệm tay trái đơn giản, dễ áp dụng.",
+  "audience": "Người mới đến trung cấp muốn học chơi solo cơ bản và phối hai tay.",
+  "contentTopics": [
+    "Tư duy piano solo cơ bản",
+    "Melody tay phải và đệm tay trái",
+    "Arpeggio và luyện đoạn solo ngắn"
+  ],
+  "outcomes": [
+    "Chơi được melody rõ ràng cho solo cơ bản",
+    "Phối hợp hai tay chậm và chắc",
+    "Tự luyện được một đoạn solo ngắn hoàn chỉnh"
+  ],
+  "priceLabel": "499.000đ",
+  "priceVnd": 499000,
+  "level": "intermediate",
+  "durationWeeks": 12,
+  "heroImage": "images/courses/course-piano-basic-cover.jpg",
+  "lessonOrder": ["psb-l01", "psb-l02", "psb-l03", "psb-l04", "psb-l05", "psb-l06", "psb-l07"]
+}
+

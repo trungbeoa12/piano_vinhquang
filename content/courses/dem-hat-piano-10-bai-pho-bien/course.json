@@ -1,0 +1,26 @@
+{
+  "id": "dem-hat-piano-10-bai-pho-bien",
+  "slug": "dem-hat-piano-10-bai-pho-bien",
+  "isPublished": true,
+  "title": "Đệm hát piano thực hành 10 bài phổ biến",
+  "shortDescription": "Thực hành đệm hát với các vòng hợp âm phổ biến, intro, ending và cách vào bài đơn giản.",
+  "summary": "Thực hành đệm hát với các vòng hợp âm phổ biến, intro, ending và cách vào bài đơn giản.",
+  "audience": "Người mới đến trung cấp muốn thực hành đệm hát với các mẫu pop phổ biến.",
+  "contentTopics": [
+    "Vòng hợp âm phổ biến",
+    "Intro, ending và cách vào bài",
+    "Thực hành theo các bài mẫu"
+  ],
+  "outcomes": [
+    "Chơi được vòng hợp âm phổ biến trong đệm hát",
+    "Biết cách vào intro và kết ending đơn giản",
+    "Thực hành theo 10 bài mẫu với lộ trình rõ ràng"
+  ],
+  "priceLabel": "299.000đ",
+  "priceVnd": 299000,
+  "level": "beginner_to_intermediate",
+  "durationWeeks": 10,
+  "heroImage": "images/courses/course-piano-accompaniment-cover.jpg",
+  "lessonOrder": ["dht10-l01", "dht10-l02", "dht10-l03", "dht10-l04", "dht10-l05", "dht10-l06"]
+}
+

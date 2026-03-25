@@ -1,0 +1,17 @@
+{
+  "id": "lnp-l05",
+  "slug": "lnp-l05",
+  "title": "Bài luyện ngón tổng hợp hằng ngày",
+  "description": "Tổng hợp các bài tập luyện ngón thành chuỗi hằng ngày để tiến bộ đều.",
+  "courseId": "luyen-ngon-piano-moi-ngay",
+  "order": 5,
+  "durationMin": 40,
+  "videoUrl": null,
+  "sheetUrl": null,
+  "audioUrl": null,
+  "midiUrl": null,
+  "isPreview": false,
+  "status": "draft",
+  "resources": []
+}
+

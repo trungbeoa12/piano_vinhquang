@@ -1,0 +1,26 @@
+{
+  "id": "piano-dem-hat-hoan-chinh",
+  "slug": "piano-dem-hat-hoan-chinh",
+  "isPublished": true,
+  "title": "Piano đệm hát hoàn chỉnh cho người tự học",
+  "shortDescription": "Khóa đệm hát đầy đủ hơn, giúp người học tự đệm trọn bài với voicing, rhythm pattern và fill-in cơ bản.",
+  "summary": "Khóa đệm hát đầy đủ hơn, giúp người học tự đệm trọn bài với voicing, rhythm pattern và fill-in cơ bản.",
+  "audience": "Người tự học muốn đệm hát trọn bài với voicing và pattern rõ ràng.",
+  "contentTopics": [
+    "Voicing hợp âm dễ nghe",
+    "Bass pattern và rhythm pattern",
+    "Fill-in và cấu trúc bài hoàn chỉnh"
+  ],
+  "outcomes": [
+    "Tự đệm theo cấu trúc intro - dạo giữa - ending",
+    "Chơi được bass pattern và rhythm pattern cơ bản",
+    "Thực hiện fill-in và luyện đệm trọn bài"
+  ],
+  "priceLabel": "499.000đ",
+  "priceVnd": 499000,
+  "level": "intermediate",
+  "durationWeeks": 12,
+  "heroImage": "images/courses/course-piano-accompaniment-cover.jpg",
+  "lessonOrder": ["phc-l01", "phc-l02", "phc-l03", "phc-l04", "phc-l05", "phc-l06", "phc-l07"]
+}
+

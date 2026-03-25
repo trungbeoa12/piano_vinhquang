@@ -1,0 +1,17 @@
+{
+  "id": "phc-l02",
+  "slug": "phc-l02",
+  "title": "Voicing hợp âm dễ nghe",
+  "description": "Chọn voicing hợp âm dễ nghe và luyện cách chuyển voicing theo nhịp bài.",
+  "courseId": "piano-dem-hat-hoan-chinh",
+  "order": 2,
+  "durationMin": 40,
+  "videoUrl": null,
+  "sheetUrl": null,
+  "audioUrl": null,
+  "midiUrl": null,
+  "isPreview": false,
+  "status": "draft",
+  "resources": []
+}
+

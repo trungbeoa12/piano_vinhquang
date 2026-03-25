@@ -1,0 +1,21 @@
+{
+  "id": "pcbn-l02",
+  "slug": "pcbn-l02",
+  "title": "Số ngón, cách đặt tay và bấm phím",
+  "description": "Hiểu số ngón, cách đặt tay và luyện bấm phím đúng để chơi đều và chính xác.",
+  "courseId": "piano-can-ban-cho-nguoi-moi",
+  "order": 2,
+  "durationMin": 40,
+  "videoUrl": null,
+  "sheetUrl": null,
+  "audioUrl": null,
+  "midiUrl": null,
+  "isPreview": false,
+  "status": "ready",
+  "resources": [
+    { "refId": "pvq-pcb-l02-vid", "kind": "video", "title": "Video - Số ngón và bấm phím" },
+    { "refId": "pvq-pcb-l02-sheet", "kind": "sheet", "title": "Sheet - Số ngón và bấm phím" },
+    { "refId": "pvq-pcb-l02-midi", "kind": "midi", "title": "MIDI - Số ngón và bấm phím" }
+  ]
+}
+

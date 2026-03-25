@@ -1,0 +1,26 @@
+{
+  "id": "luyen-ngon-piano-moi-ngay",
+  "slug": "luyen-ngon-piano-moi-ngay",
+  "isPublished": true,
+  "title": "Luyện ngón piano mỗi ngày cho người mới",
+  "shortDescription": "Bộ bài tập luyện ngón giúp tăng độ linh hoạt, đều nhịp và cảm giác phím cho người mới học.",
+  "summary": "Bộ bài tập luyện ngón giúp tăng độ linh hoạt, đều nhịp và cảm giác phím cho người mới học.",
+  "audience": "Người mới cần lộ trình luyện ngón rõ ràng mỗi ngày.",
+  "contentTopics": [
+    "Khởi động ngón tay",
+    "Bài tập 5 ngón cho tay phải và tay trái",
+    "Phối hợp hai tay và tăng cảm giác phím"
+  ],
+  "outcomes": [
+    "Chơi đều nhịp hơn khi luyện ngón",
+    "Cải thiện cảm giác phím và sự linh hoạt",
+    "Tự luyện được theo lộ trình"
+  ],
+  "priceLabel": "199.000đ",
+  "priceVnd": 199000,
+  "level": "beginner",
+  "durationWeeks": 6,
+  "heroImage": "images/courses/course-piano-basic-cover.jpg",
+  "lessonOrder": ["lnp-l01", "lnp-l02", "lnp-l03", "lnp-l04", "lnp-l05"]
+}
+

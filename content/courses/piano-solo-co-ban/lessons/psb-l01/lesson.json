@@ -1,0 +1,17 @@
+{
+  "id": "psb-l01",
+  "slug": "psb-l01",
+  "title": "Tư duy chơi piano solo cơ bản",
+  "description": "Nắm tư duy chơi solo cơ bản, tập cách thể hiện giai điệu và cấu trúc đơn giản.",
+  "courseId": "piano-solo-co-ban",
+  "order": 1,
+  "durationMin": 35,
+  "videoUrl": null,
+  "sheetUrl": null,
+  "audioUrl": null,
+  "midiUrl": null,
+  "isPreview": true,
+  "status": "draft",
+  "resources": []
+}
+

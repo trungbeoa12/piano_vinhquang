@@ -1,0 +1,26 @@
+{
+  "id": "piano-nhap-mon-cho-nguoi-moi",
+  "slug": "piano-nhap-mon-cho-nguoi-moi",
+  "isPublished": true,
+  "title": "Piano nhập môn cho người mới bắt đầu",
+  "shortDescription": "Khóa nhập môn giúp người mới làm quen với bàn phím, tư thế ngồi, số ngón và nhịp cơ bản.",
+  "summary": "Khóa nhập môn giúp người mới làm quen với bàn phím, tư thế ngồi, số ngón và nhịp cơ bản.",
+  "audience": "Người mới bắt đầu làm quen piano từ số 0.",
+  "contentTopics": [
+    "Bàn phím, tư thế ngồi và đặt tay",
+    "Số ngón và kỹ thuật bấm phím cơ bản",
+    "Nhịp, đếm phách và làm quen tempo"
+  ],
+  "outcomes": [
+    "Biết cách ngồi đúng và đặt tay cơ bản",
+    "Gọi tên và sử dụng số ngón đúng bài tập",
+    "Theo được nhịp cơ bản khi luyện tập"
+  ],
+  "priceLabel": "199.000đ",
+  "priceVnd": 199000,
+  "level": "beginner",
+  "durationWeeks": 6,
+  "heroImage": "images/courses/course-piano-basic-cover.jpg",
+  "lessonOrder": ["pnm-l01", "pnm-l02", "pnm-l03", "pnm-l04", "pnm-l05"]
+}
+

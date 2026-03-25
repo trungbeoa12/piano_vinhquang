@@ -1,0 +1,17 @@
+{
+  "id": "psb-l07",
+  "slug": "psb-l07",
+  "title": "Thực hành bản solo cơ bản đầu tiên",
+  "description": "Thực hành toàn bộ kỹ thuật của bài solo cơ bản theo lộ trình.",
+  "courseId": "piano-solo-co-ban",
+  "order": 7,
+  "durationMin": 50,
+  "videoUrl": null,
+  "sheetUrl": null,
+  "audioUrl": null,
+  "midiUrl": null,
+  "isPreview": false,
+  "status": "draft",
+  "resources": []
+}
+
