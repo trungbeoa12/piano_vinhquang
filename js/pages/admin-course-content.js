@@ -1,0 +1,144 @@
+(function () {
+  var STORAGE_KEY = 'pvq_admin_key';
+
+  function getAdminKey() {
+    try {
+      return localStorage.getItem(STORAGE_KEY) || '';
+    } catch (error) {
+      return '';
+    }
+  }
+
+  function adminFetch(path, options) {
+    var requestOptions = options || {};
+    requestOptions.headers = Object.assign({}, requestOptions.headers || {}, {
+      'x-admin-key': getAdminKey(),
+    });
+    var endpoint = window.PVQ_withApiBase
+      ? window.PVQ_withApiBase(path)
+      : path;
+
+    return fetch(endpoint, requestOptions).then(function (response) {
+      return response.json().then(function (payload) {
+        if (!response.ok || !payload.ok) {
+          var error = new Error(
+            (payload && payload.message) || 'Không thể tải dữ liệu khóa học.'
+          );
+          error.status = response.status;
+          throw error;
+        }
+        return payload;
+      });
+    });
+  }
+
+  function getCourseIdFromPath() {
+    var pathname = String(window.location.pathname || '');
+    var parts = pathname.split('/').filter(Boolean);
+    return parts.length ? parts[parts.length - 1] : '';
+  }
+
+  function setFeedback(message) {
+    var feedbackEl = document.getElementById('admin-course-content-feedback');
+    if (feedbackEl) feedbackEl.textContent = message || '';
+  }
+
+  function renderSummary(item) {
+    var titleEl = document.getElementById('admin-course-content-title');
+    var copyEl = document.getElementById('admin-course-content-copy');
+    var target = document.getElementById('admin-course-summary');
+    if (!target) return;
+
+    if (!item) {
+      if (titleEl) titleEl.textContent = 'Không tìm thấy khóa học';
+      if (copyEl) copyEl.textContent = 'Khóa học này không tồn tại trong content JSON hiện tại.';
+      target.innerHTML = '';
+      return;
+    }
+
+    if (titleEl) titleEl.textContent = item.title || item.id;
+    if (copyEl) {
+      copyEl.textContent =
+        item.shortDescription ||
+        'Đây là tổng quan khóa học trước khi đi tới bước sửa lesson và cập nhật link học liệu.';
+    }
+
+    target.innerHTML =
+      '<div class="pvq-account-meta-list">' +
+      '<div class="pvq-account-meta-item"><span>ID / slug</span><strong>' + (item.slug || item.id || '—') + '</strong></div>' +
+      '<div class="pvq-account-meta-item"><span>Trạng thái</span><strong>' + (item.isPublished ? 'published' : 'draft') + '</strong></div>' +
+      '<div class="pvq-account-meta-item"><span>Số lesson</span><strong>' + (item.lessonCount || 0) + '</strong></div>' +
+      '<div class="pvq-account-meta-item"><span>Level</span><strong>' + (item.level || '—') + '</strong></div>' +
+      '<div class="pvq-account-meta-item"><span>Thời lượng</span><strong>' + ((item.durationWeeks || 0) ? item.durationWeeks + ' tuần' : '—') + '</strong></div>' +
+      '<div class="pvq-account-meta-item"><span>Giá</span><strong>' + (item.priceLabel || '—') + '</strong></div>' +
+      '</div>' +
+      '<p class="pvq-muted" style="margin-top:18px">' + (item.summary || 'Chưa có summary.') + '</p>';
+  }
+
+  function renderLessons(item) {
+    var target = document.getElementById('admin-course-lessons-list');
+    if (!target) return;
+
+    var lessons = item && Array.isArray(item.lessons) ? item.lessons : [];
+    if (!lessons.length) {
+      target.innerHTML =
+        '<div class="pvq-account-empty-state"><strong>Chưa có lesson</strong><p class="pvq-muted">Khóa học này hiện chưa có lesson trong content JSON.</p></div>';
+      return;
+    }
+
+    target.innerHTML = lessons
+      .map(function (lesson) {
+        var description = lesson.description || 'Chưa có mô tả cho lesson này.';
+        return (
+          '<article class="pvq-dashboard-course-card">' +
+          '<div class="pvq-dashboard-course-meta">' +
+          '<h3>' + (lesson.order || 0) + '. ' + (lesson.title || lesson.id) + '</h3>' +
+          '<p class="pvq-muted">Lesson ID: ' + (lesson.id || '—') + '</p>' +
+          '<p class="pvq-muted">' + description + '</p>' +
+          '<p class="pvq-muted">Thời lượng: ' + ((lesson.durationMin || 0) ? lesson.durationMin + ' phút' : '—') + '</p>' +
+          '<p class="pvq-muted">Số resource: ' + (lesson.resourceCount || 0) + '</p>' +
+          '<p class="pvq-dashboard-status">Trạng thái: ' + (lesson.status || 'draft') + (lesson.isPreview ? ' • preview' : '') + '</p>' +
+          '</div>' +
+          '<div class="pvq-course-access-actions">' +
+          '<button type="button" class="cta-btn cta-btn-secondary" disabled>Form sửa sẽ làm ở bước tiếp theo</button>' +
+          '</div>' +
+          '</article>'
+        );
+      })
+      .join('');
+  }
+
+  function loadCourseDetail() {
+    var courseId = getCourseIdFromPath();
+    if (!courseId) {
+      renderSummary(null);
+      renderLessons(null);
+      setFeedback('Thiếu courseId trên URL.');
+      return Promise.resolve();
+    }
+
+    setFeedback('Đang tải khóa học và lesson...');
+    return adminFetch('/api/admin/courses/' + encodeURIComponent(courseId))
+      .then(function (payload) {
+        renderSummary(payload.item || null);
+        renderLessons(payload.item || null);
+        setFeedback('');
+      })
+      .catch(function (error) {
+        renderSummary(null);
+        renderLessons(null);
+        setFeedback(error.message);
+      });
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    if (!getAdminKey()) {
+      renderSummary(null);
+      renderLessons(null);
+      setFeedback('Chưa có admin key. Vào /admin/courses để lưu admin key trước.');
+      return;
+    }
+
+    loadCourseDetail();
+  });
+})();

@@ -15,6 +15,8 @@ const {
   DEFAULT_TOKEN_TTL_SECONDS,
 } = require('./lib/auth-service');
 const {
+  listAdminCoursesSummary,
+  loadAdminCourseDetail,
   listCoursesSummary,
   listLessonsByCourseId,
   normalizeLessonShape,
@@ -32,6 +34,11 @@ const { priceVndFromCourse } = require('./lib/order-service');
 loadEnvFile(path.join(__dirname, '.env'));
 
 const app = express();
+const ADMIN_COURSES_PAGE_FILE = path.join(__dirname, 'admin-courses.html');
+const ADMIN_COURSE_CONTENT_PAGE_FILE = path.join(
+  __dirname,
+  'admin-course-content.html'
+);
 
 const portEnvRaw = process.env.PORT;
 const portExplicit =
@@ -622,6 +629,14 @@ const contactRateLimiter = createApiRateLimiter(
 );
 
 app.use(express.static(path.join(__dirname)));
+
+app.get('/admin/courses', function (req, res) {
+  return res.sendFile(ADMIN_COURSES_PAGE_FILE);
+});
+
+app.get('/admin/courses/:courseId', function (req, res) {
+  return res.sendFile(ADMIN_COURSE_CONTENT_PAGE_FILE);
+});
 
 async function listEnrollmentCourseIds(userId) {
   if (!enrollmentsCollection || !userId) return [];
@@ -1282,6 +1297,62 @@ app.get('/api/admin/orders', requireAdminKey, async function (req, res) {
   } catch (error) {
     logServerError('api/admin/orders/list', error);
     return sendError(res, 500, 'ADMIN_ORDERS_LIST_FAILED', 'Failed to load orders.');
+  }
+});
+
+app.get('/api/admin/courses', requireAdminKey, async function (req, res) {
+  try {
+    const items = await listAdminCoursesSummary();
+    return res.json({
+      ok: true,
+      items: items,
+    });
+  } catch (error) {
+    logServerError('api/admin/courses/list', error);
+    return sendError(
+      res,
+      500,
+      'ADMIN_COURSES_LIST_FAILED',
+      'Failed to load admin courses list.'
+    );
+  }
+});
+
+app.get('/api/admin/courses/:courseId', requireAdminKey, async function (req, res) {
+  try {
+    const courseId = getRequiredTrimmedString(req.params.courseId);
+    if (!courseId) {
+      return sendError(
+        res,
+        400,
+        'VALIDATION_COURSE_ID',
+        'courseId is required.'
+      );
+    }
+
+    const item = await loadAdminCourseDetail(courseId);
+    return res.json({
+      ok: true,
+      item: item,
+    });
+  } catch (error) {
+    if (error && error.code === 'ENOENT') {
+      return sendError(
+        res,
+        404,
+        'ADMIN_COURSE_NOT_FOUND',
+        'Course not found.'
+      );
+    }
+    logServerError('api/admin/courses/detail', error, {
+      courseId: req.params.courseId,
+    });
+    return sendError(
+      res,
+      500,
+      'ADMIN_COURSE_DETAIL_FAILED',
+      'Failed to load admin course detail.'
+    );
   }
 });
 

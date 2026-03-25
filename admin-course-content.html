@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Course Content — Piano Vinh Quang</title>
+    <meta name="description" content="Placeholder cho bước tiếp theo: xem lesson và sửa nội dung khóa học.">
+    <script src="js/common-head.js"></script>
+</head>
+<body data-page="admin-course-content" data-footer-contact-href="index.html#contact">
+    <div class="snowflakes" id="snowflakes"></div>
+    <div id="site-header-mount"></div>
+
+    <main class="page-main page-main--account">
+        <div class="pvq-account-shell pvq-dashboard-shell">
+            <section class="pvq-panel pvq-dashboard-section" style="margin-bottom:24px">
+                <p class="pvq-account-kicker">Course Content</p>
+                <h2 id="admin-course-content-title">Đang tải khóa học…</h2>
+                <p id="admin-course-content-copy" class="pvq-muted">
+                    Xem tổng quan khóa học và danh sách lesson để chuẩn bị cho bước sửa nội dung.
+                </p>
+                <div class="pvq-course-access-actions" style="margin-top:18px">
+                    <a href="/admin/courses" class="cta-btn cta-btn-secondary">Quay lại danh sách khóa học</a>
+                </div>
+            </section>
+
+            <section class="pvq-panel pvq-dashboard-section" style="margin-bottom:24px">
+                <p class="pvq-account-kicker">Course Summary</p>
+                <div id="admin-course-summary"></div>
+            </section>
+
+            <section class="pvq-panel pvq-dashboard-section">
+                <p class="pvq-account-kicker">Lessons</p>
+                <h2>Danh sách lesson</h2>
+                <p id="admin-course-content-feedback" class="pvq-muted pvq-account-feedback" aria-live="polite"></p>
+                <div id="admin-course-lessons-list"></div>
+            </section>
+        </div>
+    </main>
+
+    <div id="site-footer-mount"></div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/app-common.js"></script>
+    <script src="js/site-header.js"></script>
+    <script src="js/site-shell.js"></script>
+    <script src="js/pages/admin-course-content.js"></script>
+</body>
+</html>
