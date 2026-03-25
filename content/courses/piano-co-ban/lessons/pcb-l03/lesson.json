@@ -1,0 +1,30 @@
+{
+  "id": "pcb-l03",
+  "title": "Nhịp điệu vững hơn: tay phải và mẫu quãng cơ bản",
+  "description": "Luyện nhịp ổn định hơn với tay phải, nhận diện và chơi các mẫu quãng cơ bản theo bài tập ngắn.",
+  "order": 3,
+  "durationMin": 45,
+  "videoUrl": null,
+  "sheetUrl": null,
+  "audioUrl": null,
+  "isPreview": false,
+  "status": "placeholder",
+  "resources": [
+    {
+      "refId": "pvq-pcb-l03-vid",
+      "kind": "video",
+      "title": "Video bai hoc - Lesson 3"
+    },
+    {
+      "refId": "pvq-pcb-l03-sheet",
+      "kind": "sheet",
+      "title": "Sheet MusicXML - Lesson 3"
+    },
+    {
+      "refId": "pvq-pcb-l03-midi",
+      "kind": "midi",
+      "title": "MIDI - Lesson 3"
+    }
+  ]
+}
+

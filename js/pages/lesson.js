@@ -20,6 +20,28 @@ function ensurePianoMounted(options) {
   var settings = options || {};
   var musicxmlUrl = settings.musicxmlUrl || '';
   var midiUrl = settings.midiUrl || '';
+  var lessonTitle = settings.lessonTitle || '';
+
+  // Đồng bộ title trong piano widget với bài học hiện tại.
+  // Widget hiện dùng PVQ_PIANO_LESSONS làm nguồn data cho UI (tabs + now-playing),
+  // nên ta chỉ thay title, giữ nguyên notes để không làm hỏng luồng phát nhạc.
+  if (lessonTitle) {
+    try {
+      var baseSongs = window.PVQ_PIANO_LESSONS;
+      if (Array.isArray(baseSongs) && baseSongs.length) {
+        window.PVQ_PIANO_LESSONS = baseSongs.map(function (s) {
+          return {
+            title: lessonTitle,
+            notes: Array.isArray(s && s.notes) ? s.notes : [],
+          };
+        });
+      }
+    } catch (e) {
+      // Không để piano lỗi làm gãy trang lesson.
+      // eslint-disable-next-line no-console
+      console.warn('[lesson] failed to sync piano song titles: ' + e.message);
+    }
+  }
 
   var mountEl = document.getElementById('pvq-piano-mount');
   if (!mountEl) {
@@ -97,74 +119,41 @@ function renderLessonContent(data) {
   var resolvedInlineMidi = resolvedItems.find(function (item) {
     return item && item.kind === 'midi' && item.inlineUrl;
   });
-  var statusLabel = lesson.status || 'placeholder';
+  // Chỉ hiển thị các nút “mở tài nguyên” thật sự có URL resolve được từ backend.
+  // Tránh render thêm danh sách resource raw gây trùng/lộ metadata kỹ thuật.
   var videoUrl = normalizeResourceUrl(
-    lesson.videoUrl || (resolvedVideo && resolvedVideo.url) || ''
+    (resolvedVideo && resolvedVideo.url) || lesson.videoUrl || ''
   );
   var sheetUrl = normalizeResourceUrl(
-    lesson.sheetUrl || (resolvedSheet && resolvedSheet.url) || ''
+    (resolvedSheet && resolvedSheet.url) || lesson.sheetUrl || ''
   );
   var audioUrl = normalizeResourceUrl(
-    lesson.audioUrl || (resolvedAudio && resolvedAudio.url) || ''
+    (resolvedAudio && resolvedAudio.url) || lesson.audioUrl || ''
   );
+
   var videoHtml = videoUrl
-    ? '<div class="pvq-resource-item"><div><strong>Video bài học</strong><div class="pvq-resource-kind">' +
-      statusLabel +
-      '</div></div><a href="' +
+    ? '<div class="pvq-resource-item"><div><strong>Video</strong></div><a href="' +
       videoUrl +
       '" target="_blank" rel="noopener noreferrer" class="cta-btn cta-btn-secondary" style="min-height:44px;padding:10px 18px;font-size:0.88rem">Mở video</a></div>'
-    : '<div class="pvq-resource-item"><div><strong>Video bài học</strong><div class="pvq-resource-kind">' +
-      statusLabel +
-      '</div></div><span class="pvq-muted">Video sẽ được cập nhật sau</span></div>';
+    : '';
   var sheetHtml = sheetUrl
-    ? '<div class="pvq-resource-item"><div><strong>Sheet nhạc</strong><div class="pvq-resource-kind">' +
-      statusLabel +
-      '</div></div><a href="' +
+    ? '<div class="pvq-resource-item"><div><strong>Sheet nhạc</strong></div><a href="' +
       sheetUrl +
       '" target="_blank" rel="noopener noreferrer" class="cta-btn cta-btn-secondary" style="min-height:44px;padding:10px 18px;font-size:0.88rem">Mở sheet</a></div>'
-    : '<div class="pvq-resource-item"><div><strong>Sheet nhạc</strong><div class="pvq-resource-kind">' +
-      statusLabel +
-      '</div></div><span class="pvq-muted">Sheet sẽ được cập nhật sau</span></div>';
+    : '';
   var audioHtml = audioUrl
-    ? '<div class="pvq-resource-item"><div><strong>Audio luyện tập</strong><div class="pvq-resource-kind">' +
-      statusLabel +
-      '</div></div><a href="' +
+    ? '<div class="pvq-resource-item"><div><strong>Audio</strong></div><a href="' +
       audioUrl +
       '" target="_blank" rel="noopener noreferrer" class="cta-btn cta-btn-secondary" style="min-height:44px;padding:10px 18px;font-size:0.88rem">Mở audio</a></div>'
-    : '<div class="pvq-resource-item"><div><strong>Audio luyện tập</strong><div class="pvq-resource-kind">' +
-      statusLabel +
-      '</div></div><span class="pvq-muted">Audio sẽ được cập nhật sau</span></div>';
-  var itemsHtml = resolvedItems
-    .map(function (item) {
-      var itemUrl = normalizeResourceUrl(item.url);
-      if (!itemUrl) {
-        return (
-          '<div class="pvq-resource-item"><div><strong>' +
-          item.title +
-          '</strong><div class="pvq-resource-kind">' +
-          item.kind +
-          '</div></div><span class="pvq-muted">Chưa cấu hình URL</span></div>'
-        );
-      }
-      return (
-        '<div class="pvq-resource-item"><div><strong>' +
-        item.title +
-        '</strong><div class="pvq-resource-kind">' +
-        item.kind +
-        '</div></div><a href="' +
-        itemUrl +
-        '" target="_blank" rel="noopener noreferrer" class="cta-btn cta-btn-secondary" style="min-height:44px;padding:10px 18px;font-size:0.88rem">Mở</a></div>'
-      );
-    })
-    .join('');
+    : '';
 
+  var hasAnyResource = !!(videoUrl || sheetUrl || audioUrl);
   sideEl.innerHTML =
-    '<p class="pvq-muted" style="margin-bottom:16px">Sheet nhạc của bài học sẽ được render trực tiếp ở phần chính của lesson khi MusicXML sẵn sàng. Bạn vẫn có thể mở tài nguyên riêng lẻ ở đây nếu cần.</p>' +
+    '<p class="pvq-muted" style="margin-bottom:16px">Bạn có thể mở tài nguyên của bài học ở đây. Phần sheet sẽ được render trực tiếp khi MusicXML sẵn sàng.</p>' +
     '<div class="pvq-resource-list">' +
-    videoHtml +
-    sheetHtml +
-    audioHtml +
-    itemsHtml +
+    (hasAnyResource
+      ? videoHtml + sheetHtml + audioHtml
+      : '<div class="pvq-muted">Bài học này hiện chưa có tài nguyên để mở.</div>') +
     '</div>';
 
   ensurePianoMounted({
@@ -174,6 +163,7 @@ function renderLessonContent(data) {
     midiUrl: normalizeResourceUrl(
       resolvedInlineMidi ? resolvedInlineMidi.inlineUrl : ''
     ),
+    lessonTitle: lesson.title,
   });
 }
 
@@ -333,7 +323,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         var parts = [
           found.course.title,
           String(found.lesson.durationMin || 0) + ' phút',
-          found.lesson.status ? ('trạng thái: ' + found.lesson.status) : '',
         ].filter(Boolean);
         subEl.textContent = parts.join(' — ');
       }

@@ -1,0 +1,30 @@
+{
+  "id": "pcb-l05",
+  "title": "Tổng hợp bài tập: tempo và chuyển tay",
+  "description": "Ghép nối các bài tập nhỏ thành chuỗi luyện tập có tempo rõ ràng, tăng độ linh hoạt khi chuyển tay.",
+  "order": 5,
+  "durationMin": 50,
+  "videoUrl": null,
+  "sheetUrl": null,
+  "audioUrl": null,
+  "isPreview": false,
+  "status": "placeholder",
+  "resources": [
+    {
+      "refId": "pvq-pcb-l05-vid",
+      "kind": "video",
+      "title": "Video bai hoc - Lesson 5"
+    },
+    {
+      "refId": "pvq-pcb-l05-sheet",
+      "kind": "sheet",
+      "title": "Sheet MusicXML - Lesson 5"
+    },
+    {
+      "refId": "pvq-pcb-l05-midi",
+      "kind": "midi",
+      "title": "MIDI - Lesson 5"
+    }
+  ]
+}
+

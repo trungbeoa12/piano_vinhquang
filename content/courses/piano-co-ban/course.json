@@ -20,6 +20,9 @@
   "heroImage": "images/courses/course-piano-basic-cover.jpg",
   "lessonOrder": [
     "pcb-l01",
-    "pcb-l02"
+      "pcb-l02",
+      "pcb-l03",
+      "pcb-l04",
+      "pcb-l05"
   ]
 }

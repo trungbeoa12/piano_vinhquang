@@ -1,0 +1,30 @@
+{
+  "id": "pcb-l04",
+  "title": "Đọc nốt và luyện mẫu theo thang âm",
+  "description": "Rèn khả năng đọc nốt cơ bản và luyện theo mẫu thang âm/chuỗi nốt ngắn để vào bài nhanh hơn.",
+  "order": 4,
+  "durationMin": 40,
+  "videoUrl": null,
+  "sheetUrl": null,
+  "audioUrl": null,
+  "isPreview": false,
+  "status": "placeholder",
+  "resources": [
+    {
+      "refId": "pvq-pcb-l04-vid",
+      "kind": "video",
+      "title": "Video bai hoc - Lesson 4"
+    },
+    {
+      "refId": "pvq-pcb-l04-sheet",
+      "kind": "sheet",
+      "title": "Sheet MusicXML - Lesson 4"
+    },
+    {
+      "refId": "pvq-pcb-l04-midi",
+      "kind": "midi",
+      "title": "MIDI - Lesson 4"
+    }
+  ]
+}
+

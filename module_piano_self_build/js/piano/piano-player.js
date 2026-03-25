@@ -185,6 +185,10 @@
     if (!this.songTabs || !this.songTabs.length) return;
     var self = this;
     this.songTabs.forEach(function (tab, i) {
+      var list = self.songs();
+      if (list && list[i] && tab && tab.textContent !== list[i].title) {
+        tab.textContent = list[i].title;
+      }
       tab.classList.toggle('active', i === self.currentSong);
     });
   };
