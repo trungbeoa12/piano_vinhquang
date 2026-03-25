@@ -57,6 +57,34 @@ function renderCourseAccessCard(course, hasAccess) {
     '</div>';
 }
 
+function renderPendingOrderCard(course, order) {
+  var accessEl = document.getElementById('course-access-cta');
+  if (!accessEl || !course || !order) return;
+
+  var checkoutHref = 'checkout.html?courseId=' + encodeURIComponent(course.id);
+  var isSubmitted = order.status === 'payment_submitted';
+  var title = isSubmitted
+    ? 'Đơn hàng đang chờ admin xác nhận'
+    : 'Bạn đang có đơn hàng chưa hoàn tất';
+  var desc = isSubmitted
+    ? 'Bạn đã báo chuyển khoản cho khóa học này. Vào trang thanh toán để theo dõi trạng thái xác nhận.'
+    : 'Bạn đã tạo đơn cho khóa học này. Vào trang thanh toán để xem thông tin chuyển khoản và hoàn tất bước báo chuyển khoản.';
+
+  accessEl.innerHTML =
+    '<div class="pvq-course-access-card">' +
+    '<p class="pvq-course-access-badge">Đơn hàng mở</p>' +
+    '<h3>' + title + '</h3>' +
+    '<p class="pvq-muted">' + desc + '</p>' +
+    '<div class="pvq-course-access-price">Trạng thái: ' + order.status + '</div>' +
+    '<div class="pvq-course-access-actions">' +
+    '<a href="' + checkoutHref + '" class="cta-btn cta-btn-primary">' +
+    (isSubmitted ? 'Xem trạng thái đơn' : 'Tiếp tục thanh toán') +
+    '</a>' +
+    '<a href="dashboard.html" class="cta-btn cta-btn-secondary">Mở dashboard</a>' +
+    '</div>' +
+    '</div>';
+}
+
 function renderGuestAccessCard(course) {
   var accessEl = document.getElementById('course-access-cta');
   if (!accessEl) return;
@@ -179,32 +207,73 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
           }
 
-	          var accessPath =
-	            '/api/courses/' + encodeURIComponent(c.id) + '/access';
-	          return fetch(
-	            window.PVQ_withApiBase
-	              ? window.PVQ_withApiBase(accessPath)
-	              : accessPath,
-	            {
-	            headers: {
-	              Authorization: 'Bearer ' + window.PVQ_Auth.getToken(),
-	            },
-	          })
-            .then(function (response) {
+          var accessPath =
+            '/api/courses/' + encodeURIComponent(c.id) + '/access';
+          var orderPath =
+            '/api/me/orders?courseId=' + encodeURIComponent(c.id);
+
+          return Promise.all([
+            fetch(
+              window.PVQ_withApiBase
+                ? window.PVQ_withApiBase(accessPath)
+                : accessPath,
+              {
+                headers: {
+                  Authorization: 'Bearer ' + window.PVQ_Auth.getToken(),
+                },
+              }
+            ).then(function (response) {
               if (!response.ok) {
                 throw new Error('Failed to load course access.');
               }
               return response.json();
+            }),
+            fetch(
+              window.PVQ_withApiBase
+                ? window.PVQ_withApiBase(orderPath)
+                : orderPath,
+              {
+                headers: {
+                  Authorization: 'Bearer ' + window.PVQ_Auth.getToken(),
+                },
+              }
+            ).then(function (response) {
+              if (!response.ok) {
+                throw new Error('Failed to load user orders.');
+              }
+              return response.json();
+            }),
+          ])
+            .then(function (results) {
+              var accessPayload = results[0] || {};
+              var ordersPayload = results[1] || {};
+              var hasAccess = !!accessPayload.hasAccess;
+              var openOrder = (ordersPayload.items || []).find(function (item) {
+                return item && (
+                  item.status === 'pending_payment' ||
+                  item.status === 'payment_submitted'
+                );
+              });
+
+              if (hasAccess) {
+                renderCourseAccessCard(c, true);
+                renderLessons(c, true);
+                return;
+              }
+
+              if (openOrder) {
+                renderPendingOrderCard(c, openOrder);
+                renderLessons(c, false);
+                return;
+              }
+
+              renderCourseAccessCard(c, false);
+              renderLessons(c, false);
             })
-	            .then(function (payload) {
-	              var hasAccess = !!(payload && payload.hasAccess);
-	              renderCourseAccessCard(c, hasAccess);
-	              renderLessons(c, hasAccess);
-	            })
-	            .catch(function () {
-	              renderCourseAccessCard(c, false);
-	              renderLessons(c, false);
-	            });
+            .catch(function () {
+              renderCourseAccessCard(c, false);
+              renderLessons(c, false);
+            });
 	        });
 
       if (lessonsEl && c.lessons) {

@@ -91,6 +91,10 @@ const orderTransferCodePrefix =
   getRequiredTrimmedString(process.env.ORDER_TRANSFER_CODE_PREFIX) || 'PVQ';
 const adminConfirmApiKey = getRequiredTrimmedString(
   process.env.ADMIN_ACTION_SECRET || process.env.ADMIN_CONFIRM_API_KEY
+) || (
+  isProductionEnvironment() || isRailwayEnvironment()
+    ? ''
+    : 'pvq_admin_dev_key'
 );
 
 let customersCollection;
@@ -101,6 +105,16 @@ let lessonProgressCollection;
 let mongoClient;
 let httpServer;
 let isShuttingDown = false;
+
+const ORDER_STATUS_PENDING_PAYMENT = 'pending_payment';
+const ORDER_STATUS_PAYMENT_SUBMITTED = 'payment_submitted';
+const ORDER_STATUS_CONFIRMED = 'confirmed';
+const ORDER_STATUS_CANCELLED = 'cancelled';
+const ORDER_OPEN_STATUSES = [
+  ORDER_STATUS_PENDING_PAYMENT,
+  ORDER_STATUS_PAYMENT_SUBMITTED,
+  'pending',
+];
 
 function isRailwayEnvironment() {
   return !!(
@@ -289,27 +303,28 @@ async function confirmOrderAsPaid(orderId, confirmedBy, adminNote) {
     return { ok: false, statusCode: 404, code: 'ORDER_NOT_FOUND', message: 'Order not found.' };
   }
 
-  if (order.status === 'paid') {
+  if (order.status === ORDER_STATUS_CONFIRMED || order.status === 'paid') {
     return { ok: true, order: order };
   }
 
-  if (order.status !== 'pending') {
+  if (order.status !== ORDER_STATUS_PAYMENT_SUBMITTED) {
     return {
       ok: false,
       statusCode: 400,
       code: 'ORDER_INVALID_STATE',
-      message: 'Order cannot be confirmed.',
+      message: 'Only submitted payments can be confirmed.',
     };
   }
 
   const updated = await ordersCollection.findOneAndUpdate(
-    { _id: orderId, status: 'pending' },
+    { _id: orderId, status: ORDER_STATUS_PAYMENT_SUBMITTED },
     {
       $set: {
-        status: 'paid',
+        status: ORDER_STATUS_CONFIRMED,
         confirmedAt: new Date(),
         confirmedBy: confirmedBy || 'admin',
         note: adminNote ? String(adminNote).trim().slice(0, 500) : order.note || null,
+        updatedAt: new Date(),
       },
     },
     { returnDocument: 'after' }
@@ -361,10 +376,19 @@ function serializeOrder(orderDoc) {
     bankAccountNumber: orderDoc.bankAccountNumber || paymentAccountNumber,
     bankAccountName: orderDoc.bankAccountName || paymentAccountName,
     status: orderDoc.status,
+    paymentMethod: orderDoc.paymentMethod || 'bank_transfer_manual',
     createdAt:
       orderDoc.createdAt instanceof Date
         ? orderDoc.createdAt.toISOString()
         : orderDoc.createdAt,
+    updatedAt:
+      orderDoc.updatedAt instanceof Date
+        ? orderDoc.updatedAt.toISOString()
+        : orderDoc.updatedAt || null,
+    paymentSubmittedAt:
+      orderDoc.paymentSubmittedAt instanceof Date
+        ? orderDoc.paymentSubmittedAt.toISOString()
+        : orderDoc.paymentSubmittedAt || null,
     confirmedAt:
       orderDoc.confirmedAt instanceof Date
         ? orderDoc.confirmedAt.toISOString()
@@ -590,6 +614,164 @@ async function hasActiveEnrollment(userId, courseId) {
   return !!row;
 }
 
+async function listOrdersByUserId(userId, filters) {
+  if (!ordersCollection || !userId) return [];
+
+  const query = {
+    userId: String(userId),
+  };
+  const settings = filters || {};
+
+  if (settings.courseId) {
+    query.courseId = String(settings.courseId);
+  }
+  if (settings.status) {
+    query.status = String(settings.status);
+  }
+  if (Array.isArray(settings.statusIn) && settings.statusIn.length) {
+    query.status = { $in: settings.statusIn.map(String) };
+  }
+
+  return ordersCollection.find(query).sort({ createdAt: -1 }).toArray();
+}
+
+function buildOrderApiPayload(orderDoc, extra) {
+  const payload = {
+    order: serializeOrder(orderDoc),
+    checkout: buildCheckoutPayload(orderDoc),
+  };
+  if (extra && typeof extra === 'object') {
+    Object.assign(payload, extra);
+  }
+  return payload;
+}
+
+async function enrichOrderForAdmin(orderDoc) {
+  if (!orderDoc) return null;
+
+  let user = null;
+  let course = null;
+
+  if (usersCollection && ObjectId.isValid(orderDoc.userId)) {
+    user = await usersCollection.findOne(
+      { _id: new ObjectId(orderDoc.userId) },
+      { projection: { email: 1, displayName: 1 } }
+    );
+  }
+
+  try {
+    course = await loadCourseById(orderDoc.courseId);
+  } catch (error) {
+    course = null;
+  }
+
+  return Object.assign({}, serializeOrder(orderDoc), {
+    user: user
+      ? {
+          id: String(user._id),
+          email: user.email || '',
+          displayName: user.displayName || '',
+        }
+      : {
+          id: String(orderDoc.userId || ''),
+          email: '',
+          displayName: '',
+        },
+    course: course
+      ? {
+          id: course.id,
+          title: course.title || orderDoc.courseId,
+        }
+      : {
+          id: String(orderDoc.courseId || ''),
+          title: String(orderDoc.courseId || ''),
+        },
+  });
+}
+
+async function handleCreateOrder(req, res) {
+  try {
+    if (!requireMongoCollection(ordersCollection, res)) return;
+    if (!requireMongoCollection(enrollmentsCollection, res)) return;
+
+    const courseId = getRequiredTrimmedString(req.body.courseId);
+    if (!courseId) {
+      return sendError(res, 400, 'VALIDATION_COURSE_ID', 'courseId is required.');
+    }
+
+    const course = await loadCourseById(courseId);
+    const userIdStr = String(req.auth.user._id);
+    const amount = priceVndFromCourse(course);
+    const now = new Date();
+
+    if (await hasActiveEnrollment(req.auth.user._id, courseId)) {
+      return sendError(
+        res,
+        409,
+        'COURSE_ALREADY_ENROLLED',
+        'You already have access to this course.'
+      );
+    }
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return sendError(
+        res,
+        422,
+        'COURSE_PRICE_NOT_READY',
+        'Course price is not ready for checkout yet.'
+      );
+    }
+
+    const latestPending = await ordersCollection.findOne(
+      {
+        userId: userIdStr,
+        courseId: courseId,
+        status: { $in: ORDER_OPEN_STATUSES },
+      },
+      { sort: { createdAt: -1 } }
+    );
+
+    if (latestPending) {
+      return res.status(200).json(Object.assign({
+        ok: true,
+        reusedExistingOrder: true,
+      }, buildOrderApiPayload(latestPending)));
+    }
+
+    const transferCode = generateTransferCode();
+    const insertResult = await ordersCollection.insertOne({
+      userId: userIdStr,
+      courseId: courseId,
+      amount: amount,
+      price: amount,
+      transferCode: transferCode,
+      bankName: paymentBankName,
+      bankAccountNumber: paymentAccountNumber,
+      bankAccountName: paymentAccountName,
+      paymentMethod: 'bank_transfer_manual',
+      status: ORDER_STATUS_PENDING_PAYMENT,
+      createdAt: now,
+      updatedAt: now,
+      paymentSubmittedAt: null,
+      confirmedAt: null,
+      confirmedBy: null,
+      note: null,
+    });
+    const createdOrder = await ordersCollection.findOne({ _id: insertResult.insertedId });
+
+    return res.status(201).json(Object.assign({
+      ok: true,
+      reusedExistingOrder: false,
+    }, buildOrderApiPayload(createdOrder)));
+  } catch (error) {
+    logServerError('api/orders/create', error);
+    if (error && error.code === 'ENOENT') {
+      return sendError(res, 404, 'COURSE_NOT_FOUND', 'Course not found.');
+    }
+    return sendError(res, 500, 'ORDER_CREATE_FAILED', 'Failed to create order.');
+  }
+}
+
 async function listLessonProgress(userId) {
   if (!lessonProgressCollection || !userId) return [];
 
@@ -812,6 +994,51 @@ app.get('/api/my/enrollments', requireAuth, async function (req, res) {
   });
 });
 
+app.get('/api/me/enrollments', requireAuth, async function (req, res) {
+  return res.json({
+    ok: true,
+    enrolledCourseIds: await listEnrollmentCourseIds(req.auth.user._id),
+  });
+});
+
+app.get('/api/me/orders', requireAuth, async function (req, res) {
+  try {
+    if (!requireMongoCollection(ordersCollection, res)) return;
+    const courseId = getRequiredTrimmedString(req.query.courseId);
+    const status = getRequiredTrimmedString(req.query.status);
+    const items = await listOrdersByUserId(req.auth.user._id, {
+      courseId: courseId || undefined,
+      status: status || undefined,
+    });
+    return res.json({
+      ok: true,
+      items: items.map(serializeOrder),
+    });
+  } catch (error) {
+    logServerError('api/me/orders', error);
+    return sendError(res, 500, 'MY_ORDERS_FAILED', 'Failed to load your orders.');
+  }
+});
+
+app.get('/api/orders/my', requireAuth, async function (req, res) {
+  try {
+    if (!requireMongoCollection(ordersCollection, res)) return;
+    const courseId = getRequiredTrimmedString(req.query.courseId);
+    const status = getRequiredTrimmedString(req.query.status);
+    const items = await listOrdersByUserId(req.auth.user._id, {
+      courseId: courseId || undefined,
+      status: status || undefined,
+    });
+    return res.json({
+      ok: true,
+      items: items.map(serializeOrder),
+    });
+  } catch (error) {
+    logServerError('api/orders/my', error);
+    return sendError(res, 500, 'MY_ORDERS_FAILED', 'Failed to load your orders.');
+  }
+});
+
 app.get('/api/my/progress', requireAuth, async function (req, res) {
   return res.json({
     ok: true,
@@ -892,73 +1119,9 @@ app.get('/api/courses/:courseId/access', requireAuth, async function (req, res) 
   });
 });
 
-app.post('/api/orders/create', orderRateLimiter, requireAuth, async function (req, res) {
-  try {
-    if (!requireMongoCollection(ordersCollection, res)) return;
+app.post('/api/orders/create', orderRateLimiter, requireAuth, handleCreateOrder);
 
-    const courseId = getRequiredTrimmedString(req.body.courseId);
-    if (!courseId) {
-      return sendError(res, 400, 'VALIDATION_COURSE_ID', 'courseId is required.');
-    }
-
-    const course = await loadCourseById(courseId);
-    const userIdStr = String(req.auth.user._id);
-    const amount = priceVndFromCourse(course);
-    const now = new Date();
-
-    if (!Number.isFinite(amount) || amount <= 0) {
-      return sendError(
-        res,
-        422,
-        'COURSE_PRICE_NOT_READY',
-        'Course price is not ready for checkout yet.'
-      );
-    }
-
-    const latestPending = await ordersCollection.findOne(
-      { userId: userIdStr, courseId: courseId, status: 'pending' },
-      { sort: { createdAt: -1 } }
-    );
-
-    if (latestPending) {
-      return res.status(201).json({
-        ok: true,
-        order: serializeOrder(latestPending),
-        checkout: buildCheckoutPayload(latestPending),
-      });
-    }
-
-    const transferCode = generateTransferCode();
-    const insertResult = await ordersCollection.insertOne({
-      userId: userIdStr,
-      courseId: courseId,
-      amount: amount,
-      price: amount,
-      transferCode: transferCode,
-      bankName: paymentBankName,
-      bankAccountNumber: paymentAccountNumber,
-      bankAccountName: paymentAccountName,
-      status: 'pending',
-      createdAt: now,
-      confirmedAt: null,
-      confirmedBy: null,
-      note: null,
-    });
-    const createdOrder = await ordersCollection.findOne({ _id: insertResult.insertedId });
-
-    return res.status(201).json({
-      ok: true,
-      order: serializeOrder(createdOrder),
-      checkout: buildCheckoutPayload(createdOrder),
-    });
-  } catch (error) {
-    logServerError('api/orders/create', error);
-    if (error && error.code === 'ENOENT') {
-      return sendError(res, 404, 'COURSE_NOT_FOUND', 'Course not found.');
-    }
-    return sendError(res, 500, 'ORDER_CREATE_FAILED', 'Failed to create order.');
-  }
-});
+app.post('/api/orders', orderRateLimiter, requireAuth, handleCreateOrder);
 
 app.get('/api/orders/:orderId', requireAuth, async function (req, res) {
   try {
@@ -991,22 +1154,91 @@ app.get('/api/orders/:orderId', requireAuth, async function (req, res) {
   }
 });
 
+app.post('/api/orders/:orderId/mark-paid', orderRateLimiter, requireAuth, async function (req, res) {
+  try {
+    if (!requireMongoCollection(ordersCollection, res)) return;
+    const orderIdRaw = getRequiredTrimmedString(req.params.orderId);
+    if (!orderIdRaw || !ObjectId.isValid(orderIdRaw)) {
+      return sendError(res, 400, 'VALIDATION_ORDER_ID', 'Valid orderId is required.');
+    }
+
+    const orderId = new ObjectId(orderIdRaw);
+    const order = await ordersCollection.findOne({ _id: orderId });
+    if (!order) {
+      return sendError(res, 404, 'ORDER_NOT_FOUND', 'Order not found.');
+    }
+    if (String(order.userId) !== String(req.auth.user._id)) {
+      return sendError(res, 403, 'ORDER_FORBIDDEN', 'You cannot update this order.');
+    }
+    if (order.status === ORDER_STATUS_CONFIRMED) {
+      return sendError(res, 409, 'ORDER_ALREADY_CONFIRMED', 'This order is already confirmed.');
+    }
+    if (
+      order.status !== ORDER_STATUS_PENDING_PAYMENT &&
+      order.status !== ORDER_STATUS_PAYMENT_SUBMITTED &&
+      order.status !== 'pending'
+    ) {
+      return sendError(res, 400, 'ORDER_INVALID_STATE', 'Order cannot be marked as paid.');
+    }
+
+    if (order.status === ORDER_STATUS_PAYMENT_SUBMITTED) {
+      return res.json(Object.assign({ ok: true }, buildOrderApiPayload(order)));
+    }
+
+    const now = new Date();
+    const updated = await ordersCollection.findOneAndUpdate(
+      {
+        _id: orderId,
+        userId: String(req.auth.user._id),
+        status: { $in: [ORDER_STATUS_PENDING_PAYMENT, 'pending'] },
+      },
+      {
+        $set: {
+          status: ORDER_STATUS_PAYMENT_SUBMITTED,
+          paymentSubmittedAt: now,
+          updatedAt: now,
+        },
+      },
+      { returnDocument: 'after' }
+    );
+    const nextOrder =
+      updated && updated.value
+        ? updated.value
+        : await ordersCollection.findOne({ _id: orderId });
+
+    return res.json(Object.assign({ ok: true }, buildOrderApiPayload(nextOrder)));
+  } catch (error) {
+    logServerError('api/orders/mark-paid', error);
+    return sendError(res, 500, 'ORDER_MARK_PAID_FAILED', 'Failed to mark order as paid.');
+  }
+});
+
 app.get('/api/admin/orders', requireAdminKey, async function (req, res) {
   try {
     if (!requireMongoCollection(ordersCollection, res)) return;
     const status = getRequiredTrimmedString(req.query.status);
     const query = {};
     if (status) {
-      if (['pending', 'paid', 'cancelled'].indexOf(status) === -1) {
+      if (
+        [
+          ORDER_STATUS_PENDING_PAYMENT,
+          ORDER_STATUS_PAYMENT_SUBMITTED,
+          ORDER_STATUS_CONFIRMED,
+          ORDER_STATUS_CANCELLED,
+        ].indexOf(status) === -1
+      ) {
         return sendError(res, 400, 'VALIDATION_ORDER_STATUS', 'Invalid order status filter.');
       }
       query.status = status;
+    } else {
+      query.status = ORDER_STATUS_PAYMENT_SUBMITTED;
     }
 
     const items = await ordersCollection.find(query).sort({ createdAt: -1 }).limit(200).toArray();
+    const enrichedItems = await Promise.all(items.map(enrichOrderForAdmin));
     return res.json({
       ok: true,
-      items: items.map(serializeOrder),
+      items: enrichedItems,
     });
   } catch (error) {
     logServerError('api/admin/orders/list', error);
@@ -1067,6 +1299,30 @@ app.post('/api/admin/orders/confirm', orderRateLimiter, requireAdminKey, async f
     });
   } catch (error) {
     logServerError('api/admin/orders/confirm', error);
+    return sendError(res, 500, 'ADMIN_ORDER_CONFIRM_FAILED', 'Failed to confirm order.');
+  }
+});
+
+app.post('/api/admin/orders/:orderId/confirm', orderRateLimiter, requireAdminKey, async function (req, res) {
+  try {
+    if (!requireMongoCollection(ordersCollection, res)) return;
+    if (!requireMongoCollection(enrollmentsCollection, res)) return;
+
+    const orderIdRaw = getRequiredTrimmedString(req.params.orderId);
+    if (!orderIdRaw || !ObjectId.isValid(orderIdRaw)) {
+      return sendError(res, 400, 'VALIDATION_ORDER_ID', 'Valid orderId is required.');
+    }
+
+    const adminNote = getRequiredTrimmedString(req.body.adminNote);
+    const adminId = getRequiredTrimmedString(req.body.confirmedBy) || 'admin';
+    const result = await confirmOrderAsPaid(new ObjectId(orderIdRaw), adminId, adminNote);
+    if (!result.ok) {
+      return sendError(res, result.statusCode, result.code, result.message);
+    }
+
+    return res.json(Object.assign({ ok: true }, buildOrderApiPayload(result.order)));
+  } catch (error) {
+    logServerError('api/admin/orders/:orderId/confirm', error);
     return sendError(res, 500, 'ADMIN_ORDER_CONFIRM_FAILED', 'Failed to confirm order.');
   }
 });

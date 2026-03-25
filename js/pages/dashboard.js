@@ -160,6 +160,48 @@ function renderCourses(courses, progressItems) {
     .join('');
 }
 
+function renderOrders(orders, courseMap) {
+  var target = document.getElementById('dashboard-orders-list');
+  if (!target) return;
+
+  var pendingOrders = (orders || []).filter(function (order) {
+    return order && (
+      order.status === 'pending_payment' ||
+      order.status === 'payment_submitted'
+    );
+  });
+
+  if (!pendingOrders.length) {
+    target.innerHTML =
+      '<div class="pvq-account-empty-state"><strong>Không có đơn chờ xác nhận</strong><p class="pvq-muted">Khi bạn tạo đơn mua khóa học, trạng thái sẽ xuất hiện tại đây cho tới khi admin xác nhận.</p></div>';
+    return;
+  }
+
+  target.innerHTML = pendingOrders
+    .map(function (order) {
+      var course = courseMap[order.courseId] || null;
+      var courseTitle = course ? course.title : order.courseId;
+      var statusLabel = order.status === 'payment_submitted'
+        ? 'Đã báo chuyển khoản, chờ admin xác nhận'
+        : 'Đơn đã tạo, chờ bạn chuyển khoản';
+
+      return (
+        '<article class="pvq-dashboard-course-card">' +
+        '<div class="pvq-dashboard-course-meta">' +
+        '<h3>' + courseTitle + '</h3>' +
+        '<p class="pvq-muted">Mã đơn: ' + (order.id || '—') + '</p>' +
+        '<p class="pvq-dashboard-status">' + statusLabel + '</p>' +
+        '</div>' +
+        '<div class="pvq-course-access-actions">' +
+        '<a href="checkout.html?courseId=' + encodeURIComponent(order.courseId) + '" class="cta-btn cta-btn-primary">Xem đơn hàng</a>' +
+        '<a href="course-detail.html?id=' + encodeURIComponent(order.courseId) + '" class="cta-btn cta-btn-secondary">Xem khóa học</a>' +
+        '</div>' +
+        '</article>'
+      );
+    })
+    .join('');
+}
+
 async function loadDashboard() {
   var session = await window.PVQ_Auth.refreshSession();
   var guestEl = document.getElementById('dashboard-guest');
@@ -190,12 +232,35 @@ async function loadDashboard() {
   }).catch(function () {
     return { items: [] };
   });
+  var ordersPayload = await apiFetch('/api/me/orders', {
+    headers: {
+      Authorization: 'Bearer ' + window.PVQ_Auth.getToken(),
+    },
+  }).catch(function () {
+    return { items: [] };
+  });
 
-  var courseIds = Array.isArray(session.enrolledCourseIds)
+  var enrolledCourseIds = Array.isArray(session.enrolledCourseIds)
     ? session.enrolledCourseIds
     : [];
+  var pendingOrderCourseIds = ((ordersPayload && ordersPayload.items) || [])
+    .filter(function (order) {
+      return order && (
+        order.status === 'pending_payment' ||
+        order.status === 'payment_submitted'
+      );
+    })
+    .map(function (order) {
+      return order.courseId;
+    });
+  var courseIdsForLookup = enrolledCourseIds.slice();
+  pendingOrderCourseIds.forEach(function (courseId) {
+    if (courseIdsForLookup.indexOf(courseId) === -1) {
+      courseIdsForLookup.push(courseId);
+    }
+  });
   var courses = await Promise.all(
-    courseIds.map(function (courseId) {
+    courseIdsForLookup.map(function (courseId) {
       return window.PVQ_Content.loadCourseWithLessons(courseId).catch(function () {
         return null;
       });
@@ -203,10 +268,23 @@ async function loadDashboard() {
   );
   var validCourses = courses.filter(Boolean);
   var progressItems = Array.isArray(progressPayload.items) ? progressPayload.items : [];
+  var orders = Array.isArray(ordersPayload.items) ? ordersPayload.items : [];
+  var courseMap = {};
+  validCourses.forEach(function (course) {
+    if (course && course.id) {
+      courseMap[course.id] = course;
+    }
+  });
+  var enrolledCourses = enrolledCourseIds
+    .map(function (courseId) {
+      return courseMap[courseId] || null;
+    })
+    .filter(Boolean);
 
   renderStats(session, progressItems);
-  renderContinueLearning(validCourses, progressItems);
-  renderCourses(validCourses, progressItems);
+  renderContinueLearning(enrolledCourses, progressItems);
+  renderCourses(enrolledCourses, progressItems);
+  renderOrders(orders, courseMap);
 }
 
 document.addEventListener('DOMContentLoaded', function () {

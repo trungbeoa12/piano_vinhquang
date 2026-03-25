@@ -195,8 +195,84 @@ Frontend auth pages:
 - `register.html`: tạo tài khoản mới
 - `checkout.html`: checkout chuyển khoản thủ công (QR + mã nội dung chuyển khoản)
 - `dashboard.html`: tiếp tục học và xem tiến độ
+- `admin-orders.html`: trang tối thiểu để admin xem đơn `payment_submitted` và confirm cấp quyền học
 
-Checkout `POST /api/orders/create` trả thêm:
+## Happy path bán khóa học
+
+Luồng MVP hiện tại:
+
+1. User mở `course-detail.html?id=<courseId>`
+2. Bấm mua khóa học
+3. Nếu chưa login -> chuyển sang đăng nhập / quay lại checkout
+4. Nếu đã login -> hệ thống tạo hoặc tái sử dụng order đang mở
+5. Order mới tạo có trạng thái `pending_payment`
+6. User vào `checkout.html?courseId=<courseId>` để xem:
+   - tên khóa học
+   - giá
+   - mã đơn hàng
+   - trạng thái đơn
+   - ngân hàng: `VietinBank`
+   - số tài khoản: `103866619999`
+   - chủ tài khoản: `Đỗ Thành Trung`
+7. User bấm `Tôi đã chuyển khoản`
+8. Order đổi sang `payment_submitted`
+9. Admin mở `admin-orders.html`
+10. Admin confirm đơn
+11. Backend đổi order sang `confirmed` và cấp enrollment
+12. User reload `dashboard.html` sẽ thấy khóa học đã được cấp và vào lesson học được
+
+## Order states
+
+Flow trạng thái đơn tối thiểu:
+
+- `pending_payment`: user đã tạo đơn, chưa bấm xác nhận chuyển khoản
+- `payment_submitted`: user đã bấm `Tôi đã chuyển khoản`, chờ admin xác nhận
+- `confirmed`: admin đã confirm, enrollment đã được cấp hoặc đã tồn tại
+- `cancelled`: chưa dùng trong happy path hiện tại nhưng đã dành sẵn
+
+Rule chính:
+
+- guest không tạo order được
+- user đã có enrollment thì không mua lại cùng course theo flow bình thường
+- nếu đã có order mở cho cùng course thì hệ thống tái sử dụng order cũ
+- owner mới được `mark-paid`
+- chỉ admin mới được confirm
+- confirm nhiều lần không tạo enrollment trùng
+
+## API order/enrollment hiện tại
+
+- `POST /api/orders`
+- `POST /api/orders/create`
+  - body: `{ "courseId": "piano-co-ban" }`
+  - yêu cầu auth
+  - trả order mới hoặc order đang mở
+
+- `GET /api/orders/:orderId`
+  - chỉ owner hoặc admin (`x-admin-key`) xem được
+
+- `POST /api/orders/:orderId/mark-paid`
+  - owner bấm `Tôi đã chuyển khoản`
+  - chuyển order từ `pending_payment` sang `payment_submitted`
+
+- `GET /api/me/orders`
+- `GET /api/orders/my`
+  - lấy danh sách order của user hiện tại
+
+- `GET /api/my/enrollments`
+- `GET /api/me/enrollments`
+  - trả danh sách `enrolledCourseIds`
+
+- `GET /api/admin/orders?status=payment_submitted`
+  - list đơn chờ xác nhận
+
+- `POST /api/admin/orders/:orderId/confirm`
+  - admin confirm đơn và cấp enrollment
+
+- `POST /api/orders/confirm`
+- `POST /api/admin/orders/confirm`
+  - alias cũ vẫn còn để tương thích
+
+Checkout `POST /api/orders` hoặc `POST /api/orders/create` trả thêm:
 
 - `checkout.amount`
 - `checkout.bank` (`bankName`, `bankCode`, `accountNumber`, `accountName`)
@@ -204,7 +280,30 @@ Checkout `POST /api/orders/create` trả thêm:
 - `checkout.qr.imageUrl`
 - `checkout.qr.data`
 
-Sau khi người dùng chuyển khoản, admin gọi confirm API để đổi đơn sang `paid` và cấp enrollment.
+Sau khi người dùng chuyển khoản:
+
+- frontend gọi `POST /api/orders/:orderId/mark-paid`
+- order đổi sang `payment_submitted`
+- admin gọi confirm API để đổi đơn sang `confirmed` và cấp enrollment
+
+## Admin key local
+
+Trong local dev, nếu chưa set `ADMIN_ACTION_SECRET`, backend dùng fallback:
+
+- `pvq_admin_dev_key`
+
+Key này chỉ để test local happy path. Trên production nên set `ADMIN_ACTION_SECRET` rõ ràng.
+
+## Checklist test local ngắn
+
+1. `npm start`
+2. Mở `account.html` và đăng nhập bằng user chưa có enrollment hoặc đăng ký user mới
+3. Vào `course-detail.html?id=piano-co-ban`
+4. Bấm mua -> sang `checkout.html`
+5. Bấm `Tôi đã chuyển khoản`
+6. Mở `admin-orders.html`, nhập `pvq_admin_dev_key`, bấm confirm
+7. Quay lại `dashboard.html`, kiểm tra khóa học đã xuất hiện
+8. Mở lesson đầu tiên và xác nhận truy cập được
 
 Payload mẫu:
 

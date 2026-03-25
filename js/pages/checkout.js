@@ -72,6 +72,14 @@ function renderCheckoutStatus(status, message) {
     '</div>';
 }
 
+function getOrderStatusLabel(status) {
+  if (status === 'pending_payment') return 'Chờ chuyển khoản';
+  if (status === 'payment_submitted') return 'Đã báo chuyển khoản';
+  if (status === 'confirmed') return 'Đã xác nhận';
+  if (status === 'cancelled') return 'Đã hủy';
+  return status || '—';
+}
+
 function renderOrderSummary(course, order, checkoutData) {
   var el = document.getElementById('checkout-order-summary');
   if (!el || !course) return;
@@ -91,8 +99,9 @@ function renderOrderSummary(course, order, checkoutData) {
     '<dt>Ngân hàng</dt><dd>' + (bank.bankName || 'VietinBank') + '</dd>' +
     '<dt>Số tài khoản</dt><dd>' + (bank.accountNumber || '—') + '</dd>' +
     '<dt>Chủ tài khoản</dt><dd>' + (bank.accountName || '—') + '</dd>' +
+    '<dt>Mã đơn hàng</dt><dd>' + ((order && order.id) || '—') + '</dd>' +
     '<dt>Nội dung CK</dt><dd><strong>' + transferCode + '</strong></dd>' +
-    '<dt>Trạng thái đơn</dt><dd>' + ((order && order.status) || 'pending') + '</dd>' +
+    '<dt>Trạng thái đơn</dt><dd>' + getOrderStatusLabel(order && order.status) + '</dd>' +
     '</dl>';
 }
 
@@ -143,17 +152,33 @@ function renderManualTransferState(course, order, checkoutData) {
     ? checkoutData.transferCode
     : (order && order.transferCode) || '';
 
+  var isSubmitted = order && order.status === 'payment_submitted';
+  var isConfirmed = order && order.status === 'confirmed';
+
   flowEl.innerHTML =
     '<div class="pvq-checkout-state">' +
     '<p class="pvq-course-access-badge">Bước 2</p>' +
     '<h3>Chuyển khoản thủ công</h3>' +
-    '<p class="pvq-muted">Quét QR hoặc chuyển khoản theo thông tin bên dưới. Sau khi chuyển, bấm nút xác nhận để hệ thống ghi nhận chờ duyệt.</p>' +
+    '<p class="pvq-muted">Chuyển khoản theo thông tin bên dưới rồi bấm xác nhận để hệ thống chuyển đơn sang trạng thái chờ admin duyệt.</p>' +
     (qrImage
       ? ('<div style="margin:12px 0"><img src="' + qrImage + '" alt="QR chuyển khoản" style="max-width:240px;border-radius:12px;border:1px solid rgba(255,255,255,0.12)"></div>')
       : '<p class="pvq-muted">QR đang được tạo...</p>') +
+    '<dl class="pvq-sales-dl" style="margin:12px 0 18px">' +
+    '<dt>Ngân hàng</dt><dd>VietinBank</dd>' +
+    '<dt>Số tài khoản</dt><dd>103866619999</dd>' +
+    '<dt>Chủ tài khoản</dt><dd>Đỗ Thành Trung</dd>' +
+    '</dl>' +
     '<p class="pvq-muted"><strong>Nội dung chuyển khoản:</strong> ' + transferCode + '</p>' +
     '<div class="pvq-course-access-actions">' +
-    '<button type="button" id="checkout-submit-btn" class="cta-btn cta-btn-primary" style="border:none;cursor:pointer">Tôi đã chuyển khoản</button>' +
+    (
+      isConfirmed
+        ? '<a href="dashboard.html" class="cta-btn cta-btn-primary">Về dashboard</a>'
+        : '<button type="button" id="checkout-submit-btn" class="cta-btn cta-btn-primary" style="border:none;cursor:pointer" ' +
+          (isSubmitted ? 'disabled' : '') +
+          '>' +
+          (isSubmitted ? 'Đã ghi nhận chuyển khoản' : 'Tôi đã chuyển khoản') +
+          '</button>'
+    ) +
     '<a href="course-detail.html?id=' + encodeURIComponent(course.id) + '" class="cta-btn cta-btn-secondary">Quay lại khóa học</a>' +
     '</div>' +
     '<p class="pvq-muted pvq-course-access-feedback" id="checkout-feedback"></p>' +
@@ -161,18 +186,36 @@ function renderManualTransferState(course, order, checkoutData) {
 
   var submitBtn = document.getElementById('checkout-submit-btn');
   var feedbackEl = document.getElementById('checkout-feedback');
+  if (feedbackEl && isSubmitted) {
+    feedbackEl.textContent = 'Đã ghi nhận, chờ admin xác nhận.';
+  }
   if (!submitBtn) return;
 
   submitBtn.addEventListener('click', function () {
     submitBtn.disabled = true;
     if (feedbackEl) {
-      feedbackEl.textContent =
-        'Đã ghi nhận yêu cầu. Admin sẽ xác nhận đơn sau khi kiểm tra chuyển khoản.';
+      feedbackEl.textContent = 'Đang ghi nhận chuyển khoản...';
     }
-    renderCheckoutStatus(
-      'success',
-      'Đơn đang chờ admin xác nhận. Sau khi xác nhận, bạn sẽ vào học được ngay.'
-    );
+    checkoutFetch('/api/orders/' + encodeURIComponent(order.id) + '/mark-paid', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({}),
+    })
+      .then(function (payload) {
+        var nextOrder = payload.order || order;
+        renderOrderSummary(course, nextOrder, payload.checkout || checkoutData);
+        renderManualTransferState(course, nextOrder, payload.checkout || checkoutData);
+        renderCheckoutStatus(
+          'success',
+          'Đã ghi nhận, chờ admin xác nhận. Sau khi xác nhận bạn sẽ vào học được ngay.'
+        );
+      })
+      .catch(function (error) {
+        submitBtn.disabled = false;
+        if (feedbackEl) feedbackEl.textContent = error.message;
+      });
   });
 }
 
@@ -218,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function () {
               }
 
               renderCheckoutStatus('processing', 'Đang tạo đơn hàng chuyển khoản...');
-              return checkoutFetch('/api/orders/create', {
+              return checkoutFetch('/api/orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ courseId: course.id }),
@@ -226,7 +269,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 var ord = body.order || {};
                 var checkoutData = body.checkout || {};
                 renderOrderSummary(course, ord, checkoutData);
-                renderCheckoutStatus('idle', 'Đơn đã tạo. Vui lòng chuyển khoản theo QR.');
+                if (ord.status === 'payment_submitted') {
+                  renderCheckoutStatus('success', 'Đã ghi nhận, chờ admin xác nhận.');
+                } else if (ord.status === 'confirmed') {
+                  renderCheckoutStatus('success', 'Đơn đã được xác nhận. Bạn có thể vào học.');
+                } else {
+                  renderCheckoutStatus('idle', 'Đơn đã sẵn sàng. Vui lòng chuyển khoản theo thông tin bên dưới.');
+                }
                 renderManualTransferState(course, ord, checkoutData);
               });
             })
