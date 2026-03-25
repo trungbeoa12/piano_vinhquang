@@ -43,6 +43,11 @@
     if (feedbackEl) feedbackEl.textContent = message || '';
   }
 
+  function setEditorFeedback(message) {
+    var feedbackEl = document.getElementById('admin-lesson-editor-feedback');
+    if (feedbackEl) feedbackEl.textContent = message || '';
+  }
+
   function renderSummary(item) {
     var titleEl = document.getElementById('admin-course-content-title');
     var copyEl = document.getElementById('admin-course-content-copy');
@@ -100,12 +105,124 @@
           '<p class="pvq-dashboard-status">Trạng thái: ' + (lesson.status || 'draft') + (lesson.isPreview ? ' • preview' : '') + '</p>' +
           '</div>' +
           '<div class="pvq-course-access-actions">' +
-          '<button type="button" class="cta-btn cta-btn-secondary" disabled>Form sửa sẽ làm ở bước tiếp theo</button>' +
+          '<button type="button" class="cta-btn cta-btn-secondary admin-lesson-edit-btn" data-lesson-id="' + lesson.id + '">Sửa nội dung</button>' +
           '</div>' +
           '</article>'
         );
       })
       .join('');
+
+    Array.prototype.slice.call(
+      target.querySelectorAll('.admin-lesson-edit-btn')
+    ).forEach(function (button) {
+      button.addEventListener('click', function () {
+        var lessonId = button.getAttribute('data-lesson-id');
+        if (!lessonId) return;
+        loadLessonEditor(lessonId);
+      });
+    });
+  }
+
+  function getEditorCourseId() {
+    return getCourseIdFromPath();
+  }
+
+  function setEditorLoadingState(isLoading) {
+    var saveBtn = document.getElementById('admin-lesson-save-btn');
+    if (saveBtn) saveBtn.disabled = !!isLoading;
+  }
+
+  function populateLessonEditor(item) {
+    var form = document.getElementById('admin-lesson-editor-form');
+    var titleEl = document.getElementById('admin-lesson-editor-title');
+    if (form) form.style.display = item ? '' : 'none';
+    if (titleEl) {
+      titleEl.textContent = item
+        ? 'Sửa lesson: ' + (item.title || item.id)
+        : 'Chọn một lesson để sửa';
+    }
+    if (!item) return;
+
+    form.dataset.lessonId = item.id || '';
+    document.getElementById('admin-lesson-title').value = item.title || '';
+    document.getElementById('admin-lesson-description').value = item.description || '';
+    document.getElementById('admin-lesson-duration').value = item.durationMin || 0;
+    document.getElementById('admin-lesson-status').value = item.status || 'draft';
+    document.getElementById('admin-lesson-video-link').value = item.videoLink || '';
+    document.getElementById('admin-lesson-musicxml-link').value = item.musicxmlLink || '';
+    document.getElementById('admin-lesson-midi-link').value = item.midiLink || '';
+  }
+
+  function loadLessonEditor(lessonId) {
+    var courseId = getEditorCourseId();
+    if (!courseId || !lessonId) return Promise.resolve();
+
+    setEditorFeedback('Đang tải lesson...');
+    return adminFetch(
+      '/api/admin/courses/' +
+        encodeURIComponent(courseId) +
+        '/lessons/' +
+        encodeURIComponent(lessonId)
+    )
+      .then(function (payload) {
+        populateLessonEditor(payload.item || null);
+        setEditorFeedback('');
+      })
+      .catch(function (error) {
+        populateLessonEditor(null);
+        setEditorFeedback(error.message);
+      });
+  }
+
+  function bindLessonEditorForm() {
+    var form = document.getElementById('admin-lesson-editor-form');
+    if (!form) return;
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      var courseId = getEditorCourseId();
+      var lessonId = form.dataset.lessonId || '';
+      if (!courseId || !lessonId) {
+        setEditorFeedback('Chưa chọn lesson để sửa.');
+        return;
+      }
+
+      setEditorLoadingState(true);
+      setEditorFeedback('Đang lưu lesson...');
+
+      adminFetch(
+        '/api/admin/courses/' +
+          encodeURIComponent(courseId) +
+          '/lessons/' +
+          encodeURIComponent(lessonId),
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: document.getElementById('admin-lesson-title').value,
+            description: document.getElementById('admin-lesson-description').value,
+            durationMin: Number(document.getElementById('admin-lesson-duration').value || 0),
+            status: document.getElementById('admin-lesson-status').value,
+            videoLink: document.getElementById('admin-lesson-video-link').value,
+            musicxmlLink: document.getElementById('admin-lesson-musicxml-link').value,
+            midiLink: document.getElementById('admin-lesson-midi-link').value,
+          }),
+        }
+      )
+        .then(function (payload) {
+          populateLessonEditor(payload.item || null);
+          setEditorFeedback('Đã lưu lesson thành công.');
+          return loadCourseDetail();
+        })
+        .catch(function (error) {
+          setEditorFeedback(error.message);
+        })
+        .finally(function () {
+          setEditorLoadingState(false);
+        });
+    });
   }
 
   function loadCourseDetail() {
@@ -132,6 +249,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
+    bindLessonEditorForm();
     if (!getAdminKey()) {
       renderSummary(null);
       renderLessons(null);

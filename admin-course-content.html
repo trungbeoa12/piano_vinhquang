@@ -35,6 +35,49 @@
                 <p id="admin-course-content-feedback" class="pvq-muted pvq-account-feedback" aria-live="polite"></p>
                 <div id="admin-course-lessons-list"></div>
             </section>
+
+            <section class="pvq-panel pvq-dashboard-section" style="margin-top:24px">
+                <p class="pvq-account-kicker">Lesson Editor</p>
+                <h2 id="admin-lesson-editor-title">Chọn một lesson để sửa</h2>
+                <p id="admin-lesson-editor-feedback" class="pvq-muted pvq-account-feedback" aria-live="polite"></p>
+                <form id="admin-lesson-editor-form" class="pvq-form-stack" style="display:none">
+                    <div class="form-group">
+                        <label for="admin-lesson-title">Title</label>
+                        <input type="text" id="admin-lesson-title" name="title" placeholder="Nhập title lesson">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-lesson-description">Description</label>
+                        <textarea id="admin-lesson-description" name="description" placeholder="Nhập mô tả lesson"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-lesson-duration">Duration (minutes)</label>
+                        <input type="number" min="0" id="admin-lesson-duration" name="durationMin" placeholder="35">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-lesson-status">Status</label>
+                        <select id="admin-lesson-status" name="status">
+                            <option value="draft">draft</option>
+                            <option value="placeholder">placeholder</option>
+                            <option value="ready">ready</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-lesson-video-link">Video link</label>
+                        <input type="url" id="admin-lesson-video-link" name="videoLink" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-lesson-musicxml-link">MusicXML link</label>
+                        <input type="url" id="admin-lesson-musicxml-link" name="musicxmlLink" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-lesson-midi-link">MIDI link</label>
+                        <input type="url" id="admin-lesson-midi-link" name="midiLink" placeholder="https://...">
+                    </div>
+                    <div class="pvq-course-access-actions">
+                        <button type="submit" id="admin-lesson-save-btn" class="cta-btn cta-btn-primary" style="border:none;cursor:pointer">Lưu lesson</button>
+                    </div>
+                </form>
+            </section>
         </div>
     </main>
 

@@ -17,6 +17,8 @@ const {
 const {
   listAdminCoursesSummary,
   loadAdminCourseDetail,
+  loadAdminLessonEditor,
+  saveAdminLessonEditor,
   listCoursesSummary,
   listLessonsByCourseId,
   normalizeLessonShape,
@@ -1355,6 +1357,134 @@ app.get('/api/admin/courses/:courseId', requireAdminKey, async function (req, re
     );
   }
 });
+
+app.get(
+  '/api/admin/courses/:courseId/lessons/:lessonId',
+  requireAdminKey,
+  async function (req, res) {
+    try {
+      const courseId = getRequiredTrimmedString(req.params.courseId);
+      const lessonId = getRequiredTrimmedString(req.params.lessonId);
+
+      if (!courseId || !lessonId) {
+        return sendError(
+          res,
+          400,
+          'VALIDATION_COURSE_LESSON_ID',
+          'courseId and lessonId are required.'
+        );
+      }
+
+      const item = await loadAdminLessonEditor(courseId, lessonId);
+      return res.json({
+        ok: true,
+        item: item,
+      });
+    } catch (error) {
+      if (error && error.code === 'ENOENT') {
+        return sendError(
+          res,
+          404,
+          'ADMIN_LESSON_NOT_FOUND',
+          'Lesson not found.'
+        );
+      }
+      logServerError('api/admin/courses/lessons/detail', error, {
+        courseId: req.params.courseId,
+        lessonId: req.params.lessonId,
+      });
+      return sendError(
+        res,
+        500,
+        'ADMIN_LESSON_DETAIL_FAILED',
+        'Failed to load admin lesson detail.'
+      );
+    }
+  }
+);
+
+app.patch(
+  '/api/admin/courses/:courseId/lessons/:lessonId',
+  requireAdminKey,
+  async function (req, res) {
+    try {
+      const courseId = getRequiredTrimmedString(req.params.courseId);
+      const lessonId = getRequiredTrimmedString(req.params.lessonId);
+      const title = getRequiredTrimmedString(req.body.title);
+      const description = getRequiredTrimmedString(req.body.description);
+      const status = getRequiredTrimmedString(req.body.status).toLowerCase();
+      const videoLink = getRequiredTrimmedString(req.body.videoLink);
+      const musicxmlLink = getRequiredTrimmedString(req.body.musicxmlLink);
+      const midiLink = getRequiredTrimmedString(req.body.midiLink);
+      const durationMin = Number(req.body.durationMin);
+
+      if (!courseId || !lessonId) {
+        return sendError(
+          res,
+          400,
+          'VALIDATION_COURSE_LESSON_ID',
+          'courseId and lessonId are required.'
+        );
+      }
+
+      if (!title) {
+        return sendError(res, 400, 'VALIDATION_LESSON_TITLE', 'title is required.');
+      }
+
+      if (!Number.isFinite(durationMin) || durationMin < 0) {
+        return sendError(
+          res,
+          400,
+          'VALIDATION_LESSON_DURATION',
+          'durationMin must be a valid non-negative number.'
+        );
+      }
+
+      if (['draft', 'placeholder', 'ready'].indexOf(status) === -1) {
+        return sendError(
+          res,
+          400,
+          'VALIDATION_LESSON_STATUS',
+          'status must be one of: draft, placeholder, ready.'
+        );
+      }
+
+      const item = await saveAdminLessonEditor(courseId, lessonId, {
+        title: title,
+        description: description,
+        durationMin: durationMin,
+        status: status,
+        videoLink: videoLink,
+        musicxmlLink: musicxmlLink,
+        midiLink: midiLink,
+      });
+
+      return res.json({
+        ok: true,
+        item: item,
+      });
+    } catch (error) {
+      if (error && error.code === 'ENOENT') {
+        return sendError(
+          res,
+          404,
+          'ADMIN_LESSON_NOT_FOUND',
+          'Lesson not found.'
+        );
+      }
+      logServerError('api/admin/courses/lessons/update', error, {
+        courseId: req.params.courseId,
+        lessonId: req.params.lessonId,
+      });
+      return sendError(
+        res,
+        500,
+        'ADMIN_LESSON_UPDATE_FAILED',
+        'Failed to save lesson content.'
+      );
+    }
+  }
+);
 
 app.post('/api/orders/confirm', orderRateLimiter, requireAdminKey, async function (req, res) {
   try {
