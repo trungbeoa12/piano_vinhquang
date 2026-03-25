@@ -1,6 +1,7 @@
 const fs = require('fs');
 const express = require('express');
 const path = require('path');
+const { URL } = require('url');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const { MongoClient, ObjectId } = require('mongodb');
@@ -264,6 +265,44 @@ function createApiRateLimiter(windowMs, max, scopeName) {
 function generateTransferCode() {
   const randomPart = Math.random().toString(36).slice(2, 8).toUpperCase();
   return `${orderTransferCodePrefix}${Date.now().toString(36).toUpperCase()}${randomPart}`;
+}
+
+function extractGoogleDriveFileId(rawUrl) {
+  try {
+    const parsed = new URL(String(rawUrl || ''));
+    const match = parsed.pathname.match(/\/file\/d\/([^/]+)/);
+    if (match && match[1]) return match[1];
+    const queryId = parsed.searchParams.get('id');
+    return queryId ? String(queryId).trim() : '';
+  } catch (error) {
+    return '';
+  }
+}
+
+function resolveInlineResourceSourceUrl(entry) {
+  if (!entry || !entry.url) return '';
+
+  if (entry.provider === 'google_drive') {
+    const fileId = extractGoogleDriveFileId(entry.url);
+    if (fileId) {
+      return 'https://drive.google.com/uc?export=download&id=' + encodeURIComponent(fileId);
+    }
+  }
+
+  return String(entry.url);
+}
+
+function getInlineResourceContentType(entry, fallbackType) {
+  if (entry && entry.type === 'sheet_view') {
+    return 'application/vnd.recordare.musicxml+xml; charset=utf-8';
+  }
+  if (entry && entry.type === 'midi') {
+    return 'audio/midi';
+  }
+  if (entry && entry.type === 'pdf') {
+    return 'application/pdf';
+  }
+  return fallbackType || 'application/octet-stream';
 }
 
 function buildQrImageUrl(amount, transferCode) {
@@ -1449,6 +1488,53 @@ app.get('/api/resources/:refId/open', function (req, res) {
 
     return res.redirect(entry.url);
   } catch (error) {
+    return sendError(res, 401, 'RESOURCE_LINK_INVALID', 'Invalid or expired resource link.');
+  }
+});
+
+app.get('/api/resources/:refId/content', async function (req, res) {
+  try {
+    const refId = getRequiredTrimmedString(req.params.refId);
+    const token = getRequiredTrimmedString(req.query.token);
+
+    if (!refId || !token) {
+      return sendError(res, 400, 'VALIDATION_RESOURCE_TOKEN', 'refId and token are required.');
+    }
+
+    verifySignedResourceToken(token, refId, resourceLinkSecret);
+
+    const entry = getPrivateResourceEntry(refId);
+    if (!entry || !entry.url) {
+      return sendError(res, 404, 'RESOURCE_NOT_FOUND', 'Resource not found.');
+    }
+
+    const sourceUrl = resolveInlineResourceSourceUrl(entry);
+    if (!sourceUrl) {
+      return sendError(res, 404, 'RESOURCE_NOT_FOUND', 'Resource source URL is missing.');
+    }
+
+    const upstream = await fetch(sourceUrl);
+    if (!upstream.ok) {
+      return sendError(
+        res,
+        502,
+        'RESOURCE_FETCH_FAILED',
+        'Failed to load upstream resource.'
+      );
+    }
+
+    const arrayBuffer = await upstream.arrayBuffer();
+    const contentType = getInlineResourceContentType(
+      entry,
+      upstream.headers.get('content-type')
+    );
+    const cacheControl = upstream.headers.get('cache-control') || 'private, max-age=300';
+
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', cacheControl);
+    return res.send(Buffer.from(arrayBuffer));
+  } catch (error) {
+    logServerError('api/resources/content', error);
     return sendError(res, 401, 'RESOURCE_LINK_INVALID', 'Invalid or expired resource link.');
   }
 });

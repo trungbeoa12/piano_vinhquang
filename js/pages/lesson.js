@@ -14,20 +14,49 @@ function renderLocked(message) {
   playerCol.innerHTML = '<div class="pvq-alert"><p>' + message + '</p></div>';
 }
 
-function ensurePianoMounted() {
+function ensurePianoMounted(options) {
   var playerCol = getPlayerColumn();
   if (!playerCol) return;
+  var settings = options || {};
+  var musicxmlUrl = settings.musicxmlUrl || '';
+  var midiUrl = settings.midiUrl || '';
 
   var mountEl = document.getElementById('pvq-piano-mount');
   if (!mountEl) {
+    var scoreAttrs = '';
+    if (musicxmlUrl) {
+      scoreAttrs +=
+        ' data-pvq-score-musicxml="' +
+        String(musicxmlUrl).replace(/"/g, '&quot;') +
+        '"';
+    }
+    if (midiUrl) {
+      scoreAttrs +=
+        ' data-pvq-score-midi="' +
+        String(midiUrl).replace(/"/g, '&quot;') +
+        '"';
+    }
     var pianoMountHtml =
       '<div class="pvq-lesson-piano-wrap">' +
-      '<div id="pvq-piano-mount" ' +
-      'data-pvq-score-musicxml="assets/scores/waltz-in-a-minorchopin.musicxml" ' +
-      'data-pvq-score-midi="assets/scores/waltz-in-a-minorchopin.mid">' +
+      '<div id="pvq-piano-mount"' + scoreAttrs + '>' +
       '</div>' +
       '</div>';
     playerCol.insertAdjacentHTML('afterbegin', pianoMountHtml);
+    mountEl = document.getElementById('pvq-piano-mount');
+  }
+
+  if (mountEl) {
+    if (musicxmlUrl) {
+      mountEl.setAttribute('data-pvq-score-musicxml', musicxmlUrl);
+    } else {
+      mountEl.removeAttribute('data-pvq-score-musicxml');
+    }
+
+    if (midiUrl) {
+      mountEl.setAttribute('data-pvq-score-midi', midiUrl);
+    } else {
+      mountEl.removeAttribute('data-pvq-score-midi');
+    }
   }
 
   var existingScript = playerCol.querySelector(
@@ -61,6 +90,12 @@ function renderLessonContent(data) {
   });
   var resolvedAudio = resolvedItems.find(function (item) {
     return item && (item.kind === 'audio' || item.kind === 'midi') && item.url;
+  });
+  var resolvedInlineSheet = resolvedItems.find(function (item) {
+    return item && (item.kind === 'sheet' || item.kind === 'pdf') && item.inlineUrl;
+  });
+  var resolvedInlineMidi = resolvedItems.find(function (item) {
+    return item && item.kind === 'midi' && item.inlineUrl;
   });
   var statusLabel = lesson.status || 'placeholder';
   var videoUrl = normalizeResourceUrl(
@@ -124,7 +159,7 @@ function renderLessonContent(data) {
     .join('');
 
   sideEl.innerHTML =
-    '<p class="pvq-muted" style="margin-bottom:16px">Bài học có thể đang ở trạng thái placeholder. Bạn vẫn có thể theo dõi flow học, tiến độ và mở tài nguyên ngay khi URL thật được cập nhật.</p>' +
+    '<p class="pvq-muted" style="margin-bottom:16px">Sheet nhạc của bài học sẽ được render trực tiếp ở phần chính của lesson khi MusicXML sẵn sàng. Bạn vẫn có thể mở tài nguyên riêng lẻ ở đây nếu cần.</p>' +
     '<div class="pvq-resource-list">' +
     videoHtml +
     sheetHtml +
@@ -132,7 +167,14 @@ function renderLessonContent(data) {
     itemsHtml +
     '</div>';
 
-  ensurePianoMounted();
+  ensurePianoMounted({
+    musicxmlUrl: normalizeResourceUrl(
+      resolvedInlineSheet ? resolvedInlineSheet.inlineUrl : ''
+    ),
+    midiUrl: normalizeResourceUrl(
+      resolvedInlineMidi ? resolvedInlineMidi.inlineUrl : ''
+    ),
+  });
 }
 
 function fetchAuthJson(path, options) {
@@ -254,7 +296,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   if (!courseId || !lessonId) {
     renderLocked('Thiếu tham số khóa học hoặc bài học.');
-    ensurePianoMounted();
     return;
   }
 
@@ -267,7 +308,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         renderLocked(
           '<strong>Cần đăng nhập.</strong> Vui lòng vào trang Tài khoản để đăng nhập, sau đó quay lại bài học này.'
         );
-        ensurePianoMounted();
         return null;
       }
 
@@ -277,7 +317,6 @@ document.addEventListener('DOMContentLoaded', async function () {
       if (!payload) return;
       if (!payload.ok || !payload.course || !payload.lesson) {
         renderLocked('Không tìm thấy bài học.');
-        ensurePianoMounted();
         return;
       }
 
@@ -332,6 +371,5 @@ document.addEventListener('DOMContentLoaded', async function () {
       } else {
         renderLocked('Không thể tải dữ liệu bài học từ server.');
       }
-      ensurePianoMounted();
     });
 });
