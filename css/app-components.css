@@ -11,12 +11,16 @@
 	width: 100%;
 	max-width: none;
 	margin: 0;
-	padding: clamp(104px, 12vw, 140px) 0 clamp(40px, 6vw, 64px);
+	padding:
+		calc(var(--pvq-header-offset, 104px) + clamp(22px, 3vw, 36px))
+		0
+		clamp(40px, 6vw, 64px);
 	position: relative;
 	z-index: 2;
 }
 
 .page-main--lesson {
+	padding-top: calc(var(--pvq-header-offset, 104px) + clamp(28px, 4vw, 42px));
 	padding-bottom: clamp(28px, 5vw, 44px);
 }
 

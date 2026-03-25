@@ -2,6 +2,16 @@
  * Header/footer chung — inject vào các mount tương ứng.
  * current: 'home' | 'products' | 'courses' | 'account'
  */
+window.PVQ_applyHeaderOffset = function () {
+  var header = document.querySelector('.site-header');
+  if (!header) return;
+
+  var height = Math.ceil(header.getBoundingClientRect().height || 0);
+  if (!height) return;
+
+  document.documentElement.style.setProperty('--pvq-header-offset', height + 'px');
+};
+
 window.PVQ_injectSiteHeader = function (current, options) {
   var mount = document.getElementById('site-header-mount');
   if (!mount || !window.PVQ_appCommon) return Promise.resolve();
@@ -27,6 +37,7 @@ window.PVQ_injectSiteHeader = function (current, options) {
     })
     .then(function () {
       window.PVQ_appCommon.initNavigation();
+      window.PVQ_applyHeaderOffset();
     });
 };
 
@@ -39,3 +50,9 @@ window.PVQ_injectSiteFooter = function (options) {
     contact_href: settings.contactHref || 'index.html#contact',
   });
 };
+
+window.addEventListener('resize', function () {
+  if (window.PVQ_applyHeaderOffset) {
+    window.PVQ_applyHeaderOffset();
+  }
+});
