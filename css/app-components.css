@@ -389,6 +389,10 @@ body[data-page="account"] .pvq-common-cta-shell {
 	line-height: 1.08;
 }
 
+.pvq-lesson-status-region {
+	margin-bottom: 24px;
+}
+
 .pvq-lesson-layout {
 	display: grid;
 	grid-template-columns: minmax(680px, 2fr) minmax(320px, 1fr);
@@ -1060,22 +1064,50 @@ body[data-page="account"] .pvq-common-cta-shell {
 }
 
 .pvq-lesson-progress-card {
-	margin-top: 18px;
 	padding: 18px 20px;
 	border-radius: 18px;
 	background: rgba(255, 255, 255, 0.82);
 	border: 1px solid rgba(15, 23, 42, 0.08);
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	justify-content: space-between;
+	display: grid;
+	grid-template-columns: minmax(0, 1.25fr) auto;
 	gap: 16px 20px;
+	align-items: center;
+	position: static;
+	z-index: auto;
+}
+
+.pvq-lesson-progress-main {
+	min-width: 0;
+}
+
+.pvq-lesson-progress-kicker {
+	display: inline-block;
+	margin-bottom: 8px;
+	font-size: 0.78rem;
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	color: var(--accent-ink);
+	font-weight: 700;
 }
 
 .pvq-lesson-progress-card strong {
 	display: block;
 	color: var(--ivory);
 	margin-bottom: 6px;
+}
+
+.pvq-lesson-progress-card .pvq-muted {
+	margin: 0;
+	line-height: 1.65;
+}
+
+.pvq-lesson-progress-actions {
+	justify-content: flex-end;
+}
+
+.pvq-lesson-progress-feedback {
+	grid-column: 1 / -1;
+	margin-top: -4px;
 }
 
 @media (max-width: 1023px) {
@@ -1089,6 +1121,14 @@ body[data-page="account"] .pvq-common-cta-shell {
 
 	.pvq-checkout-methods {
 		grid-template-columns: 1fr;
+	}
+
+	.pvq-lesson-progress-card {
+		grid-template-columns: 1fr;
+	}
+
+	.pvq-lesson-progress-actions {
+		justify-content: flex-start;
 	}
 }
 

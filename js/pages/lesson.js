@@ -211,11 +211,20 @@ function renderProgressCard(found, progressItem) {
   var completed = !!(progressItem && progressItem.completed);
   var statusLabel = completed ? 'Đã hoàn thành bài này' : 'Đang học';
   var actionLabel = completed ? 'Đã hoàn thành' : 'Đánh dấu đã học xong';
+  var lessonIndex = lessonOrder.indexOf(found.lesson.id);
+  var lessonCountLabel =
+    lessonIndex !== -1 && lessonOrder.length
+      ? 'Bài ' + (lessonIndex + 1) + '/' + lessonOrder.length
+      : 'Tiến độ bài học';
 
   mount.innerHTML =
     '<div class="pvq-lesson-progress-card">' +
-    '<div><strong>' + statusLabel + '</strong><p class="pvq-muted">Tiến độ của bài học này được lưu theo tài khoản để bạn tiếp tục học trên dashboard.</p></div>' +
-    '<div class="pvq-course-access-actions">' +
+    '<div class="pvq-lesson-progress-main">' +
+    '<span class="pvq-lesson-progress-kicker">' + lessonCountLabel + '</span>' +
+    '<strong>' + statusLabel + '</strong>' +
+    '<p class="pvq-muted">Tiến độ của bài học này được lưu theo tài khoản để bạn tiếp tục học trên dashboard.</p>' +
+    '</div>' +
+    '<div class="pvq-course-access-actions pvq-lesson-progress-actions">' +
     '<button type="button" id="lesson-complete-btn" class="cta-btn cta-btn-primary" style="border:none;cursor:pointer" ' +
     (completed ? 'disabled' : '') +
     '>' + actionLabel + '</button>' +
@@ -223,7 +232,7 @@ function renderProgressCard(found, progressItem) {
     (nextLessonId ? 'Bài tiếp theo' : 'Về dashboard') +
     '</a>' +
     '</div>' +
-    '<p class="pvq-muted pvq-course-access-feedback" id="lesson-progress-feedback"></p>' +
+    '<p class="pvq-muted pvq-course-access-feedback pvq-lesson-progress-feedback" id="lesson-progress-feedback"></p>' +
     '</div>';
 }
 
