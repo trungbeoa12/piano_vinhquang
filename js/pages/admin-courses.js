@@ -69,7 +69,7 @@
           '<p class="pvq-dashboard-status">Trạng thái: ' + publishLabel + '</p>' +
           '</div>' +
           '<div class="pvq-course-access-actions">' +
-          '<a href="/admin/courses/' + encodeURIComponent(item.id) + '" class="cta-btn cta-btn-primary">Xem lessons</a>' +
+          '<a href="admin-course-content.html?courseId=' + encodeURIComponent(item.id) + '" class="cta-btn cta-btn-primary">Xem lessons</a>' +
           '</div>' +
           '</article>'
         );

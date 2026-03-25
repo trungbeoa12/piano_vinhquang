@@ -33,6 +33,10 @@
   }
 
   function getCourseIdFromPath() {
+    if (window.PVQ_getQueryParam) {
+      var queryCourseId = window.PVQ_getQueryParam('courseId');
+      if (queryCourseId) return queryCourseId;
+    }
     var pathname = String(window.location.pathname || '');
     var parts = pathname.split('/').filter(Boolean);
     return parts.length ? parts[parts.length - 1] : '';
