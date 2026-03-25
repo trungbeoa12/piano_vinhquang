@@ -8,17 +8,22 @@
   "sheetUrl": null,
   "audioUrl": null,
   "isPreview": false,
-  "status": "placeholder",
+  "status": "ready",
   "resources": [
     {
       "refId": "pvq-pcb-l02-vid",
       "kind": "video",
-      "title": "Video bài học"
+      "title": "Video bai hoc - Fur Elise"
     },
     {
-      "refId": "pvq-pcb-l02-pdf",
-      "kind": "pdf",
-      "title": "Tài liệu PDF"
+      "refId": "pvq-pcb-l02-sheet",
+      "kind": "sheet",
+      "title": "Sheet MusicXML - Fur Elise"
+    },
+    {
+      "refId": "pvq-pcb-l02-midi",
+      "kind": "midi",
+      "title": "MIDI - Fur Elise"
     }
   ]
 }

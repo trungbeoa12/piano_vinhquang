@@ -8,17 +8,22 @@
   "sheetUrl": null,
   "audioUrl": null,
   "isPreview": true,
-  "status": "placeholder",
+  "status": "ready",
   "resources": [
     {
       "refId": "pvq-pcb-l01-vid",
       "kind": "video",
-      "title": "Video bài học"
+      "title": "Video bai hoc - Canon in D"
     },
     {
       "refId": "pvq-pcb-l01-sheet",
       "kind": "sheet",
-      "title": "Sheet bài tập số 1"
+      "title": "Sheet MusicXML - Canon in D"
+    },
+    {
+      "refId": "pvq-pcb-l01-midi",
+      "kind": "midi",
+      "title": "MIDI - Canon in D"
     }
   ]
 }
