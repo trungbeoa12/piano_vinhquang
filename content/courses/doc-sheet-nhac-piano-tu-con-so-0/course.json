@@ -20,7 +20,6 @@
   "priceVnd": 299000,
   "level": "beginner",
   "durationWeeks": 8,
-  "heroImage": "images/courses/course-piano-basic-cover.jpg",
+  "heroImage": "images/courses/course-piano-sheet-reading-hero.jpg",
   "lessonOrder": ["ds0-l01", "ds0-l02", "ds0-l03", "ds0-l04", "ds0-l05", "ds0-l06"]
 }
-

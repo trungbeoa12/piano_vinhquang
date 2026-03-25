@@ -20,7 +20,6 @@
   "priceVnd": 499000,
   "level": "intermediate",
   "durationWeeks": 12,
-  "heroImage": "images/courses/course-piano-basic-cover.jpg",
+  "heroImage": "images/courses/course-piano-solo-performance-hero.jpg",
   "lessonOrder": ["psb-l01", "psb-l02", "psb-l03", "psb-l04", "psb-l05", "psb-l06", "psb-l07"]
 }
-

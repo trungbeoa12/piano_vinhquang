@@ -20,7 +20,6 @@
   "priceVnd": 299000,
   "level": "beginner",
   "durationWeeks": 8,
-  "heroImage": "images/courses/course-piano-basic-cover.jpg",
+  "heroImage": "images/courses/course-piano-basic-main-hero.jpg",
   "lessonOrder": ["pcbn-l01", "pcbn-l02", "pcbn-l03", "pcbn-l04", "pcbn-l05", "pcbn-l06"]
 }
-

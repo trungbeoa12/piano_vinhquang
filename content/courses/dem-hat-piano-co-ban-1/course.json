@@ -20,7 +20,6 @@
   "priceVnd": 199000,
   "level": "beginner",
   "durationWeeks": 7,
-  "heroImage": "images/courses/course-piano-accompaniment-cover.jpg",
+  "heroImage": "images/courses/course-piano-accompaniment-main-hero.jpg",
   "lessonOrder": ["dhpb1-l01", "dhpb1-l02", "dhpb1-l03", "dhpb1-l04", "dhpb1-l05"]
 }
-

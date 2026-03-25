@@ -20,7 +20,6 @@
   "priceVnd": 499000,
   "level": "intermediate",
   "durationWeeks": 12,
-  "heroImage": "images/courses/course-piano-accompaniment-cover.jpg",
+  "heroImage": "images/courses/course-piano-accompaniment-main-hero.jpg",
   "lessonOrder": ["phc-l01", "phc-l02", "phc-l03", "phc-l04", "phc-l05", "phc-l06", "phc-l07"]
 }
-

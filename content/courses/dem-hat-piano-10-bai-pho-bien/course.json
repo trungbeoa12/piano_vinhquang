@@ -20,7 +20,6 @@
   "priceVnd": 299000,
   "level": "beginner_to_intermediate",
   "durationWeeks": 10,
-  "heroImage": "images/courses/course-piano-accompaniment-cover.jpg",
+  "heroImage": "images/courses/course-piano-beginner-foundation-hero.jpg",
   "lessonOrder": ["dht10-l01", "dht10-l02", "dht10-l03", "dht10-l04", "dht10-l05", "dht10-l06"]
 }
-
