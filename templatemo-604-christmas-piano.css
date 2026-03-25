@@ -751,9 +751,12 @@ h1 {
 
 .mini-piano {
 	display: flex;
-	justify-content: center;
+	justify-content: flex-start;
 	position: relative;
 	height: 92px;
+	width: max-content;
+	margin: 0 auto;
+	max-width: 100%;
 }
 
 .mini-key {
