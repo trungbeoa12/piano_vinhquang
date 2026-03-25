@@ -202,7 +202,7 @@ function resolveCorsConfig() {
     origins: origins,
     credentials: credentials,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-key'],
   };
 }
 
