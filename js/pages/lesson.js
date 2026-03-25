@@ -46,6 +46,12 @@ function renderLessonContent(data) {
   if (!sideEl) return;
 
   var lesson = data.lesson || {};
+  function normalizeResourceUrl(url) {
+    if (!url) return '';
+    if (/^https?:\/\//i.test(url)) return url;
+    if (window.PVQ_withApiBase) return window.PVQ_withApiBase(url);
+    return url;
+  }
   var resolvedItems = Array.isArray(data.items) ? data.items : [];
   var resolvedVideo = resolvedItems.find(function (item) {
     return item && item.kind === 'video' && item.url;
@@ -57,9 +63,15 @@ function renderLessonContent(data) {
     return item && (item.kind === 'audio' || item.kind === 'midi') && item.url;
   });
   var statusLabel = lesson.status || 'placeholder';
-  var videoUrl = lesson.videoUrl || (resolvedVideo && resolvedVideo.url) || '';
-  var sheetUrl = lesson.sheetUrl || (resolvedSheet && resolvedSheet.url) || '';
-  var audioUrl = lesson.audioUrl || (resolvedAudio && resolvedAudio.url) || '';
+  var videoUrl = normalizeResourceUrl(
+    lesson.videoUrl || (resolvedVideo && resolvedVideo.url) || ''
+  );
+  var sheetUrl = normalizeResourceUrl(
+    lesson.sheetUrl || (resolvedSheet && resolvedSheet.url) || ''
+  );
+  var audioUrl = normalizeResourceUrl(
+    lesson.audioUrl || (resolvedAudio && resolvedAudio.url) || ''
+  );
   var videoHtml = videoUrl
     ? '<div class="pvq-resource-item"><div><strong>Video bài học</strong><div class="pvq-resource-kind">' +
       statusLabel +
@@ -89,7 +101,8 @@ function renderLessonContent(data) {
       '</div></div><span class="pvq-muted">Audio sẽ được cập nhật sau</span></div>';
   var itemsHtml = resolvedItems
     .map(function (item) {
-      if (!item.url) {
+      var itemUrl = normalizeResourceUrl(item.url);
+      if (!itemUrl) {
         return (
           '<div class="pvq-resource-item"><div><strong>' +
           item.title +
@@ -104,7 +117,7 @@ function renderLessonContent(data) {
         '</strong><div class="pvq-resource-kind">' +
         item.kind +
         '</div></div><a href="' +
-        item.url +
+        itemUrl +
         '" target="_blank" rel="noopener noreferrer" class="cta-btn cta-btn-secondary" style="min-height:44px;padding:10px 18px;font-size:0.88rem">Mở</a></div>'
       );
     })
