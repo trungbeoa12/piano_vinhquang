@@ -213,9 +213,12 @@
 
 .pvq-piano-module .mini-piano {
 	display: flex;
-	justify-content: center;
+	justify-content: flex-start;
 	position: relative;
 	height: 92px;
+	width: max-content;
+	margin: 0 auto;
+	max-width: 100%;
 }
 
 .pvq-piano-module .mini-key {
@@ -247,6 +250,23 @@
 	border-radius: 0 0 4px 4px;
 	z-index: 2;
 	top: 0;
+}
+
+/* Sheet viewer must not affect keyboard layout */
+.pvq-piano-module .pvq-score-container {
+	margin-top: 18px;
+	padding: 14px 16px;
+	background: var(--bg-section);
+	border: 1px solid rgba(15, 23, 42, 0.08);
+	border-radius: 18px;
+	box-shadow: var(--shadow-card);
+	overflow: auto;
+	contain: layout paint;
+	isolation: isolate;
+}
+
+.pvq-piano-module .pvq-score-container .pvq-score {
+	min-height: 40px;
 }
 
 .pvq-piano-module .mini-key.black.active {
